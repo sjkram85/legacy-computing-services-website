@@ -4,7 +4,7 @@
   'use strict';
 
   const D = window.LCS_DATA;
-  const VIEWS = ['home', 'services', 'estimator', 'about', 'contact'];
+  const VIEWS = ['home', 'services', 'work', 'estimator', 'about', 'contact'];
   const EMAIL = D.company.email;
 
   function icon(path, size) {
@@ -340,7 +340,18 @@
     } else if (viewName === 'estimator' && location.hash !== '#estimator/' + activeTierId) {
       history.replaceState(null, '', '#estimator/' + activeTierId);
     }
+    if (scrollTarget) {
+      const node = document.getElementById(scrollTarget);
+      scrollTarget = null;
+      if (node) node.scrollIntoView();
+    }
     refreshReveals();
+  }
+
+  let scrollTarget = null;
+  function showFaq() {
+    scrollTarget = 'faq';
+    switchView('home');
   }
 
   let revealObserver = null;
@@ -512,12 +523,166 @@
     closeMobileMenu();
   });
 
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function renderFaq() {
+    const list = document.getElementById('faq-list');
+    if (!list || !D.faq) return;
+    list.replaceChildren();
+    D.faq.items.forEach((item) => {
+      const details = el('details', 'faq-item');
+      const summary = el('summary', '', item.q);
+      const answer = el('p', '', item.a);
+      details.append(summary, answer);
+      if (item.soon) details.append(el('p', '', item.soon));
+      list.appendChild(details);
+    });
+  }
+
+  function renderGbp() {
+    document.querySelectorAll('[data-gbp]').forEach((node) => {
+      const info = D.googleBusiness || {};
+      node.replaceChildren();
+      node.className = 'soon-badge';
+      if (info.url) {
+        const link = el('a', 'work-link', info.label || 'Google reviews');
+        link.href = info.url;
+        link.rel = 'noopener';
+        link.target = '_blank';
+        node.appendChild(link);
+      } else {
+        node.textContent = info.label || 'Google Business Profile — coming soon';
+      }
+    });
+  }
+
+  function renderTestimonials() {
+    const mount = document.getElementById('home-testimonials');
+    if (!mount) return;
+    mount.replaceChildren();
+    const quotes = D.testimonials || [];
+    if (!quotes.length) return;
+    const grid = el('div', 'slot-grid');
+    quotes.forEach((quote) => {
+      const card = el('blockquote', 'work-card');
+      card.append(el('p', '', quote.text || ''), el('p', 'work-kicker', quote.by || ''));
+      grid.appendChild(card);
+    });
+    mount.append(el('h2', 'mt-10 text-2xl font-bold text-slate-950', 'What clients say'), grid);
+  }
+
+  function compareBlock(before, after) {
+    const box = el('div', 'compare');
+    box.dataset.compare = '1';
+    const afterImg = el('img', 'compare-after');
+    afterImg.src = after.src;
+    afterImg.alt = after.alt || '';
+    const beforeImg = el('img', 'compare-before');
+    beforeImg.src = before.src;
+    beforeImg.alt = before.alt || '';
+    const afterTag = el('span', 'compare-tag', after.label || 'After');
+    afterTag.style.right = '0.75rem';
+    const beforeTag = el('span', 'compare-tag', before.label || 'Before');
+    beforeTag.style.left = '0.75rem';
+    const handle = el('span', 'compare-handle');
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.min = '0';
+    range.max = '100';
+    range.value = '50';
+    range.setAttribute('aria-label', 'Show more of the before or after image');
+    box.append(afterImg, beforeImg, beforeTag, afterTag, handle, range);
+    const set = (value) => {
+      const n = Number(value);
+      beforeImg.style.clipPath = 'inset(0 ' + (100 - n) + '% 0 0)';
+      handle.style.left = n + '%';
+    };
+    range.addEventListener('input', () => set(range.value));
+    set(50);
+    return box;
+  }
+
+  function renderPortfolio() {
+    const mount = document.getElementById('work-projects');
+    if (!mount || !D.portfolio) return;
+    mount.replaceChildren();
+    D.portfolio.projects.forEach((project) => {
+      const card = el('article', 'work-card');
+      card.append(el('p', 'work-kicker', project.place || 'Web'), el('h2', '', project.title), el('p', '', project.summary || ''));
+      if (project.liveUrl) {
+        const link = el('a', 'work-link', project.liveLabel || 'Open the site');
+        link.href = project.liveUrl;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        const row = el('p');
+        row.appendChild(link);
+        card.appendChild(row);
+      }
+      if (project.before && project.after) card.appendChild(compareBlock(project.before, project.after));
+      else if (project.comingSoon) card.appendChild(el('p', 'soon-badge', 'Coming soon'));
+      mount.appendChild(card);
+    });
+    (D.portfolio.builds || []).forEach((build) => {
+      const card = el('article', 'work-card');
+      card.append(el('p', 'work-kicker', build.place || 'Custom PC'), el('h2', '', build.title), el('p', '', build.summary || ''));
+      const grid = el('div', 'slot-grid');
+      [
+        ['Parts list', (build.parts || []).join(', ')],
+        ['Photos', (build.photos || []).length ? build.photos.length + ' photos' : ''],
+        ['Thermals', build.thermals || '']
+      ].forEach(([label, value]) => {
+        const box = el('div', 'slot-box');
+        box.append(el('strong', '', label), el('span', '', value || 'Coming soon'));
+        grid.appendChild(box);
+      });
+      card.appendChild(grid);
+      mount.appendChild(card);
+    });
+  }
+
+  function renderFounder() {
+    const mount = document.getElementById('founder-card');
+    const profile = D.founderProfile;
+    if (!mount || !profile) return;
+    mount.replaceChildren();
+    if (profile.photo) {
+      const img = el('img');
+      img.src = profile.photo;
+      img.alt = profile.photoAlt || profile.name || '';
+      img.width = 120;
+      img.height = 120;
+      img.style.width = '7.5rem';
+      img.style.height = '7.5rem';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '1rem';
+      mount.appendChild(img);
+    } else {
+      mount.appendChild(el('div', 'founder-slot', profile.photoSoon || 'Coming soon'));
+    }
+    const copy = el('div');
+    copy.append(el('p', 'work-kicker', profile.role || ''), el('h2', '', profile.name || ''));
+    copy.querySelector('h2').style.fontSize = '1.25rem';
+    copy.querySelector('h2').style.fontWeight = '800';
+    copy.appendChild(el('p', '', profile.bio || profile.bioSoon || 'Coming soon'));
+    mount.appendChild(copy);
+  }
+
   function init() {
     bindText();
     renderPillars();
     renderHighlights();
     renderServices();
     renderAbout();
+    renderPortfolio();
+    renderFaq();
+    renderFounder();
+    renderTestimonials();
+    renderGbp();
     renderContactOptions();
     checkContent();
     const year = document.getElementById('currentYear');
@@ -536,7 +701,8 @@
     handleContactSubmit: handleContactSubmit,
     resetConsultationForm: resetConsultationForm,
     copyCompanyEmail: copyCompanyEmail,
-    openMailClient: openMailClient
+    openMailClient: openMailClient,
+    showFaq: showFaq
   });
 
   init();

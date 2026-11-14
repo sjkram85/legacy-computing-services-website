@@ -12,11 +12,12 @@ Then visit http://localhost:8000. Hash routes also work on a fresh load, for exa
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | Layout only: header, the five views, footer, form shell, and HTML templates. |
+| `index.html` | Layout: header, views, footer, form, and templates. |
 | `js/site-data.js` | All editable copy: services, prices, ranges, process steps, towns, and the contact categories. |
 | `js/app.js` | Hash router (`switchView` / `routeFromHash`), the estimator, and the contact form. |
-| `assets/legacy-computing-logo.jpg` | Full logo lockup, used large in the home hero. |
-| `assets/legacy-computing-shield.jpg` | Shield cropped from that same file, used in the header and footer. |
+| `assets/legacy-computing-logo.png` | Full logo with a transparent background, used in the home hero. |
+| `assets/legacy-computing-shield.png` | Shield cropped from that file, transparent, used in the header and footer. |
+| `assets/portfolio/` | Before/after images for real projects. |
 | `assets/icons/` | Favicon, Apple touch icon, and Open Graph image, scaled from the shield crop. |
 
 ## Change a price or a tier
