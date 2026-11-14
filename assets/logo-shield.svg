@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Legacy Computing Services shield">
+  <path d="M24 4L7 11.5V23.5C7 34.2 14.25 43.9 24 46.5C33.75 43.9 41 34.2 41 23.5V11.5L24 4Z" fill="#0F172A" stroke="url(#lcsShieldGrad)" stroke-width="2.2"/>
+  <path d="M24 9.5L12 14.8V23.4C12 31.1 17.1 38.1 24 40.2C30.9 38.1 36 31.1 36 23.4V14.8L24 9.5Z" stroke="#38BDF8" stroke-opacity="0.35" stroke-width="1.2"/>
+  <path d="M17 18V29H24.5" stroke="#F8FAFC" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31 20.5C29.8 19.3 28.2 18.8 26.6 19.2C24.8 19.6 23.8 21.3 24.2 23C24.6 24.7 26.2 25.4 28.1 25.8C30.1 26.2 31.4 27.1 31.1 29.1C30.8 30.9 29 31.9 27 31.6C25.5 31.4 24.3 30.7 23.6 29.8" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="17" cy="18" r="1.7" fill="#38BDF8"/>
+  <circle cx="31" cy="20.5" r="1.7" fill="#F59E0B"/>
+  <defs>
+    <linearGradient id="lcsShieldGrad" x1="7" y1="4" x2="41" y2="46.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.65" stop-color="#0284C7"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+</svg>
