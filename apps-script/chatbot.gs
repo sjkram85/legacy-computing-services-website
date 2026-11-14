@@ -28,7 +28,11 @@
 var CHAT_LIMITS = {
   messageChars: 1000,
   historyMessages: 10,
-  maxOutputTokens: 400,
+  // gemini-3.8-flash counts thought tokens against this cap. A short
+  // question can spend about 200 of them before any reply text, which
+  // left answers empty at 400. 1200 leaves room for those thoughts and
+  // for the two-to-four sentence reply the system prompt asks for.
+  maxOutputTokens: 1200,
   maxBodyChars: 20000,
   defaultDailyLimit: 300,
   defaultModel: 'gemini-3.8-flash'
@@ -179,14 +183,20 @@ function callGemini_(messages, apiKey, props) {
 function extractReply_(data) {
   var candidates = data && data.candidates;
   if (!candidates || !candidates.length) return '';
-  var content = candidates[0].content;
+  var candidate = candidates[0];
+  var content = candidate.content;
   var parts = content && content.parts;
   if (!parts || !parts.length) return '';
   var out = [];
   for (var i = 0; i < parts.length; i++) {
     if (parts[i] && parts[i].text) out.push(String(parts[i].text));
   }
-  return out.join('').trim();
+  var text = out.join('').trim();
+  // finishReason MAX_TOKENS is still a reply when text exists. Thought tokens
+  // share maxOutputTokens and can stop a short answer early. Empty stays empty.
+  if (candidate.finishReason === 'MAX_TOKENS' && text) return text;
+  if (!text) return '';
+  return text;
 }
 
 function systemPrompt_() {
