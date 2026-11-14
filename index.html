@@ -6,6 +6,18 @@
   <title>Legacy Computing Services LLC | Honest Web Engineering, Custom PCs & Tech Support — Bel Air, MD</title>
   <meta name="description" content="Protecting what matters. Building what’s next. 25+ years of certified tech industry expertise delivered with honest, upfront truth and zero techno-babble in Bel Air & Harford County, MD." />
   <link rel="canonical" href="https://legacycomputingservices.com/" />
+  <link rel="icon" href="assets/icons/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <meta property="og:title" content="Legacy Computing Services LLC | Honest Web Engineering, Custom PCs &amp; Tech Support — Bel Air, MD" />
+  <meta property="og:description" content="Protecting what matters. Building what’s next. 25+ years of certified tech industry expertise delivered with honest, upfront truth and zero techno-babble in Bel Air &amp; Harford County, MD." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://legacycomputingservices.com/" />
+  <meta property="og:image" content="https://legacycomputingservices.com/assets/icons/og-card.png" />
+  <meta property="og:image:alt" content="Legacy Computing Services LLC shield" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Legacy Computing Services LLC | Honest Web Engineering, Custom PCs &amp; Tech Support — Bel Air, MD" />
+  <meta name="twitter:description" content="Protecting what matters. Building what’s next. 25+ years of certified tech industry expertise delivered with honest, upfront truth and zero techno-babble in Bel Air &amp; Harford County, MD." />
+  <meta name="twitter:image" content="https://legacycomputingservices.com/assets/icons/og-card.png" />
 
   <!-- Google Fonts: Plus Jakarta Sans, Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -107,9 +119,14 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #334155;
     }
+
+    #toastIcon.is-error {
+      background: rgba(244, 63, 94, 0.2);
+      color: #FB7185;
+    }
   </style>
 </head>
-<body class="antialiased selection:bg-sky-500/30 selection:text-sky-100">
+<body id="top" class="antialiased selection:bg-sky-500/30 selection:text-sky-100">
   <!-- Hidden File Input for Live Logo Previewer -->
   <input type="file" id="logoFileInput" accept="image/*" class="hidden" aria-hidden="true" />
 
@@ -136,7 +153,7 @@
       <div class="flex items-center justify-between h-20">
         <!-- Brand Logo + Live Upload Button -->
         <div class="flex items-center gap-3">
-          <a href="#" class="flex items-center gap-3.5 group focus:outline-none">
+          <a href="#top" class="flex items-center gap-3.5 group focus:outline-none">
             <div class="brand-logo-slot relative w-12 h-12 rounded-xl official-logo-stage group-hover:border-sky-400/70 flex items-center justify-center overflow-hidden transition-colors">
               <!-- Official Shield + Circuit Traces + Upward Teal Arrow Vector -->
               <svg class="default-lcs-svg w-9 h-9" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1150,7 +1167,7 @@
                   <span class="font-mono text-xs uppercase tracking-widest text-emerald-400">Ready to Send</span>
                   <h3 class="font-display text-2xl font-bold text-white">Thanks, <span id="confirmName">Friend</span>!</h3>
                   <p class="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                    Your inquiry regarding <strong id="confirmService" class="text-cyan-400">Tech Support</strong> is formatted and ready. Click below to send it directly through your email app, or copy the details.
+                    Your inquiry regarding <strong id="confirmService" class="text-cyan-400">Tech Support</strong> is formatted and ready. Click below to send it directly through your email app, or edit and send another.
                   </p>
                 </div>
                 <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -1473,6 +1490,22 @@
     let currentServiceKey = 'websites';
     let showTechSpecs = false;
 
+    function toggleEnthusiastSpecs() {
+      showTechSpecs = !showTechSpecs;
+      const box = document.getElementById('enthusiastSpecsBox');
+      const btn = document.getElementById('techSpecsToggleBtn');
+      const label = document.getElementById('techSpecsToggleLabel');
+      const chevron = document.getElementById('techSpecsChevron');
+      if (box) box.classList.toggle('hidden', !showTechSpecs);
+      if (btn) btn.setAttribute('aria-expanded', showTechSpecs ? 'true' : 'false');
+      if (label) {
+        label.textContent = showTechSpecs
+          ? 'Hide Technical Specs (Optional — For Enthusiasts & IT Contacts)'
+          : 'Show Technical Specs (Optional — For Enthusiasts & IT Contacts)';
+      }
+      if (chevron) chevron.classList.toggle('rotate-180', showTechSpecs);
+    }
+
     function selectServiceTab(key) {
       currentServiceKey = key;
       const data = serviceData[key];
@@ -1675,6 +1708,27 @@
 
     // -----------------------------------------------------------------------
     // 7. NON-BLOCKING TOAST NOTIFICATION
+    // -----------------------------------------------------------------------
+    let toastTimer = null;
+
+    function showToast(title, message, isError) {
+      const banner = document.getElementById('toastBanner');
+      const titleEl = document.getElementById('toastTitle');
+      const messageEl = document.getElementById('toastMessage');
+      const icon = document.getElementById('toastIcon');
+      if (!banner || !titleEl || !messageEl) return;
+
+      titleEl.textContent = title || '';
+      messageEl.textContent = message || '';
+      if (icon) icon.classList.toggle('is-error', !!isError);
+
+      banner.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        banner.classList.add('translate-y-24', 'opacity-0');
+      }, 4000);
+    }
+
     // -----------------------------------------------------------------------
     // 8. HERO LOGO STAGE CYBER MATRIX BACKGROUND ANIMATION
     // -----------------------------------------------------------------------
