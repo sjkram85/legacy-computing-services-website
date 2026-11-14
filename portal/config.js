@@ -36,5 +36,5 @@ window.LCS_PORTAL = {
      When set, it must be a Google Apps Script web app URL ending in /exec.
      See docs/portal-setup.md and apps-script/inquiries.gs.
      The address will be public once it is saved in this file. */
-  inquiriesWebhookUrl: ""
+  inquiriesWebhookUrl: "https://script.google.com/macros/s/AKfycbxXent-Sa4smfBZmx8SguDFRKu8CWtB8c7AaqPYQUik2XrL3NEhjSUuIy_380BVN6evFA/exec"
 };
