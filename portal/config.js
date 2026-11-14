@@ -26,6 +26,12 @@ window.LCS_PORTAL = {
      Leave blank until the company docs folder exists. */
   driveFolderId: "",
 
+  /* Optional. Calendar embedded on the dashboard.
+     Leave blank to use the signed-in employee's primary calendar (their email).
+     A calendar id is usually an email address. It is not a secret, but the
+     calendar itself must be shared only with the people who should see it. */
+  calendarId: "",
+
   /* Optional. Leave blank to keep the public contact form as email-only.
      When set, it must be a Google Apps Script web app URL ending in /exec.
      See docs/portal-setup.md and apps-script/inquiries.gs.

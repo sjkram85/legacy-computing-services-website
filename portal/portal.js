@@ -41,6 +41,7 @@
     createdSheet: null,
     drive: { files: [], error: '', folderId: '' },
     events: [],
+    viewer: null,
     calendarError: '',
     sheetsError: '',
     customerQuery: '',
@@ -61,6 +62,16 @@
 
   function driveFolderId() {
     return Lib.googleId(cfg().driveFolderId);
+  }
+
+  function calendarEmbedSrc() {
+    if (state.mode !== 'live') return '';
+    var configured = Lib.clean(cfg().calendarId);
+    if (Lib.isPlaceholder(configured)) configured = '';
+    var id = configured || (state.profile && state.profile.email) || '';
+    if (!id) return '';
+    var agenda = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+    return Lib.calendarEmbedUrl(id, { mode: agenda ? 'AGENDA' : 'WEEK', timeZone: 'America/New_York' });
   }
 
   function el(tag, attrs, kids) {
@@ -138,6 +149,7 @@
   }
 
   function applyHash() {
+    state.viewer = null;
     var parts = hashParts();
     if (parts[0] === 'print' && (parts[1] === 'quote' || parts[1] === 'invoice')) {
       state.section = 'print';
@@ -146,7 +158,7 @@
       state.editorId = '';
       return;
     }
-    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, quotes: 1, invoices: 1, docs: 1 };
+    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, quotes: 1, invoices: 1, docs: 1, sheet: 1 };
     state.section = known[parts[0]] ? parts[0] : 'home';
     state.editorId = parts[1] || '';
     state.printKind = '';
@@ -466,7 +478,8 @@
       ['inquiries', 'Inquiries'],
       ['quotes', 'Quotes'],
       ['invoices', 'Invoices'],
-      ['docs', 'Docs']
+      ['docs', 'Docs'],
+      ['sheet', 'Spreadsheet']
     ].forEach(function (item) {
       var on = state.section === item[0];
       if (state.section === 'print') {
@@ -489,6 +502,7 @@
     if (state.section === 'quotes') return state.editorId ? renderDocEditor('quote') : renderDocList('quote');
     if (state.section === 'invoices') return state.editorId ? renderDocEditor('invoice') : renderDocList('invoice');
     if (state.section === 'docs') return renderDocs();
+    if (state.section === 'sheet') return renderSheet();
     if (state.section === 'print') return renderPrint();
     return renderHome();
   }
@@ -496,11 +510,11 @@
   function quickLinks() {
     var domain = Lib.allowedDomain(cfg()) || 'legacycomputingservices.com';
     return [
-      ['Gmail', 'https://mail.google.com/a/' + domain, 'Company inbox'],
+      ['Gmail', 'https://mail.google.com/a/' + domain, 'Cannot be embedded'],
       ['Drive', 'https://drive.google.com/', 'Files'],
-      ['Calendar', 'https://calendar.google.com/calendar/u/0/r', 'Schedule'],
+      ['Calendar', 'https://calendar.google.com/calendar/u/0/r', 'Full calendar'],
       ['Meet', 'https://meet.google.com/', 'Video calls'],
-      ['Admin', 'https://admin.google.com/', 'For Workspace admins']
+      ['Admin', 'https://admin.google.com/', 'Workspace admins']
     ];
   }
 
@@ -515,6 +529,7 @@
       });
       link.appendChild(el('span', { class: 'block font-display font-bold text-white' }, [item[0]]));
       link.appendChild(el('span', { class: 'block mt-1 text-xs text-slate-400' }, [item[2]]));
+      link.appendChild(el('span', { class: 'block mt-2 font-mono text-[10px] uppercase tracking-wider text-sky-300' }, ['Opens in a new tab']));
       grid.appendChild(link);
     });
     return grid;
@@ -590,8 +605,9 @@
 
   function renderHome() {
     var page = el('div', { class: 'space-y-8' });
-    page.appendChild(sectionHead('Workspace', 'Dashboard', 'Links open Google. Lists below are the sheet and calendar your account is allowed to read.'));
+    page.appendChild(sectionHead('Workspace', 'Dashboard', 'Gmail cannot be embedded, so Gmail, Drive, Calendar, Meet, and Admin open in a new tab. The calendar below stays on this page.'));
     page.appendChild(linkGrid());
+    page.appendChild(renderCalendarEmbed());
     var callout = sheetCallout();
     if (callout) page.appendChild(callout);
     if (state.sheetsError) page.appendChild(emptyNote(state.sheetsError));
@@ -606,16 +622,56 @@
     stats.appendChild(statCard('Open quotes', openQuotes, 'quotes'));
     stats.appendChild(statCard('Unpaid invoices', unpaid, 'invoices'));
     page.appendChild(stats);
-    var cols = el('div', { class: 'grid lg:grid-cols-2 gap-6' });
-    cols.appendChild(calendarCard());
-    cols.appendChild(recentTickets());
-    page.appendChild(cols);
+    page.appendChild(recentTickets());
     return page;
+  }
+
+  function sampleLayout(label) {
+    return el('div', {
+      class: 'w-full h-80 sm:h-[32rem] rounded-2xl border border-dashed border-amber-400/50 bg-slate-950/80 flex items-center justify-center p-6 text-center'
+    }, [
+      el('p', { class: 'max-w-md text-sm text-amber-100 leading-relaxed' }, [
+        'Sample — ' + label + '. Not connected to Google.'
+      ])
+    ]);
+  }
+
+  function renderCalendarEmbed() {
+    var wrap = el('div', { class: 'space-y-4' });
+    var box = el('section', { class: 'cyber-panel rounded-3xl p-6 space-y-4' });
+    box.appendChild(el('h2', { class: 'font-display text-xl font-bold text-white' }, ['Calendar']));
+    var src = calendarEmbedSrc();
+    if (state.mode === 'demo') {
+      box.appendChild(el('p', { class: 'text-sm text-amber-100 leading-relaxed' }, [
+        'Sample layout. Not a Google calendar. After sign-in, this frame embeds Google Calendar for calendarId in portal/config.js, or for the signed-in email when that setting is blank. A narrow window uses agenda mode.'
+      ]));
+      box.appendChild(sampleLayout('calendar embed'));
+    } else if (src) {
+      box.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
+        'Embedded from Google Calendar. A narrow window uses agenda mode. The dark frame is as far as Google’s embed follows this page. Google still decides who can see the calendar.'
+      ]));
+      box.appendChild(el('iframe', {
+        id: 'lcs-calendar-frame',
+        title: 'Google Calendar',
+        src: src,
+        class: 'w-full h-80 sm:h-[32rem] rounded-2xl border border-slate-700 bg-[#0B131E]'
+      }));
+    } else {
+      box.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
+        'No calendar to embed yet. Set calendarId in portal/config.js, or sign in so the page can use that account’s email.'
+      ]));
+    }
+    wrap.appendChild(box);
+    wrap.appendChild(calendarCard());
+    return wrap;
   }
 
   function calendarCard() {
     var card = el('section', { class: 'cyber-panel rounded-3xl p-6 space-y-4' });
     card.appendChild(el('h2', { class: 'font-display text-xl font-bold text-white' }, ['Upcoming']));
+    card.appendChild(el('p', { class: 'text-sm text-slate-400 leading-relaxed' }, [
+      'A short list from Calendar access, when Google granted it. This is the fallback under the embed.'
+    ]));
     if (state.calendarError) card.appendChild(el('p', { class: 'text-sm text-amber-200 leading-relaxed' }, [state.calendarError]));
     if (!state.events.length && !state.calendarError) {
       card.appendChild(el('p', { class: 'text-sm text-slate-400' }, ['No upcoming events on the primary calendar.']));
@@ -1236,9 +1292,88 @@
     });
   }
 
+  function googleEditor(mime) {
+    return mime === 'application/vnd.google-apps.document'
+      || mime === 'application/vnd.google-apps.spreadsheet'
+      || mime === 'application/vnd.google-apps.presentation';
+  }
+
+  function openViewer(file) {
+    state.viewer = {
+      id: file.id || '',
+      name: file.name || 'Untitled',
+      mimeType: file.mimeType || '',
+      webViewLink: file.webViewLink || '',
+      sample: !!(file.sample || state.mode === 'demo'),
+      edit: false
+    };
+    paint(true);
+  }
+
+  function closeViewer() {
+    state.viewer = null;
+    paint(true);
+  }
+
+  function renderViewer() {
+    var item = state.viewer;
+    if (!item) return null;
+    var overlay = el('div', {
+      class: 'fixed inset-0 z-50 bg-[#0B131E]/80 flex items-end sm:items-center justify-center p-3 sm:p-6',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': item.name || 'File preview'
+    });
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) closeViewer();
+    });
+    var panel = el('div', { class: 'cyber-panel rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden' });
+    var bar = el('div', { class: 'flex flex-wrap items-center justify-between gap-3 p-4 border-b border-slate-700' });
+    var title = el('div', { class: 'min-w-0' });
+    title.appendChild(el('h2', { class: 'font-display font-bold text-white truncate' }, [item.name || 'Untitled']));
+    if (item.sample) title.appendChild(el('p', { class: 'text-xs text-amber-200 mt-1' }, ['Sample file. Not a Drive preview.']));
+    bar.appendChild(title);
+    var actions = el('div', { class: 'flex flex-wrap gap-2' });
+    if (googleEditor(item.mimeType)) {
+      actions.appendChild(button(item.edit ? 'View preview' : 'Edit in the page', SECONDARY, function () {
+        state.viewer.edit = !state.viewer.edit;
+        paint(true);
+      }));
+    }
+    if (!item.sample && safeHttp(item.webViewLink)) {
+      actions.appendChild(el('a', {
+        href: item.webViewLink,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: SECONDARY
+      }, ['Open in Google (new tab)']));
+    }
+    actions.appendChild(button('Close', PRIMARY, closeViewer));
+    bar.appendChild(actions);
+    panel.appendChild(bar);
+    var src = item.sample ? '' : Lib.drivePreviewUrl(item, item.edit);
+    if (src) {
+      panel.appendChild(el('iframe', {
+        title: item.name || 'File preview',
+        src: src,
+        class: 'flex-1 w-full min-h-0 border-0 bg-white'
+      }));
+    } else {
+      var note = item.sample
+        ? 'Sample — file preview. Not connected to Google. A real file loads in this frame. Docs, Sheets, and Slides use /preview, or /edit?rm=minimal when Edit in the page is on.'
+        : 'This file has no in-page preview.';
+      if (item.sample && item.edit) note = 'Sample — edit mode. Not connected to Google. A real Doc, Sheet, or Slide would load /edit?rm=minimal here.';
+      panel.appendChild(el('div', { class: 'flex-1 flex items-center justify-center p-6 text-center' }, [
+        el('p', { class: 'max-w-md text-sm text-amber-100 leading-relaxed' }, [note])
+      ]));
+    }
+    overlay.appendChild(panel);
+    return overlay;
+  }
+
   function renderDocs() {
     var page = el('div', { class: 'space-y-5' });
-    page.appendChild(sectionHead('Drive', 'Company docs and how-tos', 'Files are listed from the Drive folder in portal/config.js. Opening one uses Google Drive, not a copy stored on this website.'));
+    page.appendChild(sectionHead('Drive', 'Company docs and how-tos', 'Preview opens the file in this page. Google Docs, Sheets, and Slides can switch to a minimal editor. Google still decides whether your account can open the file.'));
     if (state.mode === 'live' && !driveFolderId()) {
       var raw = Lib.clean(cfg().driveFolderId);
       page.appendChild(emptyNote(raw && !Lib.googleId(raw)
@@ -1259,11 +1394,18 @@
       ]));
       card.appendChild(copy);
       var side = el('div', { class: 'flex items-center gap-2' });
-      if (file.sample || state.mode === 'demo') {
-        side.appendChild(sampleChip());
-        side.appendChild(el('span', { class: 'text-xs text-slate-400' }, ['Not a Drive link']));
+      var folder = file.mimeType === 'application/vnd.google-apps.folder';
+      if (file.sample || state.mode === 'demo') side.appendChild(sampleChip());
+      if (folder && !(file.sample || state.mode === 'demo')) {
+        if (safeHttp(file.webViewLink)) {
+          side.appendChild(el('a', { href: file.webViewLink, target: '_blank', rel: 'noopener noreferrer', class: SECONDARY }, ['Open in a new tab']));
+        } else {
+          side.appendChild(el('span', { class: 'text-xs text-slate-400' }, ['No open link from Google']));
+        }
+      } else if (file.sample || state.mode === 'demo' || file.id) {
+        side.appendChild(button('Preview', SECONDARY, function () { openViewer(file); }));
       } else if (safeHttp(file.webViewLink)) {
-        side.appendChild(el('a', { href: file.webViewLink, target: '_blank', rel: 'noopener noreferrer', class: SECONDARY }, ['Open']));
+        side.appendChild(el('a', { href: file.webViewLink, target: '_blank', rel: 'noopener noreferrer', class: SECONDARY }, ['Open in a new tab']));
       } else {
         side.appendChild(el('span', { class: 'text-xs text-slate-400' }, ['No open link from Google']));
       }
@@ -1271,6 +1413,40 @@
       list.appendChild(card);
     });
     page.appendChild(list);
+    var viewer = renderViewer();
+    if (viewer) page.appendChild(viewer);
+    return page;
+  }
+
+  function renderSheet() {
+    var page = el('div', { class: 'space-y-5' });
+    page.appendChild(sectionHead('Sheet', 'Spreadsheet', 'The portal spreadsheet, embedded for editing. Google still decides who can open it. This page does not store a copy.'));
+    if (state.mode === 'demo') {
+      page.appendChild(el('p', { class: 'text-sm text-amber-100 leading-relaxed' }, [
+        'Sample layout. Not a company spreadsheet. After sign-in, and after spreadsheetId is set, this tab embeds that Google Sheet.'
+      ]));
+      page.appendChild(sampleLayout('spreadsheet embed'));
+      return page;
+    }
+    if (!spreadsheetId()) {
+      var blocked = sheetCallout();
+      if (blocked) page.appendChild(blocked);
+      return page;
+    }
+    var src = Lib.spreadsheetEmbedUrl(spreadsheetId());
+    page.appendChild(el('iframe', {
+      title: state.spreadsheetTitle || 'Portal spreadsheet',
+      src: src,
+      class: 'w-full h-[70vh] min-h-[28rem] rounded-2xl border border-slate-700 bg-white'
+    }));
+    if (safeHttp(state.spreadsheetUrl)) {
+      page.appendChild(el('a', {
+        href: state.spreadsheetUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: SECONDARY + ' self-start'
+      }, ['Open in a new tab']));
+    }
     return page;
   }
 
@@ -1382,6 +1558,7 @@
     state.data = Lib.emptyData();
     state.events = [];
     state.drive = { files: [], error: '', folderId: '' };
+    state.viewer = null;
     state.sessionSpreadsheetId = '';
     state.createdSheet = null;
     state.banner = null;
@@ -1958,9 +2135,23 @@
     });
     document.addEventListener('keydown', function (event) {
       if (event.key !== 'Escape' || state.mode === 'gate') return;
+      if (state.viewer) {
+        state.viewer = null;
+        paint(true);
+        return;
+      }
       if (state.section === 'print') go(state.printKind === 'invoice' ? 'invoices' : 'quotes');
       else if (state.editorId) go(state.section);
     });
+    var calendarQuery = window.matchMedia ? window.matchMedia('(max-width: 767px)') : null;
+    var onCalendarMode = function () {
+      var frame = document.getElementById('lcs-calendar-frame');
+      if (!frame) return;
+      var src = calendarEmbedSrc();
+      if (src && frame.src !== src) frame.src = src;
+    };
+    if (calendarQuery && calendarQuery.addEventListener) calendarQuery.addEventListener('change', onCalendarMode);
+    else if (calendarQuery && calendarQuery.addListener) calendarQuery.addListener(onCalendarMode);
     paint();
   }
 

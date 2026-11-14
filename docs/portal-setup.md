@@ -100,7 +100,7 @@ You can also skip adding them by hand. The first time you sign in, Google shows 
 3. Click the pencil to edit.
 4. Replace `YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` with the Client ID you copied. Keep the quotes.
 5. Leave `allowedDomain` as `legacycomputingservices.com` unless the company domain changes. That one line is the only place the allowed domain is set.
-6. Leave `spreadsheetId`, `driveFolderId`, and `inquiriesWebhookUrl` empty for now.
+6. Leave `spreadsheetId`, `driveFolderId`, `calendarId`, and `inquiriesWebhookUrl` empty for now. Blank `calendarId` embeds each signed-in employee’s own primary calendar.
 7. Commit the change to the `main` branch.
 
 Wait a minute or two for GitHub Pages to update. Then open the portal at `https://legacycomputingservices.com/portal/`.
@@ -164,9 +164,22 @@ Create a Google Sheet yourself, add the tabs above, and type the header row exac
 4. Open the folder. The address looks like `https://drive.google.com/drive/folders/THIS_PART`.
 5. Copy `THIS_PART` into `driveFolderId` in `portal/config.js`. You can paste the whole folder URL. Commit to `main`.
 
-The Docs tab lists names and links. Employees open the file in Drive.
+The Docs tab lists the files. **Preview** opens a file inside the portal. A normal file uses `https://drive.google.com/file/d/FILE_ID/preview`. Google Docs, Sheets, and Slides use their `/preview` address, and **Edit in the page** switches that frame to `/edit?rm=minimal`. **Close** returns to the list. **Open in Google (new tab)** leaves the portal. Folders stay as a new-tab link, because a folder is not a file preview. Nothing is copied onto this website. Google still checks that the file is shared with the signed-in account.
 
-## 10. What employees do
+## 10. Calendar embed and the spreadsheet tab
+
+`calendarId` in `portal/config.js` is optional.
+
+- Leave it blank. The dashboard then embeds the signed-in employee’s primary calendar. That id is their email address. The page only learns the email after sign-in, so it is not stored in this file.
+- Or paste one shared calendar’s id, which is usually an email address such as the address of a company calendar. Share that calendar with the employees who should see it. The id is not a secret. Google still blocks anyone the calendar is not shared with.
+
+The frame is `https://calendar.google.com/calendar/embed?src=...&ctz=America/New_York`. A wide window uses week view. A narrow window uses agenda mode. Google draws the calendar grid, so the dark page color is as far as the embed can follow this site. If Calendar access was granted at sign-in, a short upcoming list is also shown. That list is the fallback. It is not a second copy of the company calendar stored here.
+
+Gmail cannot be placed in a frame. The Gmail, Drive, Calendar, Meet, and Admin shortcuts are labeled **Opens in a new tab**.
+
+The **Spreadsheet** tab embeds the portal spreadsheet at `/edit?rm=minimal` once `spreadsheetId` is set. Use it when you want to edit cells without leaving the portal. Sharing on the Google Sheet is still the lock. **Open in a new tab** is there too.
+
+## 11. What employees do
 
 1. Open the portal from the footer link.
 2. Click **Sign in with Google**.
@@ -175,14 +188,16 @@ The Docs tab lists names and links. Employees open the file in Drive.
 
 They then get:
 
-- Links to Gmail, Drive, Calendar, Meet, and the Admin console (Admin only works for Workspace admins)
+- Shortcuts to Gmail, Drive, Calendar, Meet, and the Admin console, each opening in a new tab (Admin only works for Workspace admins). Gmail cannot be embedded.
+- The company calendar embedded on the dashboard, plus a short upcoming list when Calendar access was granted
 - Tickets, customers, inquiries, quotes, and invoices from the spreadsheet
+- A Spreadsheet tab that embeds that same Google Sheet for editing
 - A print view for a quote or invoice. The browser’s print dialog can save a PDF. The portal does not upload that PDF.
-- The docs list, once the folder ID is set
+- The docs list, once the folder ID is set, with an in-page preview
 
 **Preview with sample data** is a fake dashboard for looking at the layout. The amber banner says it is sample data. Those names and dollar amounts are not company records and are not saved.
 
-## 11. Optional: website inquiries into the sheet
+## 12. Optional: website inquiries into the sheet
 
 The public contact form still only prepares an email to scott@legacycomputingservices.com. The visitor must press Send in their email app. Do not remove that.
 
