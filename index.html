@@ -19,6 +19,29 @@
   <meta name="twitter:description" content="Protecting what matters. Building what’s next. Bespoke web design, custom-engineered PC workstations, and hardware upgrades in Bel Air &amp; Harford County, Maryland." />
   <meta name="twitter:image" content="https://legacycomputingservices.com/assets/icons/og-card.png" />
   <meta name="theme-color" content="#060B14" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Legacy Computing Services LLC",
+    "email": "info@legacycomputingservices.com",
+    "url": "https://legacycomputingservices.com/",
+    "image": "https://legacycomputingservices.com/assets/legacy-computing-logo.png",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Bel Air",
+      "addressRegion": "MD",
+      "addressCountry": "US"
+    },
+    "areaServed": [
+      { "@type": "City", "name": "Bel Air" },
+      { "@type": "City", "name": "Forest Hill" },
+      { "@type": "City", "name": "Fallston" },
+      { "@type": "City", "name": "Abingdon" },
+      { "@type": "AdministrativeArea", "name": "Harford County" }
+    ]
+  }
+  </script>
   <link rel="icon" href="assets/icons/favicon-32.png" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
 
@@ -61,16 +84,18 @@
     (function () {
       var raw = (location.hash || '').replace(/^#/, '');
       var view = (raw.split('/')[0] || 'home');
-      var ok = { home: 1, services: 1, estimator: 1, about: 1, contact: 1 };
+      var ok = { home: 1, services: 1, work: 1, estimator: 1, about: 1, contact: 1 };
       document.documentElement.setAttribute('data-boot', ok[view] ? view : 'home');
     })();
   </script>
   <style>
     html[data-boot="services"] #view-home,
+    html[data-boot="work"] #view-home,
     html[data-boot="estimator"] #view-home,
     html[data-boot="about"] #view-home,
     html[data-boot="contact"] #view-home { display: none !important; }
     html[data-boot="services"] #view-services,
+    html[data-boot="work"] #view-work,
     html[data-boot="estimator"] #view-estimator,
     html[data-boot="about"] #view-about,
     html[data-boot="contact"] #view-contact { display: block !important; }
@@ -222,6 +247,25 @@
       box-shadow: 0 12px 28px -10px rgba(245, 158, 11, 0.8);
     }
     .cta-amber:hover { filter: brightness(1.05); }
+    .compare { position: relative; overflow: hidden; border-radius: 1rem; background: #0B1221; aspect-ratio: 16 / 10; }
+    .compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .compare-before { clip-path: inset(0 50% 0 0); }
+    .compare input[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+    .compare-handle { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; margin-left: -1.5px; background: #fff; box-shadow: 0 0 0 1px rgba(6,11,20,.35); pointer-events: none; }
+    .compare-tag { position: absolute; top: .75rem; z-index: 2; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; background: rgba(6,11,20,.82); color: #F8FAFC; padding: .25rem .5rem; border-radius: .4rem; pointer-events: none; }
+    .soon-badge { display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; border: 1px dashed #B45309; background: #FFFBEB; color: #9A3412; font-size: .8rem; font-weight: 700; padding: .45rem .8rem; }
+    .founder-slot { width: 7.5rem; height: 7.5rem; border-radius: 1rem; border: 1px dashed #94A3B8; background: #E8EEF5; color: #475569; display: flex; align-items: center; justify-content: center; text-align: center; font-size: .75rem; font-weight: 700; padding: .5rem; }
+    details.faq-item { border: 1px solid #D5E2EE; background: #fff; border-radius: 1rem; padding: 1rem 1.1rem; }
+    details.faq-item summary { cursor: pointer; font-weight: 700; color: #0B1221; }
+    details.faq-item p { margin-top: .6rem; color: #334155; font-size: .925rem; line-height: 1.55; }
+    .work-card { background: #fff; border: 1px solid #D5E2EE; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 16px 36px -24px rgba(2, 84, 150, 0.35); }
+    .work-kicker { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: #0369A1; }
+    .work-card h2 { margin-top: .35rem; font-size: 1.5rem; font-weight: 800; color: #0B1221; }
+    .work-card p { margin-top: .6rem; color: #334155; line-height: 1.55; }
+    .work-link { color: #0369A1; font-weight: 700; }
+    .slot-grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 1rem; }
+    .slot-box { border: 1px dashed #94A3B8; border-radius: 1rem; min-height: 7rem; padding: 1rem; background: #F8FAFC; color: #475569; }
+    .slot-box strong { display: block; color: #0B1221; margin-bottom: .35rem; }
     .motion .reveal { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
     .motion .reveal.is-in { opacity: 1; transform: none; }
     .motion #home-highlights .reveal:nth-child(2) { transition-delay: .08s; }
@@ -307,7 +351,7 @@
       <div class="flex items-center justify-between h-20 gap-3">
         <button type="button" onclick="switchView('home')" class="flex items-center gap-3.5 text-left group min-w-0" aria-label="Legacy Computing Services LLC, home">
           <span class="relative w-12 h-12 rounded-xl bg-slate-900 border border-slate-700/80 group-hover:border-sky-400/60 flex items-center justify-center overflow-hidden shrink-0">
-            <img src="assets/legacy-computing-shield.jpg" alt="" width="48" height="48" class="w-full h-full object-cover" />
+            <img src="assets/legacy-computing-shield.png" alt="" width="48" height="48" class="w-full h-full object-contain" />
             <span class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 to-amber-400"></span>
           </span>
           <span class="leading-tight min-w-0">
@@ -319,6 +363,7 @@
         <nav class="hidden xl:flex items-center gap-1" aria-label="Primary">
           <button type="button" data-nav="home" onclick="switchView('home')" class="nav-btn is-current px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Home</button>
           <button type="button" data-nav="services" onclick="switchView('services')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Services</button>
+          <button type="button" data-nav="work" onclick="switchView('work')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Our Work</button>
           <button type="button" data-nav="estimator" onclick="switchView('estimator')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Estimator</button>
           <button type="button" data-nav="about" onclick="switchView('about')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">About</button>
           <button type="button" data-nav="contact" onclick="switchView('contact')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Contact</button>
@@ -344,6 +389,9 @@
         </button>
         <button type="button" data-nav="services" onclick="switchView('services')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
           <span>Services</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
+        </button>
+        <button type="button" data-nav="work" onclick="switchView('work')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
+          <span>Our Work</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
         </button>
         <button type="button" data-nav="estimator" onclick="switchView('estimator')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
           <span>Estimator</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
@@ -396,7 +444,7 @@
             <div class="reveal lg:col-span-5">
               <div class="glass-card rounded-3xl p-6 sm:p-8 border-slate-700/70 shadow-2xl relative overflow-hidden">
                 <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 via-blue-500 to-amber-400"></div>
-                <img src="assets/legacy-computing-logo.jpg" alt="Legacy Computing Services. Protecting what matters. Building what’s next." width="612" height="538" class="w-full rounded-2xl" />
+                <img src="assets/legacy-computing-logo.png" alt="Legacy Computing Services. Protecting what matters. Building what’s next." width="612" height="538" class="w-full" />
                 <p class="mt-4 text-xs text-slate-300">
                   <span class="font-mono uppercase tracking-widest text-amber-400" data-text="company.place"></span>
                   <span class="text-slate-500"> · </span>
@@ -431,6 +479,29 @@
           </button>
         </div>
       </div>
+      <div id="home-testimonials" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div data-gbp class="soon-badge">Google Business Profile — coming soon</div>
+      </div>
+      <div id="faq" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">
+        <span class="font-mono text-xs uppercase tracking-[0.2em] text-amber-800" data-text="faq.eyebrow"></span>
+        <h2 class="mt-2 text-3xl font-bold text-slate-950" data-text="faq.title"></h2>
+        <p class="mt-3 text-slate-700 max-w-3xl" data-text="faq.lede"></p>
+        <div id="faq-list" class="mt-6 space-y-3"></div>
+      </div>
+      </div>
+    </section>
+
+    <section id="view-work" class="view-section hidden">
+      <div class="page-band">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-300" data-text="portfolio.eyebrow"></span>
+          <h1 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white max-w-3xl" data-text="portfolio.title"></h1>
+          <p class="mt-4 text-slate-200 max-w-3xl" data-text="portfolio.lede"></p>
+        </div>
+      </div>
+      <div class="section-light">
+        <div id="work-projects" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10"></div>
       </div>
     </section>
 
@@ -517,6 +588,7 @@
           <div class="ink lg:col-span-5 space-y-5">
             <p class="text-slate-300 leading-relaxed" data-text="about.lede"></p>
             <p class="text-slate-400 text-sm leading-relaxed" data-text="about.body"></p>
+            <div id="founder-card" class="rounded-3xl border border-slate-200 bg-white p-5 flex gap-4 items-start"></div>
             <div class="pt-4 space-y-4">
               <h2 class="font-mono text-xs uppercase tracking-widest text-amber-400" data-text="about.processEyebrow"></h2>
               <div id="process-list" class="space-y-3"></div>
@@ -612,6 +684,7 @@
               </div>
               <p class="text-xs text-slate-400" data-text="contact.domainLine"></p>
             </div>
+            <div data-gbp class="soon-badge">Google Business Profile — coming soon</div>
             <div class="keep-dark rounded-2xl bg-slate-950/70 border-l-4 border-amber-400 p-5">
               <p class="text-sm italic text-slate-200 leading-relaxed">“<span data-text="quote.text"></span>”</p>
               <p class="mt-2.5 font-mono text-xs text-amber-400" data-text="quote.by"></p>
@@ -628,7 +701,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-white/10">
         <div class="space-y-3">
           <div class="flex items-center gap-3">
-            <img src="assets/legacy-computing-shield.jpg" alt="" width="48" height="48" class="w-12 h-12 rounded-lg object-cover" />
+            <img src="assets/legacy-computing-shield.png" alt="" width="48" height="48" class="w-12 h-12 object-contain" />
             <div class="font-bold text-white leading-tight">Legacy Computing<br />Services LLC</div>
           </div>
           <p class="text-xs text-amber-300/90 font-mono" data-text="company.motto"></p>
@@ -639,7 +712,9 @@
           <ul class="space-y-2 text-sm">
             <li><button type="button" onclick="switchView('home')" class="hover:text-white">Home</button></li>
             <li><button type="button" onclick="switchView('services')" class="hover:text-white">Services</button></li>
+            <li><button type="button" onclick="switchView('work')" class="hover:text-white">Our Work</button></li>
             <li><button type="button" onclick="switchView('estimator')" class="hover:text-white">Estimator</button></li>
+            <li><button type="button" onclick="showFaq()" class="hover:text-white">How It Works</button></li>
             <li><button type="button" onclick="switchView('about')" class="hover:text-white">Why Legacy</button></li>
             <li><button type="button" onclick="switchView('contact')" class="hover:text-white">Contact</button></li>
           </ul>

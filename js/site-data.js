@@ -50,7 +50,7 @@ window.LCS_DATA = {
       id: "web",
       kicker: "PILLAR // 01",
       title: "Web Design & Digital Modernization",
-      summary: "Fast, responsive, mobile-first websites for local businesses, organizations, and nonprofits—complete with domain & Google Workspace setup, SEO fundamentals, and hassle-free managed hosting without front-desk overhead.",
+      summary: "Mobile-first websites for small businesses in Bel Air, Forest Hill, Fallston, Abingdon, and the rest of Harford County. The page works on a phone, is set up so local customers can find you on Google, and you keep the domain, the code, and the accounts.",
       tone: "sky",
       icon: "globe",
       inspectLabel: "Inspect Deliverables",
@@ -58,14 +58,14 @@ window.LCS_DATA = {
       /* TODO(owner): the old page jumped this card to the $1,450 redesign. It now opens the Starter Site (the “start here” tier). Confirm that default. */
       estimatorPreset: "web-starter",
       bullets: [
-        "Mobile-first custom responsive web architecture",
-        "Domain DNS, SSL security & Google Workspace email",
-        "Local Harford County SEO & managed care plans"
+        "Mobile-first pages for customers in Harford County",
+        "Local Google visibility, domain, SSL, and Google Workspace email",
+        "You own the site and the code — no agency lock-in"
       ],
       modal: {
         eyebrow: "Pillar 01 // Web Engineering",
         title: "Web Design & Digital Modernization",
-        summary: "Built from the ground up for speed, clarity, and mobile usability—giving Maryland small businesses, nonprofits, and independent professionals an authoritative web presence without bloated agency retainers.",
+        summary: "Built for small businesses and nonprofits in Harford County that need a clear next step on a phone, local search visibility, and full ownership of the domain, the code, and the accounts.",
         turnaround: "Typical Turnaround: 1–3 Weeks",
         standards: [
           "Custom mobile-first UI architecture with sub-second load speeds",
@@ -80,7 +80,7 @@ window.LCS_DATA = {
       id: "pc",
       kicker: "PILLAR // 02",
       title: "Custom PC Building & Workstations",
-      summary: "Precision-assembled desktops tailored for gaming, content creation, CAD, and heavy multi-tasking—featuring vetted component selection, clean cable management, thermal stress-testing, and zero pre-installed bloatware.",
+      summary: "Custom PCs for home users and enthusiasts in Harford County — everyday speed, a quiet gaming rig, or a heavier creator machine. The bench fee is on the estimator before any parts are ordered, and diagnostics do not start with an upsell.",
       tone: "amber",
       icon: "cpu",
       inspectLabel: "Inspect Build Protocol",
@@ -88,14 +88,14 @@ window.LCS_DATA = {
       /* TODO(owner): the old page jumped this card to the $2,400 Creator / CAD tier. It now opens the Office & Productivity workstation. Confirm that default. */
       estimatorPreset: "pc-office",
       bullets: [
-        "100% vetted retail parts with full manufacturer warranties",
-        "Multi-hour CPU/GPU thermal burn-in & acoustic tuning",
-        "Clean OS deployment, BIOS tuning & zero trialware"
+        "Retail parts with manufacturer warranties, and a written parts-plus-assembly range",
+        "Burn-in before handoff so the speed is real at home",
+        "Clean OS install, no trialware, and your files are not casually wiped"
       ],
       modal: {
         eyebrow: "Pillar 02 // Bespoke Systems",
         title: "Custom PC Building & Workstations",
-        summary: "Every workstation is engineered around your exact software stack, acoustic expectations, and thermal envelope—using tier-one retail components and disciplined assembly practices.",
+        summary: "Built around the games, apps, and noise level you actually use at home, with retail parts and a bill of materials you can read before the build starts.",
         turnaround: "Typical Turnaround: 5–10 Business Days",
         standards: [
           "Itemized Bill of Materials (BOM) with transparent component pricing",
@@ -110,7 +110,7 @@ window.LCS_DATA = {
       id: "upgrade",
       kicker: "PILLAR // 03",
       title: "Hardware Upgrades & Diagnostics",
-      summary: "Extend the life and speed of existing systems with NVMe SSD migrations, RAM expansions, GPU upgrades, thermal repasting, and thorough root-cause hardware diagnostics—saving you from premature replacement costs.",
+      summary: "For a slow or crashing home PC in Bel Air, Forest Hill, Fallston, Abingdon, or nearby Harford County: a $95 diagnostic first. If you proceed with the repair, that fee is credited toward the repair. The speed upgrade is $125 labor plus parts, not a new computer by default.",
       tone: "sky",
       icon: "wrench",
       inspectLabel: "Inspect Diagnostic Checklist",
@@ -125,7 +125,7 @@ window.LCS_DATA = {
       modal: {
         eyebrow: "Pillar 03 // Diagnostics & Lifecycle",
         title: "Hardware Upgrades & Diagnostics",
-        summary: "Before replacing an aging desktop or laptop, let us diagnose the real bottleneck. Strategic NVMe storage, memory, and thermal upgrades often deliver like-new responsiveness at a fraction of replacement cost.",
+        summary: "Before a home PC is replaced, the $95 diagnostic finds the real bottleneck. If you proceed with the repair, that fee is credited toward the repair.",
         turnaround: "Typical Turnaround: 1–3 Business Days",
         standards: [
           "Bit-accurate OS & file cloning onto high-speed Gen4/Gen5 NVMe SSDs",
@@ -143,10 +143,8 @@ window.LCS_DATA = {
     title: "Configure Your Project",
     lede: "Select a service category and tier below to preview transparent starting scope, turnaround estimates, and key deliverables—then load your selection directly into the inquiry form.",
     mission: "Protecting what matters. Building what’s next.",
-    /* TODO(owner): this note is the policy you asked to state (free consultation, no surprise fees, quote confirmed before any work).
-       Confirm whether “consultation is free” includes on-site visits. The site already says on-site consultations are available in Harford & Baltimore Counties; it does not say those visits are free.
-       Confirm the $95 diagnostic fee still applies toward later labor (see the diagnostics tier note). That credit should stay visible so the fee is not a surprise next to “no surprise fees.” */
-    honestNote: "Consultation is free. Each tier shows a starting point and a range, what is included, and who it is for. We confirm the quote with you before any work begins. No surprise fees.",
+    /* TODO(owner): confirm whether “consultation is free” includes on-site visits. The site already says on-site consultations are available in Harford & Baltimore Counties; it does not say those visits are free. */
+    honestNote: "Consultation is free. Each tier shows a starting point and a range, what is included, and who it is for. We confirm the quote with you before any work begins. No surprise fees. The $95 diagnostic fee is credited toward the repair if you proceed.",
     /* TODO(owner): confirm these published ranges. They are the existing budget hints, now shown next to the starting price. No new dollar amounts were added.
        PC bands say “Parts + Assembly” because that is how the previous page described them. Parts prices move; confirm you still want these bands public. */
     categories: [
@@ -161,7 +159,7 @@ window.LCS_DATA = {
             startHere: true,
             name: "Starter Site & Digital Launch",
             shortDesc: "Clean, high-converting single-page or 3-page launch site for new ventures.",
-            fit: "Ideal for local service providers, consultants, and community organizations needing a credible online presence fast.",
+            fit: "A first site for a small business in Bel Air, Forest Hill, Fallston, Abingdon, or nearby Harford County that needs to be usable on a phone and findable locally.",
             price: "$750+",
             turnaround: "Est. 1–2 Weeks",
             formValue: "Web Design — Starter Site",
@@ -180,7 +178,7 @@ window.LCS_DATA = {
             id: "web-redesign",
             name: "Full Business Redesign",
             shortDesc: "Multi-page modern web platform tailored for established Maryland businesses.",
-            fit: "Multi-page modern web platform tailored for established Maryland businesses.",
+            fit: "An established Harford County business that already has more to publish than one page, and wants to own the finished site.",
             price: "$1,450+",
             turnaround: "Est. 2–3 Weeks",
             formValue: "Web Design — Full Business Redesign",
@@ -199,7 +197,7 @@ window.LCS_DATA = {
             id: "web-managed",
             name: "Managed Hosting & Workspace",
             shortDesc: "Ongoing site updates, uptime monitoring, and Google Workspace administration.",
-            fit: "Ongoing site updates, uptime monitoring, and Google Workspace administration.",
+            fit: "Ongoing care for a small-business site you already own in Harford County — not a substitute for building one, and not an agency lock-in.",
             price: "$95 / mo",
             turnaround: "Setup in 48 Hours",
             formValue: "Web Design — Managed Hosting & Google Workspace",
@@ -228,7 +226,7 @@ window.LCS_DATA = {
             startHere: true,
             name: "Office & Productivity Workstation",
             shortDesc: "Whisper-quiet, ultra-responsive desktop built for multi-monitor business workflows.",
-            fit: "Whisper-quiet, ultra-responsive desktop built for multi-monitor business workflows.",
+            fit: "A quiet home or home-office PC for everyday speed, browsing, and a second monitor.",
             price: "$950+",
             turnaround: "Est. 5–7 Days",
             formValue: "Custom PC Build — Office & Productivity Workstation",
@@ -247,7 +245,7 @@ window.LCS_DATA = {
             id: "pc-gaming",
             name: "Enthusiast Gaming Rig",
             shortDesc: "High-FPS 1440p/4K gaming PC with optimized airflow and clean cable craft.",
-            fit: "High-FPS 1440p/4K gaming PC with optimized airflow and clean cable craft.",
+            fit: "For home enthusiasts who want higher frame rates, with the parts-plus-assembly range written down first.",
             price: "$1,650+",
             turnaround: "Est. 5–10 Days",
             formValue: "Custom PC Build — Enthusiast Gaming Rig",
@@ -266,7 +264,7 @@ window.LCS_DATA = {
             id: "pc-creator",
             name: "Creator / CAD Workstation",
             shortDesc: "Heavy-duty workstation engineered for 4K video editing, 3D CAD, and local AI.",
-            fit: "Heavy-duty workstation engineered for 4K video editing, 3D CAD, and local AI.",
+            fit: "For home creators editing video, running CAD, or using local AI — only if you actually need that speed.",
             price: "$2,400+",
             turnaround: "Est. 7–10 Days",
             formValue: "Custom PC Build — Creator / CAD Workstation",
@@ -294,7 +292,7 @@ window.LCS_DATA = {
             startHere: true,
             name: "System Diagnostics & Thermal Tune-Up",
             shortDesc: "Resolve random crashes, overheating, thermal throttling, or boot failures.",
-            fit: "Resolve random crashes, overheating, thermal throttling, or boot failures.",
+            fit: "A home PC in Harford County that crashes, overheats, or will not boot. The $95 fee is credited toward the repair if you proceed.",
             price: "$95 Flat",
             turnaround: "Est. 24–48 Hours",
             /* Distinct from the NVMe upgrade. The old form used one shared value for both. */
@@ -308,13 +306,13 @@ window.LCS_DATA = {
               "Storage health & backup readiness check",
               "Written findings & upgrade roadmap"
             ],
-            note: "If you proceed with a recommended hardware repair or upgrade, your diagnostic fee applies toward the labor."
+            note: "The $95 diagnostic fee is credited toward the repair if you proceed."
           },
           {
             id: "hw-upgrade",
             name: "NVMe SSD, RAM & Performance Upgrade",
             shortDesc: "Dramatically accelerate boot times and multitasking without buying a new PC.",
-            fit: "Dramatically accelerate boot times and multitasking without buying a new PC.",
+            fit: "A home PC that is simply slow. This is the speed upgrade after diagnostics, not the default replacement.",
             price: "$125 + Parts",
             turnaround: "Est. 1–3 Days",
             formValue: "Hardware Upgrade — NVMe SSD, RAM & Performance Upgrade",
@@ -422,9 +420,117 @@ window.LCS_DATA = {
     tagline: "Engineered in Harford County, Maryland"
   },
 
+  /* Empty on purpose. The page renders no quotes until real ones are added. */
+  testimonials: [],
+
+  /* TODO(owner): when the Google Business Profile exists, set url to the reviews link. Until then the badge says coming soon and is not a link. */
+  googleBusiness: {
+    url: "",
+    label: "Google Business Profile — coming soon"
+  },
+
+  portfolio: {
+    eyebrow: "Our Work",
+    title: "Sites and systems built for people here.",
+    lede: "Real projects only. If a photo, link, or result is not in hand yet, the card says coming soon.",
+    projects: [
+      {
+        id: "chusbc",
+        kind: "web",
+        title: "Cecil Harford USBC",
+        place: "Cecil & Harford Counties, Maryland",
+        summary: "A redesign of the Cecil Harford USBC association site. The live preview is the new layout. The before image is the public chusbc.org homepage as captured in November 2026.",
+        liveUrl: "https://sjkram85.github.io/CHUSBC-Website-Redesign/",
+        liveLabel: "Open the live preview",
+        before: {
+          src: "assets/portfolio/chusbc-before.jpg",
+          alt: "chusbc.org homepage, November 2026",
+          label: "Before"
+        },
+        after: {
+          src: "assets/portfolio/chusbc-after.jpg",
+          alt: "Cecil Harford USBC redesign preview",
+          label: "After"
+        }
+      },
+      {
+        id: "forest-hill-lanes",
+        kind: "web",
+        title: "Forest Hill Lanes",
+        place: "Forest Hill, Maryland",
+        comingSoon: true,
+        summary: "Coming soon.",
+        /* TODO(owner): public URL and before/after screens for the Forest Hill Lanes redesign. A public bowling-center site exists, but it was not confirmed as this company’s work, so it is not linked here. */
+        before: null,
+        after: null
+      }
+    ],
+    builds: [
+      {
+        id: "pc-showcase",
+        title: "Custom PC build",
+        place: "Harford County",
+        comingSoon: true,
+        summary: "Coming soon.",
+        /* TODO(owner): a real build’s parts list, photos, and thermal readings. Do not publish sample numbers. */
+        parts: [],
+        photos: [],
+        thermals: ""
+      }
+    ]
+  },
+
+  faq: {
+    eyebrow: "How It Works",
+    title: "Plain answers before you book.",
+    lede: "Published prices are repeated here. Anything not yet decided is marked coming soon instead of guessed.",
+    items: [
+      {
+        q: "What is the diagnostic fee for a home PC in Bel Air, Forest Hill, Fallston, Abingdon, or elsewhere in Harford County?",
+        a: "The estimator lists a $95 flat diagnostic and tune-up. That is the bench fee for finding the fault before parts are sold. The $95 diagnostic fee is credited toward the repair if you proceed."
+      },
+      {
+        q: "How do parts and payment work?",
+        a: "Custom PC ranges on the estimator are parts plus assembly. The page already says you get itemized retail component receipts so manufacturer warranties stay with you. Upgrade labor is listed as $125 plus parts.",
+        /* TODO(owner): when the customer pays, and whether parts are billed at retail with no markup or with a markup. No percent is stated. */
+        soon: "Coming soon: payment timing and any parts markup."
+      },
+      {
+        q: "Do you take a deposit before work starts?",
+        a: "The quote is confirmed before any work begins. Deposit terms are not published yet.",
+        /* TODO(owner): whether a deposit is required, the amount or percent, and when it is due. */
+        soon: "Coming soon: deposit terms."
+      },
+      {
+        q: "Is there a workmanship guarantee or a support window?",
+        a: "The Full Business Redesign tier already lists 30 days of post-launch priority support. A general workmanship guarantee for home PC builds and repairs is not published yet.",
+        /* TODO(owner): length and scope of any workmanship guarantee for builds and repairs, separate from the 30-day web support already listed on Full Business Redesign. */
+        soon: "Coming soon: build and repair guarantee length."
+      },
+      {
+        q: "What happens to my files and the details I send from Harford County?",
+        a: "This website does not store the consultation. Submit opens your email app, and nothing is delivered until you press Send. PC upgrade work lists bit-accurate cloning onto a new drive. A written privacy policy is not published yet.",
+        /* TODO(owner): how long customer files and drive images are kept, and where a privacy policy should live. */
+        soon: "Coming soon: how long files are kept."
+      }
+    ]
+  },
+
+  founderProfile: {
+    name: "Scott James Kramer",
+    role: "Founder",
+    /* TODO(owner): replace this empty photo with a headshot file path, for example assets/scott.jpg. */
+    photo: "",
+    photoSoon: "Headshot coming soon",
+    /* TODO(owner): a short bio paragraph. The about text already on the page stays until this is written. */
+    bio: "",
+    bioSoon: "Bio coming soon"
+  },
+
   nav: [
     { id: "home", label: "Home" },
     { id: "services", label: "Services" },
+    { id: "work", label: "Our Work" },
     { id: "estimator", label: "Estimator" },
     { id: "about", label: "About" },
     { id: "contact", label: "Contact" }
