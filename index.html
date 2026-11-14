@@ -1162,6 +1162,7 @@
                   <p class="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
                     Your inquiry regarding <strong id="confirmService" class="text-cyan-400">Tech Support</strong> is formatted and ready. Click below to send it directly through your email app, or edit and send another.
                   </p>
+                  <p id="inquiryCopyNote" class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed"></p>
                 </div>
                 <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <a id="mailtoDirectBtn" href="mailto:info@legacycomputingservices.com" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm">
@@ -1277,7 +1278,10 @@
 
       <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <p>© <span id="yearSpan">2026</span> Legacy Computing Services LLC. All rights reserved.</p>
-        <p class="font-mono">Maryland-Owned · Bel Air, Harford County, MD</p>
+        <p class="font-mono flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span>Maryland-Owned · Bel Air, Harford County, MD</span>
+          <a href="portal/" class="text-slate-600 hover:text-slate-400">Employee Login</a>
+        </p>
       </div>
     </div>
   </footer>
@@ -1285,8 +1289,51 @@
   <!-- ===================================================================== -->
   <!-- JAVASCRIPT INTERACTIVITY                                              -->
   <!-- ===================================================================== -->
+  <script src="portal/logic.js"></script>
+  <script src="portal/config.js"></script>
   <script>
     document.getElementById('yearSpan').textContent = new Date().getFullYear();
+
+    function handInquiryCopy(payload) {
+      try {
+        var note = document.getElementById('inquiryCopyNote');
+        if (!window.LCSPortal || typeof LCSPortal.inquiryEndpoint !== 'function') return;
+        var result = LCSPortal.inquiryEndpoint(window.LCS_PORTAL || {});
+        if (!result.url) {
+          if (note) note.textContent = result.problem || '';
+          return;
+        }
+        if (note) {
+          note.textContent = 'A copy of this request was handed to the company inquiry sheet. This page cannot confirm that Google stored it. The email is still not sent until you press Open in Email App and then Send.';
+        }
+        var frame = document.getElementById('lcs-inquiry-frame');
+        if (!frame) {
+          frame = document.createElement('iframe');
+          frame.id = 'lcs-inquiry-frame';
+          frame.name = 'lcs-inquiry-frame';
+          frame.hidden = true;
+          frame.title = 'Inquiry handoff';
+          frame.setAttribute('aria-hidden', 'true');
+          frame.style.display = 'none';
+          document.body.appendChild(frame);
+        }
+        var hop = document.createElement('form');
+        hop.method = 'POST';
+        hop.action = result.url;
+        hop.target = 'lcs-inquiry-frame';
+        hop.acceptCharset = 'UTF-8';
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = JSON.stringify(payload);
+        hop.appendChild(input);
+        document.body.appendChild(hop);
+        hop.submit();
+        hop.remove();
+      } catch (err) {
+        /* The mailto link is already set. A sheet copy must never block it. */
+      }
+    }
 
     // -----------------------------------------------------------------------
     // 1. MOBILE NAVIGATION
@@ -1608,6 +1655,15 @@
         `Name: ${name}\nEmail: ${email}\nService: ${service}\nTimeline / Budget: ${timeline || 'Open to honest recommendation'}\n\nWhat I Need:\n${goal}`
       );
       document.getElementById('mailtoDirectBtn').href = `mailto:info@legacycomputingservices.com?subject=${subject}&body=${body}`;
+      handInquiryCopy({
+        name: name,
+        email: email,
+        phone: '',
+        service: service,
+        budget: timeline,
+        details: goal,
+        source: 'Website form'
+      });
 
       intakeForm.classList.add('hidden');
       document.getElementById('intakeSuccessPanel').classList.remove('hidden');
