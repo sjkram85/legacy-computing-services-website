@@ -1299,7 +1299,7 @@
     var brand = el('div');
     brand.appendChild(el('p', { class: 'font-display text-xl font-extrabold' }, ['Legacy Computing Services LLC']));
     brand.appendChild(el('p', { class: 'text-sm mt-1' }, ['Bel Air, Maryland']));
-    brand.appendChild(el('p', { class: 'text-sm' }, ['info@legacycomputingservices.com']));
+    brand.appendChild(el('p', { class: 'text-sm' }, ['scott@legacycomputingservices.com']));
     top.appendChild(brand);
     var title = el('div', { class: 'sm:text-right' });
     title.appendChild(el('p', { class: 'font-display text-3xl font-extrabold' }, [spec.title]));

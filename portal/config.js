@@ -13,7 +13,7 @@
 window.LCS_PORTAL = {
   /* From Google Cloud → Credentials → OAuth client ID → Web application.
      It ends with .apps.googleusercontent.com. Do not paste the client secret. */
-  clientId: "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+  clientId: "530425506690-cif8h7vd43mn0ih5drigcg6aju49er5h.apps.googleusercontent.com",
 
   /* Workspace accounts on this domain only. The page checks the Google "hd" value. */
   allowedDomain: "legacycomputingservices.com",

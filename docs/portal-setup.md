@@ -184,7 +184,7 @@ They then get:
 
 ## 11. Optional: website inquiries into the sheet
 
-The public contact form still only prepares an email to info@legacycomputingservices.com. The visitor must press Send in their email app. Do not remove that.
+The public contact form still only prepares an email to scott@legacycomputingservices.com. The visitor must press Send in their email app. Do not remove that.
 
 If you also want a row on the Inquiries tab:
 

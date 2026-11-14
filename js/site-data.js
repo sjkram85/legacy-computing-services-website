@@ -10,7 +10,7 @@ window.LCS_DATA = {
     mottoLead: "Protecting what matters.",
     mottoAccent: "Building what’s next.",
     motto: "Protecting what matters. Building what’s next.",
-    email: "info@legacycomputingservices.com",
+    email: "scott@legacycomputingservices.com",
     domain: "legacycomputingservices.com",
     founder: "Scott James Kramer",
     founderLine: "Founded by Scott James Kramer",
@@ -393,7 +393,7 @@ window.LCS_DATA = {
     error: "Please complete all required fields (Name, valid Email, Service, and Project Details) before submitting.",
     submitLabel: "Open in My Email App",
     successTitle: "Your email app is opening",
-    successBody: "A message to info@legacycomputingservices.com is ready, with your service category in the subject. Press Send in your email app to deliver it. Nothing has been sent yet.",
+    successBody: "A message to scott@legacycomputingservices.com is ready, with your service category in the subject. Press Send in your email app to deliver it. Nothing has been sent yet.",
     againLabel: "Open the email again",
     editLabel: "Edit this request"
   },

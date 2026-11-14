@@ -1030,8 +1030,8 @@
             <div class="cyber-panel rounded-2xl p-5 border-slate-700/80 space-y-3">
               <span class="font-mono text-[11px] uppercase tracking-wider text-slate-400">Direct Email</span>
               <div class="flex items-center justify-between gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5">
-                <a href="mailto:info@legacycomputingservices.com" class="font-mono text-xs sm:text-sm text-cyan-400 hover:text-cyan-300 truncate">
-                  info@legacycomputingservices.com
+                <a href="mailto:scott@legacycomputingservices.com" class="font-mono text-xs sm:text-sm text-cyan-400 hover:text-cyan-300 truncate">
+                  scott@legacycomputingservices.com
                 </a>
                 <button
                   type="button"
@@ -1165,7 +1165,7 @@
                   <p id="inquiryCopyNote" class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed"></p>
                 </div>
                 <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <a id="mailtoDirectBtn" href="mailto:info@legacycomputingservices.com" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm">
+                  <a id="mailtoDirectBtn" href="mailto:scott@legacycomputingservices.com" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm">
                     Open in Email App →
                   </a>
                   <button type="button" onclick="resetIntakeForm()" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium">
@@ -1271,7 +1271,7 @@
           <p class="text-sm text-slate-400 leading-relaxed">
             Bel Air, Forest Hill, Aberdeen, Abingdon, Fallston & Greater Harford County, Maryland (plus remote support & web engineering nationwide).
           </p>
-          <p class="text-sm font-mono text-cyan-400">info@legacycomputingservices.com</p>
+          <p class="text-sm font-mono text-cyan-400">scott@legacycomputingservices.com</p>
           <p class="text-xs font-mono text-slate-500">legacycomputingservices.com</p>
         </div>
       </div>
@@ -1654,7 +1654,7 @@
       const body = encodeURIComponent(
         `Name: ${name}\nEmail: ${email}\nService: ${service}\nTimeline / Budget: ${timeline || 'Open to honest recommendation'}\n\nWhat I Need:\n${goal}`
       );
-      document.getElementById('mailtoDirectBtn').href = `mailto:info@legacycomputingservices.com?subject=${subject}&body=${body}`;
+      document.getElementById('mailtoDirectBtn').href = `mailto:scott@legacycomputingservices.com?subject=${subject}&body=${body}`;
       handInquiryCopy({
         name: name,
         email: email,
@@ -1678,12 +1678,12 @@
 
     function copyEmailAddress() {
       const temp = document.createElement('input');
-      temp.value = 'info@legacycomputingservices.com';
+      temp.value = 'scott@legacycomputingservices.com';
       document.body.appendChild(temp);
       temp.select();
       document.execCommand('copy');
       document.body.removeChild(temp);
-      showToast('Copied', 'info@legacycomputingservices.com copied to clipboard.');
+      showToast('Copied', 'scott@legacycomputingservices.com copied to clipboard.');
     }
 
     // -----------------------------------------------------------------------
