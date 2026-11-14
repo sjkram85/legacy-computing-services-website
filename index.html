@@ -3,15 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Legacy Computing Services LLC | Custom IT, Web Engineering & Workstations — Harford County, MD</title>
-  <meta name="description" content="Protecting what matters. Building what’s next. Bespoke web design, custom-engineered PC workstations, and hardware upgrades in Bel Air & Harford County, Maryland." />
+  <title>Legacy Computing Services LLC | Custom IT, Web Engineering &amp; Workstations — Harford County, MD</title>
+  <meta name="description" content="Protecting what matters. Building what’s next. Bespoke web design, custom-engineered PC workstations, and hardware upgrades in Bel Air &amp; Harford County, Maryland." />
+  <!-- TODO(owner): confirm this URL once legacycomputingservices.com points at the hosted site. The domain has no website address record yet. -->
+  <link rel="canonical" href="https://legacycomputingservices.com/" />
+  <meta property="og:title" content="Legacy Computing Services LLC | Custom IT, Web Engineering &amp; Workstations — Harford County, MD" />
+  <meta property="og:description" content="Protecting what matters. Building what’s next. Bespoke web design, custom-engineered PC workstations, and hardware upgrades in Bel Air &amp; Harford County, Maryland." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://legacycomputingservices.com/" />
+  <meta property="og:image" content="https://legacycomputingservices.com/assets/icons/og-card.png" />
+  <meta property="og:image:alt" content="Legacy Computing Services LLC shield" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Legacy Computing Services LLC | Custom IT, Web Engineering &amp; Workstations — Harford County, MD" />
+  <meta name="twitter:description" content="Protecting what matters. Building what’s next. Bespoke web design, custom-engineered PC workstations, and hardware upgrades in Bel Air &amp; Harford County, Maryland." />
+  <meta name="twitter:image" content="https://legacycomputingservices.com/assets/icons/og-card.png" />
+  <meta name="theme-color" content="#060B14" />
+  <link rel="icon" href="assets/icons/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
 
-  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -19,39 +33,53 @@
         extend: {
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
+            mono: ['JetBrains Mono', 'monospace']
           },
           colors: {
             slate: {
               950: '#060B14',
               900: '#0B1221',
               850: '#10192D',
-              800: '#16223A',
+              800: '#16223A'
             },
             brand: {
               cyan: '#38BDF8',
               steel: '#0284C7',
               amber: '#F59E0B',
-              gold: '#FBBF24',
+              gold: '#FBBF24'
             }
           },
           boxShadow: {
             'glow-cyan': '0 0 30px -5px rgba(56, 189, 248, 0.25)',
-            'glow-amber': '0 0 25px -5px rgba(245, 158, 11, 0.25)',
+            'glow-amber': '0 0 25px -5px rgba(245, 158, 11, 0.25)'
           }
         }
       }
     };
   </script>
-
+  <script>
+    (function () {
+      var raw = (location.hash || '').replace(/^#/, '');
+      var view = (raw.split('/')[0] || 'home');
+      var ok = { home: 1, services: 1, estimator: 1, about: 1, contact: 1 };
+      document.documentElement.setAttribute('data-boot', ok[view] ? view : 'home');
+    })();
+  </script>
   <style>
-    /* Custom subtle circuit/grid geometry & scrollbar styling */
+    html[data-boot="services"] #view-home,
+    html[data-boot="estimator"] #view-home,
+    html[data-boot="about"] #view-home,
+    html[data-boot="contact"] #view-home { display: none !important; }
+    html[data-boot="services"] #view-services,
+    html[data-boot="estimator"] #view-estimator,
+    html[data-boot="about"] #view-about,
+    html[data-boot="contact"] #view-contact { display: block !important; }
+
     body {
       background-color: #060B14;
       color: #F1F5F9;
       overflow-x: hidden;
     }
-
     .bg-circuit-grid {
       background-image:
         radial-gradient(circle at 75% 20%, rgba(56, 189, 248, 0.11), transparent 42%),
@@ -60,14 +88,12 @@
         linear-gradient(to bottom, rgba(56, 189, 248, 0.055) 1px, transparent 1px);
       background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px;
     }
-
     .glass-card {
       background: linear-gradient(145deg, rgba(16, 25, 45, 0.85), rgba(11, 18, 33, 0.92));
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(148, 163, 184, 0.14);
     }
-
     .glass-card-hover {
       transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
     }
@@ -76,1640 +102,659 @@
       border-color: rgba(56, 189, 248, 0.45);
       box-shadow: 0 18px 40px -15px rgba(2, 132, 199, 0.25);
     }
-
-    /* Custom subtle scrollbars */
-    ::-webkit-scrollbar {
-      width: 8px;
+    .view-section { animation: fadeIn 0.28s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    ::-webkit-scrollbar-track {
-      background: #060B14;
+    .page-band {
+      background-color: #071525;
+      background-image:
+        radial-gradient(circle at 88% 8%, rgba(56, 189, 248, 0.42), transparent 36%),
+        radial-gradient(circle at 6% 100%, rgba(245, 158, 11, 0.32), transparent 34%),
+        linear-gradient(to right, rgba(125, 211, 252, 0.09) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(125, 211, 252, 0.09) 1px, transparent 1px),
+        linear-gradient(115deg, #060B14 0%, #0C4A6E 52%, #0B1221 100%);
+      background-size: auto, auto, 44px 44px, 44px 44px, auto;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.3);
     }
-    ::-webkit-scrollbar-thumb {
-      background: #1E293B;
-      border-radius: 9999px;
+    .hero-live { position: relative; }
+    .hero-glow {
+      position: absolute;
+      width: 46%;
+      height: 78%;
+      right: -6%;
+      top: -12%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.42), rgba(245, 158, 11, 0.16) 46%, transparent 70%);
+      filter: blur(2px);
+      animation: glowDrift 11s ease-in-out infinite;
+      pointer-events: none;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #334155;
+    .hero-circuits { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .hero-circuits path {
+      fill: none;
+      stroke-width: 1.4;
+      stroke-dasharray: 7 11;
+      animation: circuitFlow 16s linear infinite;
     }
+    @keyframes glowDrift {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(-6%, 8%, 0) scale(1.08); }
+    }
+    @keyframes circuitFlow { to { stroke-dashoffset: -220; } }
+    .section-light {
+      background:
+        radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.16), transparent 28%),
+        radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.12), transparent 26%),
+        #F4F7FB;
+      color: #0B1221;
+    }
+    .section-light .glass-card {
+      background: #fff;
+      border: 1px solid #D5E2EE;
+      box-shadow: 0 16px 36px -24px rgba(2, 84, 150, 0.45);
+    }
+    .section-light .glass-card .text-white { color: #0B1221; }
+    .section-light .glass-card .text-slate-200,
+    .section-light .glass-card .text-slate-300 { color: #334155; }
+    .section-light .glass-card .text-slate-400 { color: #475569; }
+    .section-light .glass-card .text-sky-300,
+    .section-light .glass-card .text-sky-400 { color: #0369A1; }
+    .section-light .glass-card .text-amber-300,
+    .section-light .glass-card .text-amber-400 { color: #B45309; }
+    .section-light .glass-card .keep-dark .text-white { color: #F8FAFC; }
+    .section-light .glass-card .keep-dark .text-slate-200,
+    .section-light .glass-card .keep-dark .text-slate-300 { color: #CBD5E1; }
+    .section-light .glass-card .keep-dark .text-slate-400 { color: #94A3B8; }
+    .section-light .glass-card .keep-dark .text-slate-500 { color: #64748B; }
+    .section-light .glass-card .keep-dark .text-sky-300,
+    .section-light .glass-card .keep-dark .text-sky-400 { color: #7DD3FC; }
+    .section-light .glass-card .keep-dark .text-amber-300,
+    .section-light .glass-card .keep-dark .text-amber-400,
+    .section-light .keep-dark .text-amber-400 { color: #FBBF24; }
+    .section-light .keep-dark .text-slate-200 { color: #E2E8F0; }
+    .section-light .glass-card span.bg-slate-950 { color: #E2E8F0; }
+    .section-light #formErrorBox { color: #9F1239; background: #FFE4E6; border-color: #FB7185; }
+    .section-light .glass-card input.text-white,
+    .section-light .glass-card textarea.text-white,
+    .section-light .glass-card select.text-white { color: #F8FAFC; }
+    .section-light .glass-card button.bg-slate-800,
+    .section-light .glass-card a.bg-slate-800 { color: #F8FAFC; }
+    .section-light .ink .text-white { color: #0B1221; }
+    .section-light .ink .text-slate-300 { color: #334155; }
+    .section-light .ink .text-slate-400 { color: #475569; }
+    .section-light .ink .text-amber-400 { color: #B45309; }
+    .section-light .principle-n[data-tone="amber"],
+    .section-light .step-n[data-tone="amber"],
+    .section-light .highlight-icon[data-tone="amber"] {
+      color: #B45309;
+      background: #FEF3C7;
+      border-color: #FCD34D;
+    }
+    .section-light .principle-n[data-tone="sky"],
+    .section-light .step-n[data-tone="sky"],
+    .section-light .highlight-icon[data-tone="sky"],
+    .section-light .service-icon {
+      color: #0369A1;
+      background: #E0F2FE;
+      border-color: #7DD3FC;
+    }
+    .section-light .highlight-icon[data-tone="emerald"] {
+      color: #047857;
+      background: #D1FAE5;
+      border-color: #6EE7B7;
+    }
+    .section-light .service-card[data-tone="amber"] .service-icon,
+    .section-light .service-card[data-tone="amber"] .check-icon { color: #B45309; background: #FEF3C7; border-color: #FCD34D; }
+    .section-light .service-card[data-tone="amber"] .check-icon { background: transparent; }
+    .callout-amber { background: #FFFBEB; border: 1px solid #FCD34D; color: #1C1917; }
+    .callout-amber .kicker { color: #B45309; }
+    .callout-sky { background: #E0F2FE; border: 1px solid #7DD3FC; color: #0C4A6E; }
+    .cta-bright {
+      background-image: linear-gradient(90deg, #A5F3FC, #38BDF8) !important;
+      color: #041018 !important;
+      box-shadow: 0 12px 32px -10px rgba(14, 165, 233, 0.9);
+    }
+    .cta-bright:hover { filter: brightness(1.05); }
+    .cta-amber {
+      background-image: linear-gradient(90deg, #FDE68A, #FBBF24) !important;
+      color: #1C1003 !important;
+      box-shadow: 0 12px 28px -10px rgba(245, 158, 11, 0.8);
+    }
+    .cta-amber:hover { filter: brightness(1.05); }
+    .motion .reveal { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+    .motion .reveal.is-in { opacity: 1; transform: none; }
+    .motion #home-highlights .reveal:nth-child(2) { transition-delay: .08s; }
+    .motion #home-highlights .reveal:nth-child(3) { transition-delay: .16s; }
+    .motion #home-highlights .reveal:nth-child(4) { transition-delay: .24s; }
+    @media (prefers-reduced-motion: reduce) {
+      .view-section, .hero-glow, .hero-circuits path { animation: none; }
+      .glass-card-hover, .reveal, .cta-bright, .cta-amber { transition: none; }
+      .hero-glow { transform: none; }
+      .reveal { opacity: 1; transform: none; }
+    }
+    .nav-btn.is-current,
+    .mobile-nav-btn.is-current {
+      color: #7DD3FC;
+      background: #16223A;
+      font-weight: 700;
+    }
+    .cat-tab.is-selected {
+      background: #38BDF8;
+      color: #060B14;
+      border-color: transparent;
+      font-weight: 700;
+      box-shadow: 0 0 30px -5px rgba(56, 189, 248, 0.25);
+    }
+    .tier-btn.is-selected {
+      background: #0B1221;
+      border-color: rgba(56, 189, 248, 0.85);
+      box-shadow: 0 0 30px -5px rgba(56, 189, 248, 0.25);
+    }
+    .tier-btn.is-selected [data-slot="name"] { color: #fff; }
+    .service-card[data-tone="amber"] { border-color: rgba(245, 158, 11, 0.28); }
+    .service-card[data-tone="amber"] .service-icon,
+    .highlight-icon[data-tone="amber"],
+    .pillar-label[data-tone="amber"],
+    .step-n[data-tone="amber"],
+    .principle-n[data-tone="amber"] {
+      color: #F59E0B;
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+    .service-card[data-tone="amber"] .check-icon { color: #F59E0B; }
+    .highlight-icon[data-tone="sky"],
+    .pillar-label[data-tone="sky"],
+    .step-n[data-tone="sky"],
+    .principle-n[data-tone="sky"] {
+      color: #38BDF8;
+    }
+    .highlight-icon[data-tone="sky"] {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .highlight-icon[data-tone="emerald"] {
+      color: #34D399;
+      background: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.35);
+    }
+    .pillar-label[data-tone="emerald"] { color: #34D399; background: transparent; border: 0; }
+    #toastIcon.is-error { background: rgba(244, 63, 94, 0.2); color: #FB7185; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #060B14; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 9999px; }
+    :focus-visible { outline: 2px solid #38BDF8; outline-offset: 2px; }
   </style>
 </head>
-<body class="antialiased selection:bg-sky-500/30 selection:text-sky-200">
+<body class="antialiased selection:bg-sky-500/30 selection:text-sky-200 min-h-screen flex flex-col font-sans">
 
-  <!-- Hidden File Input for Live Logo Preview -->
-  <input type="file" id="logoFileInput" accept="image/png, image/jpeg, image/svg+xml, image/webp" class="hidden" />
-
-  <!-- Toast Notification Banner (Non-blocking UI Feedback) -->
-  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300 max-w-sm">
+  <div id="toastBanner" class="fixed bottom-5 left-5 z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300 max-w-sm" role="status">
     <div class="glass-card border-sky-400/40 rounded-xl px-4 py-3.5 shadow-2xl flex items-center gap-3">
       <div id="toastIcon" class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
       <div class="text-sm">
-        <p id="toastTitle" class="font-semibold text-white">Action Completed</p>
-        <p id="toastMessage" class="text-xs text-slate-300 mt-0.5">Your settings have been applied.</p>
+        <p id="toastTitle" class="font-semibold text-white">Action completed</p>
+        <p id="toastMessage" class="text-xs text-slate-300 mt-0.5"></p>
       </div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- 1. STICKY NAVIGATION BAR                                              -->
-  <!-- ===================================================================== -->
-  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl">
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-20">
-        <!-- Brand Logo Slot + Quick Upload Trigger -->
-        <div class="flex items-center gap-3">
-          <a href="#" class="flex items-center gap-3.5 group focus:outline-none">
-            <!-- Dynamic Brand Logo Container (Navbar) -->
-            <div class="brand-logo-slot relative w-11 h-11 rounded-xl bg-slate-900 border border-slate-700/80 group-hover:border-sky-400/60 flex items-center justify-center overflow-hidden shadow-inner transition-colors">
-              <!-- Default LCS Circuit-Shield SVG -->
-              <svg class="default-lcs-svg w-8 h-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 4L7 11.5V23.5C7 34.2 14.25 43.9 24 46.5C33.75 43.9 41 34.2 41 23.5V11.5L24 4Z" fill="#0F172A" stroke="url(#lcsGrad1)" stroke-width="2.2"/>
-                <path d="M24 9.5L12 14.8V23.4C12 31.1 17.1 38.1 24 40.2C30.9 38.1 36 31.1 36 23.4V14.8L24 9.5Z" stroke="#38BDF8" stroke-opacity="0.35" stroke-width="1.2"/>
-                <path d="M17 18V29H24.5" stroke="#F8FAFC" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M31 20.5C29.8 19.3 28.2 18.8 26.6 19.2C24.8 19.6 23.8 21.3 24.2 23C24.6 24.7 26.2 25.4 28.1 25.8C30.1 26.2 31.4 27.1 31.1 29.1C30.8 30.9 29 31.9 27 31.6C25.5 31.4 24.3 30.7 23.6 29.8" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
-                <circle cx="17" cy="18" r="1.7" fill="#38BDF8"/>
-                <circle cx="31" cy="20.5" r="1.7" fill="#F59E0B"/>
-                <defs>
-                  <linearGradient id="lcsGrad1" x1="7" y1="4" x2="41" y2="46.5" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#38BDF8"/>
-                    <stop offset="0.65" stop-color="#0284C7"/>
-                    <stop offset="1" stop-color="#F59E0B"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <img class="uploaded-logo-img hidden w-full h-full object-contain p-1" alt="Legacy Computing Services Logo" />
-            </div>
+      <div class="flex items-center justify-between h-20 gap-3">
+        <button type="button" onclick="switchView('home')" class="flex items-center gap-3.5 text-left group min-w-0" aria-label="Legacy Computing Services LLC, home">
+          <span class="relative w-12 h-12 rounded-xl bg-slate-900 border border-slate-700/80 group-hover:border-sky-400/60 flex items-center justify-center overflow-hidden shrink-0">
+            <img src="assets/legacy-computing-shield.jpg" alt="" width="48" height="48" class="w-full h-full object-cover" />
+            <span class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 to-amber-400"></span>
+          </span>
+          <span class="leading-tight min-w-0">
+            <span class="block text-base sm:text-lg font-bold tracking-tight text-white truncate">Legacy Computing</span>
+            <span class="hidden sm:block font-mono text-[11px] uppercase tracking-[0.18em] text-sky-400 mt-1">Services LLC</span>
+          </span>
+        </button>
 
-            <div class="leading-tight">
-              <span class="block text-base sm:text-lg font-bold tracking-tight text-white">
-                Legacy Computing
-              </span>
-              <span class="block font-mono text-[11px] uppercase tracking-[0.2em] text-sky-400">
-                Services LLC
-              </span>
-            </div>
-          </a>
-
-          <!-- Subtle Logo Preview / Swap Button -->
-          <button
-            type="button"
-            onclick="openLogoDrawer()"
-            title="Upload your custom logo file to preview live"
-            class="hidden sm:inline-flex items-center gap-1.5 ml-1 px-2.5 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-400/50 text-[11px] font-mono text-slate-300 hover:text-amber-300 transition-all cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            <span id="navLogoBtnText">Brand Logo</span>
-          </button>
-        </div>
-
-        <!-- Desktop Navigation Links -->
-        <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300">
-          <a href="#services" class="hover:text-sky-400 transition-colors">Services</a>
-          <a href="#estimator" class="hover:text-sky-400 transition-colors">Project Estimator</a>
-          <a href="#why-legacy" class="hover:text-sky-400 transition-colors">Why Legacy</a>
-          <a href="#process" class="hover:text-sky-400 transition-colors">Process</a>
-          <a href="#service-area" class="hover:text-sky-400 transition-colors">Service Area</a>
-          <a href="#contact" class="hover:text-sky-400 transition-colors">Contact</a>
+        <nav class="hidden xl:flex items-center gap-1" aria-label="Primary">
+          <button type="button" data-nav="home" onclick="switchView('home')" class="nav-btn is-current px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Home</button>
+          <button type="button" data-nav="services" onclick="switchView('services')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Services</button>
+          <button type="button" data-nav="estimator" onclick="switchView('estimator')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Estimator</button>
+          <button type="button" data-nav="about" onclick="switchView('about')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">About</button>
+          <button type="button" data-nav="contact" onclick="switchView('contact')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-sky-300 hover:bg-slate-800/80 transition">Contact</button>
         </nav>
 
-        <!-- Primary CTA + Mobile Controls -->
-        <div class="flex items-center gap-2.5">
-          <a href="#contact" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-slate-950 font-semibold text-sm shadow-glow-cyan transition-all">
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="switchView('contact')" class="cta-bright hidden xl:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all">
             <span>Start a Project</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </a>
-
-          <!-- Mobile Logo Swap Button -->
-          <button
-            type="button"
-            onclick="openLogoDrawer()"
-            aria-label="Customize Brand Logo"
-            class="sm:hidden p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-amber-400 hover:bg-slate-800">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
           </button>
-
-          <!-- Mobile Hamburger Toggle -->
-          <button
-            type="button"
-            id="mobileMenuBtn"
-            aria-label="Open Navigation Menu"
-            class="lg:hidden p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+          <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="xl:hidden p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+            <svg id="icon-menu" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <svg id="icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Mobile Navigation Drawer -->
-    <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-800 bg-slate-950/95 px-4 pt-3 pb-5 space-y-2">
-      <a href="#services" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-sky-400 font-medium">Services</a>
-      <a href="#estimator" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-sky-400 font-medium">Project Estimator</a>
-      <a href="#why-legacy" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-sky-400 font-medium">Why Legacy</a>
-      <a href="#process" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-sky-400 font-medium">Process</a>
-      <a href="#service-area" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-sky-400 font-medium">Service Area</a>
-      <a href="#contact" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-sky-400 font-medium">Contact / Quote</a>
-      <div class="pt-2 flex flex-col gap-2">
-        <button type="button" onclick="openLogoDrawer()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 border border-amber-500/40 text-amber-300 font-mono text-xs flex items-center justify-center gap-2">
-          <span>Upload & Preview Your Company Logo</span>
+    <div id="mobile-drawer" class="hidden xl:hidden border-t border-slate-800 bg-slate-950/95">
+      <div class="px-4 pt-3 pb-5 space-y-1.5">
+        <button type="button" data-nav="home" onclick="switchView('home')" class="mobile-nav-btn is-current w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
+          <span>Home</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
         </button>
-        <a href="#contact" class="mobile-nav-link w-full py-3 px-4 rounded-xl bg-sky-500 text-slate-950 font-semibold text-center text-sm">
-          Start a Project
-        </a>
+        <button type="button" data-nav="services" onclick="switchView('services')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
+          <span>Services</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
+        </button>
+        <button type="button" data-nav="estimator" onclick="switchView('estimator')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
+          <span>Estimator</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
+        </button>
+        <button type="button" data-nav="about" onclick="switchView('about')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
+          <span>About</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
+        </button>
+        <button type="button" data-nav="contact" onclick="switchView('contact')" class="mobile-nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold text-slate-200 hover:bg-slate-900">
+          <span>Contact</span><span aria-hidden="true" class="text-slate-500 text-xs">›</span>
+        </button>
+        <div class="pt-2">
+          <button type="button" onclick="switchView('contact')" class="cta-bright w-full py-3 px-4 rounded-xl font-semibold text-sm">Start a Project</button>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- ===================================================================== -->
-  <!-- BRAND CUSTOMIZER DRAWER (LIVE LOGO UPLOAD & PREVIEW)                  -->
-  <!-- ===================================================================== -->
-  <div id="logoDrawerBackdrop" onclick="closeLogoDrawer()" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200"></div>
-  <aside id="logoDrawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-slate-900 border-l border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
-    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-      <div>
-        <span class="font-mono text-[11px] uppercase tracking-widest text-amber-400">Founder Brand Studio</span>
-        <h2 class="text-lg font-bold text-white mt-0.5">Live Logo Previewer</h2>
-      </div>
-      <button type="button" onclick="closeLogoDrawer()" class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+  <main class="flex-grow">
+    <section id="view-home" class="view-section">
+      <div class="hero-live relative bg-circuit-grid border-b border-slate-800/80 overflow-hidden">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <svg class="hero-circuits" viewBox="0 0 1200 640" aria-hidden="true">
+          <path d="M0 150 H280 L340 210 H620" stroke="#38BDF8" />
+          <path d="M1200 470 H900 L840 410 H560" stroke="#F59E0B" />
+          <path d="M80 520 H260 L320 460 H520" stroke="#38BDF8" opacity="0.7" />
         </svg>
-      </button>
-    </div>
-
-    <div class="p-6 space-y-6 overflow-y-auto flex-1">
-      <p class="text-sm text-slate-300 leading-relaxed">
-        Drop in your <strong class="text-white">Legacy Computing Services LLC</strong> logo file (<span class="font-mono text-xs text-sky-400">PNG, SVG, JPG, or WEBP</span>) to immediately test how it looks across the header, hero brand card, and footer.
-      </p>
-
-      <!-- Drag & Drop Upload Zone -->
-      <div
-        id="logoDropZone"
-        onclick="document.getElementById('logoFileInput').click()"
-        class="border-2 border-dashed border-slate-700 hover:border-sky-400 bg-slate-950/60 rounded-2xl p-7 text-center cursor-pointer transition-all group">
-        <div class="w-12 h-12 mx-auto rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-        </div>
-        <p class="mt-3 text-sm font-semibold text-white">Click to select or drag & drop your logo</p>
-        <p class="mt-1 text-xs text-slate-400">Transparent PNG or SVG recommended • Processed locally in browser</p>
-      </div>
-
-      <!-- Current Logo Preview Box -->
-      <div class="rounded-2xl bg-slate-950 border border-slate-800 p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="font-mono text-xs text-slate-400 uppercase tracking-wider">Active Brand Emblem</span>
-          <span id="logoFileMeta" class="font-mono text-[11px] text-sky-400">Default LCS Vector Shield</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <!-- Dark Surface Preview -->
-          <div class="rounded-xl bg-slate-900 border border-slate-800 p-4 flex flex-col items-center justify-center gap-2">
-            <div class="brand-logo-slot w-16 h-16 flex items-center justify-center overflow-hidden">
-              <svg class="default-lcs-svg w-14 h-14" viewBox="0 0 48 48" fill="none">
-                <path d="M24 4L7 11.5V23.5C7 34.2 14.25 43.9 24 46.5C33.75 43.9 41 34.2 41 23.5V11.5L24 4Z" fill="#0F172A" stroke="#38BDF8" stroke-width="2.2"/>
-                <path d="M17 18V29H24.5" stroke="#F8FAFC" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M31 20.5C29.8 19.3 28.2 18.8 26.6 19.2C24.8 19.6 23.8 21.3 24.2 23C24.6 24.7 26.2 25.4 28.1 25.8C30.1 26.2 31.4 27.1 31.1 29.1C30.8 30.9 29 31.9 27 31.6C25.5 31.4 24.3 30.7 23.6 29.8" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
-              </svg>
-              <img class="uploaded-logo-img hidden w-full h-full object-contain" alt="Dark Surface Logo Preview" />
-            </div>
-            <span class="text-[11px] font-mono text-slate-400">Dark Navy Surface</span>
-          </div>
-
-          <!-- Contrast Badge Preview -->
-          <div class="rounded-xl bg-slate-100 border border-slate-300 p-4 flex flex-col items-center justify-center gap-2">
-            <div class="brand-logo-slot w-16 h-16 flex items-center justify-center overflow-hidden">
-              <svg class="default-lcs-svg w-14 h-14" viewBox="0 0 48 48" fill="none">
-                <path d="M24 4L7 11.5V23.5C7 34.2 14.25 43.9 24 46.5C33.75 43.9 41 34.2 41 23.5V11.5L24 4Z" fill="#0F172A" stroke="#0284C7" stroke-width="2.2"/>
-                <path d="M17 18V29H24.5" stroke="#F8FAFC" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M31 20.5C29.8 19.3 28.2 18.8 26.6 19.2C24.8 19.6 23.8 21.3 24.2 23C24.6 24.7 26.2 25.4 28.1 25.8C30.1 26.2 31.4 27.1 31.1 29.1C30.8 30.9 29 31.9 27 31.6C25.5 31.4 24.3 30.7 23.6 29.8" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
-              </svg>
-              <img class="uploaded-logo-img hidden w-full h-full object-contain" alt="Light Surface Logo Preview" />
-            </div>
-            <span class="text-[11px] font-mono text-slate-700">Light Contrast Check</span>
-          </div>
-        </div>
-
-        <!-- Logo Padding / Fit Selector -->
-        <div class="pt-2">
-          <label class="block text-xs font-medium text-slate-300 mb-2">Logo Framing & Padding</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" onclick="setLogoFit('p-0.5')" class="logo-fit-btn py-2 px-2 rounded-lg bg-slate-800 border border-sky-400/60 text-xs font-mono text-white">Tight Fit</button>
-            <button type="button" onclick="setLogoFit('p-1.5')" class="logo-fit-btn py-2 px-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300">Balanced</button>
-            <button type="button" onclick="setLogoFit('p-2.5')" class="logo-fit-btn py-2 px-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300">Padded</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between pt-2">
-        <button type="button" onclick="resetDefaultLogo()" class="text-xs font-mono text-slate-400 hover:text-rose-400 underline underline-offset-4">
-          Reset to Default Shield
-        </button>
-        <button type="button" onclick="closeLogoDrawer()" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm">
-          Done Previewing
-        </button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ===================================================================== -->
-  <!-- 2. HERO SECTION                                                       -->
-  <!-- ===================================================================== -->
-  <section class="relative bg-circuit-grid border-b border-slate-800/80 overflow-hidden">
-    <!-- Subtle Decorative Circuit SVG Lines -->
-    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-25" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="heroLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#38BDF8" stop-opacity="0" />
-          <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.6" />
-          <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-      <path d="M0 160 H280 L330 210 H720" stroke="url(#heroLineGrad)" stroke-width="1" fill="none" />
-      <circle cx="330" cy="210" r="3" fill="#38BDF8" />
-      <path d="M1440 420 H1080 L1020 360 H680" stroke="url(#heroLineGrad)" stroke-width="1" fill="none" />
-      <circle cx="1020" cy="360" r="3" fill="#F59E0B" />
-    </svg>
-
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 lg:pt-24 lg:pb-28">
-      <div class="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
-        <!-- Left Column: Copy & CTAs -->
-        <div class="lg:col-span-7 space-y-7">
-          <!-- Eyebrow Badge -->
-          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-sky-500/30 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span class="font-mono text-[11px] sm:text-xs font-semibold tracking-wider text-sky-300 uppercase">
-              Harford County, Maryland • Custom IT & Web Engineering
-            </span>
-          </div>
-
-          <!-- Headline (Company Motto) -->
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.08]">
-            Protecting what matters.
-            <span class="block mt-1 bg-gradient-to-r from-sky-400 via-cyan-300 to-amber-300 bg-clip-text text-transparent">
-              Building what’s next.
-            </span>
-          </h1>
-
-          <!-- Subheadline -->
-          <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
-            Bespoke web design, custom-engineered PC workstations, and dependable hardware upgrades built with enterprise-grade discipline for Maryland businesses and professionals.
-          </p>
-
-          <!-- Dual CTAs -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-1">
-            <a href="#estimator" class="inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-slate-950 font-bold text-sm sm:text-base shadow-glow-cyan transition-all">
-              <span>Request a Consultation</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-
-            <a href="#services" class="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-sky-400/50 text-white font-semibold text-sm sm:text-base transition-all">
-              <span>Explore Services</span>
-            </a>
-          </div>
-
-          <!-- Quick Logo Upload Callout Pill -->
-          <div class="pt-1">
-            <button type="button" onclick="openLogoDrawer()" class="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-amber-300 transition-colors group">
-              <span class="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300">LIVE PREVIEW</span>
-              <span>Have your Legacy Computing Services logo file ready? <span class="underline underline-offset-4 text-slate-200 group-hover:text-amber-300">Click here to drop it in</span>.</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Right Column: Architectural Brand & Telemetry Card -->
-        <div class="lg:col-span-5">
-          <div class="glass-card rounded-3xl p-6 sm:p-8 border-slate-700/70 shadow-2xl relative overflow-hidden">
-            <!-- Top Accent Bar -->
-            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 via-blue-500 to-amber-400"></div>
-
-            <!-- Header inside Hero Card with Live Logo Slot -->
-            <div class="flex items-center justify-between gap-4 pb-6 border-b border-slate-800">
-              <div class="flex items-center gap-4">
-                <div class="brand-logo-slot w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-950 border border-slate-700/90 flex items-center justify-center overflow-hidden shadow-lg shrink-0">
-                  <!-- Default LCS Circuit-Shield SVG -->
-                  <svg class="default-lcs-svg w-14 h-14" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24 4L7 11.5V23.5C7 34.2 14.25 43.9 24 46.5C33.75 43.9 41 34.2 41 23.5V11.5L24 4Z" fill="#0B1221" stroke="url(#heroShieldGrad)" stroke-width="2.4"/>
-                    <path d="M24 9.5L12 14.8V23.4C12 31.1 17.1 38.1 24 40.2C30.9 38.1 36 31.1 36 23.4V14.8L24 9.5Z" stroke="#38BDF8" stroke-opacity="0.35" stroke-width="1.2"/>
-                    <path d="M17 18V29H24.5" stroke="#F8FAFC" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M31 20.5C29.8 19.3 28.2 18.8 26.6 19.2C24.8 19.6 23.8 21.3 24.2 23C24.6 24.7 26.2 25.4 28.1 25.8C30.1 26.2 31.4 27.1 31.1 29.1C30.8 30.9 29 31.9 27 31.6C25.5 31.4 24.3 30.7 23.6 29.8" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
-                    <defs>
-                      <linearGradient id="heroShieldGrad" x1="7" y1="4" x2="41" y2="46.5" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#38BDF8"/>
-                        <stop offset="0.6" stop-color="#0284C7"/>
-                        <stop offset="1" stop-color="#F59E0B"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <img class="uploaded-logo-img hidden w-full h-full object-contain p-1.5" alt="Legacy Computing Services Brand Emblem" />
-                </div>
-
-                <div>
-                  <span class="font-mono text-[11px] uppercase tracking-widest text-amber-400">Bel Air, Maryland</span>
-                  <h2 class="text-lg sm:text-xl font-bold text-white leading-snug">Legacy Computing Services LLC</h2>
-                  <p class="text-xs text-slate-400 mt-0.5">Founded by Scott James Kramer</p>
-                </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 lg:pt-16 pb-20">
+          <div class="grid lg:grid-cols-12 gap-10 items-center">
+            <div class="reveal lg:col-span-7 space-y-6">
+              <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-sky-500/30">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="font-mono text-[11px] sm:text-xs font-semibold tracking-wider text-sky-300 uppercase" data-text="company.regionLabel"></span>
               </div>
-            </div>
-
-            <!-- Engineering Specs / Core Pillars Preview -->
-            <div class="py-5 space-y-3.5 font-mono text-xs">
-              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800/90">
-                <span class="text-slate-400">01 // DIGITAL PRESENCE</span>
-                <span class="text-sky-400 font-semibold">Modern Web & Workspace</span>
-              </div>
-              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800/90">
-                <span class="text-slate-400">02 // BESPOKE HARDWARE</span>
-                <span class="text-amber-400 font-semibold">Custom PC Workstations</span>
-              </div>
-              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800/90">
-                <span class="text-slate-400">03 // LIFECYCLE CARE</span>
-                <span class="text-emerald-400 font-semibold">Upgrades & Diagnostics</span>
-              </div>
-            </div>
-
-            <!-- Bottom Status Footer -->
-            <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2 text-slate-300">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span>Accepting Q4 / Q1 Projects</span>
-              </div>
-              <button type="button" onclick="openLogoDrawer()" class="font-mono text-sky-400 hover:text-sky-300 underline underline-offset-4">
-                Swap Logo →
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Trust / Credibility Metrics Strip -->
-      <div class="mt-14 pt-10 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="glass-card rounded-2xl p-4 sm:p-5 flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-white">15+ Years Discipline</p>
-            <p class="text-xs text-slate-400">Systems & Security Rigor</p>
-          </div>
-        </div>
-
-        <div class="glass-card rounded-2xl p-4 sm:p-5 flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-white">100% Custom-Tailored</p>
-            <p class="text-xs text-slate-400">Zero Cookie-Cutter Builds</p>
-          </div>
-        </div>
-
-        <div class="glass-card rounded-2xl p-4 sm:p-5 flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-white">Local Maryland Support</p>
-            <p class="text-xs text-slate-400">Bel Air & Harford County</p>
-          </div>
-        </div>
-
-        <div class="glass-card rounded-2xl p-4 sm:p-5 flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-white">Zero Bloatware Guarantee</p>
-            <p class="text-xs text-slate-400">Clean, Hardened Delivery</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================================== -->
-  <!-- 3. CORE SERVICES GRID + INTERACTIVE DETAIL MODAL                      -->
-  <!-- ===================================================================== -->
-  <section id="services" class="py-20 lg:py-28 relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Section Heading -->
-      <div class="max-w-3xl">
-        <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-400">Core Capabilities</span>
-        <h2 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white">
-          Precision engineering across web, workstations, and hardware.
-        </h2>
-        <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
-          Whether modernizing your business’s digital storefront or building a whisper-quiet workstation from hand-selected components, every engagement is engineered for reliability.
-        </p>
-      </div>
-
-      <!-- 3 Primary Pillars Grid -->
-      <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-7">
-        <!-- Pillar 1: Web Design & Digital Modernization -->
-        <article class="glass-card glass-card-hover rounded-3xl p-7 sm:p-8 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
-              </div>
-              <span class="font-mono text-xs text-slate-400">PILLAR // 01</span>
-            </div>
-
-            <h3 class="mt-6 text-xl font-bold text-white">
-              Web Design & Digital Modernization
-            </h3>
-            <p class="mt-3 text-sm text-slate-300 leading-relaxed">
-              Fast, responsive, mobile-first websites for local businesses, organizations, and nonprofits—complete with domain & Google Workspace setup, SEO fundamentals, and hassle-free managed hosting without front-desk overhead.
-            </p>
-
-            <ul class="mt-6 space-y-2.5 text-sm text-slate-300">
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Mobile-first custom responsive web architecture</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Domain DNS, SSL security & Google Workspace email</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Local Harford County SEO & managed care plans</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="mt-8 pt-5 border-t border-slate-800/90 flex items-center justify-between gap-3">
-            <button type="button" onclick="openServiceModal('web')" class="text-sm font-semibold text-sky-400 hover:text-sky-300 inline-flex items-center gap-1.5">
-              <span>Inspect Deliverables</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <button type="button" onclick="jumpToEstimator('web-redesign')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white transition-colors">
-              Estimate →
-            </button>
-          </div>
-        </article>
-
-        <!-- Pillar 2: Custom PC Building & Workstations -->
-        <article class="glass-card glass-card-hover rounded-3xl p-7 sm:p-8 flex flex-col justify-between border-amber-500/25">
-          <div>
-            <div class="flex items-center justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                </svg>
-              </div>
-              <span class="font-mono text-xs text-amber-400">PILLAR // 02</span>
-            </div>
-
-            <h3 class="mt-6 text-xl font-bold text-white">
-              Custom PC Building & Workstations
-            </h3>
-            <p class="mt-3 text-sm text-slate-300 leading-relaxed">
-              Precision-assembled desktops tailored for gaming, content creation, CAD, and heavy multi-tasking—featuring vetted component selection, clean cable management, thermal stress-testing, and zero pre-installed bloatware.
-            </p>
-
-            <ul class="mt-6 space-y-2.5 text-sm text-slate-300">
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-amber-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>100% vetted retail parts with full manufacturer warranties</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-amber-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Multi-hour CPU/GPU thermal burn-in & acoustic tuning</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-amber-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Clean OS deployment, BIOS tuning & zero trialware</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="mt-8 pt-5 border-t border-slate-800/90 flex items-center justify-between gap-3">
-            <button type="button" onclick="openServiceModal('pc')" class="text-sm font-semibold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1.5">
-              <span>Inspect Build Protocol</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <button type="button" onclick="jumpToEstimator('pc-creator')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white transition-colors">
-              Configure →
-            </button>
-          </div>
-        </article>
-
-        <!-- Pillar 3: Hardware Upgrades & Diagnostics -->
-        <article class="glass-card glass-card-hover rounded-3xl p-7 sm:p-8 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <span class="font-mono text-xs text-slate-400">PILLAR // 03</span>
-            </div>
-
-            <h3 class="mt-6 text-xl font-bold text-white">
-              Hardware Upgrades & Diagnostics
-            </h3>
-            <p class="mt-3 text-sm text-slate-300 leading-relaxed">
-              Extend the life and speed of existing systems with NVMe SSD migrations, RAM expansions, GPU upgrades, thermal repasting, and thorough root-cause hardware diagnostics—saving you from premature replacement costs.
-            </p>
-
-            <ul class="mt-6 space-y-2.5 text-sm text-slate-300">
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Seamless OS & data cloning to high-speed NVMe SSDs</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>RAM capacity expansion, GPU & PSU compatibility upgrades</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Deep dust remediation, thermal repasting & stability testing</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="mt-8 pt-5 border-t border-slate-800/90 flex items-center justify-between gap-3">
-            <button type="button" onclick="openServiceModal('upgrade')" class="text-sm font-semibold text-sky-400 hover:text-sky-300 inline-flex items-center gap-1.5">
-              <span>Inspect Diagnostic Checklist</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <button type="button" onclick="jumpToEstimator('hw-upgrade')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white transition-colors">
-              Estimate →
-            </button>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Service Details Modal -->
-  <div id="serviceModalBackdrop" onclick="closeServiceModal()" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div onclick="event.stopPropagation()" class="glass-card border-slate-700 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative">
-      <button type="button" onclick="closeServiceModal()" class="absolute top-5 right-5 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-      <span id="modalEyebrow" class="font-mono text-xs uppercase tracking-widest text-sky-400">Technical Specification</span>
-      <h3 id="modalTitle" class="mt-1.5 text-2xl font-bold text-white">Service Details</h3>
-      <p id="modalSummary" class="mt-3 text-sm text-slate-300 leading-relaxed"></p>
-
-      <div class="mt-6 rounded-2xl bg-slate-950/80 border border-slate-800 p-5">
-        <h4 class="font-mono text-xs uppercase tracking-wider text-amber-400 mb-3">Included Engineering Standards</h4>
-        <ul id="modalList" class="space-y-2.5 text-sm text-slate-200"></ul>
-      </div>
-
-      <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-800">
-        <span id="modalTurnaround" class="font-mono text-xs text-slate-400">Typical Turnaround: 1–2 Weeks</span>
-        <button type="button" id="modalCtaBtn" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm">
-          Configure in Estimator →
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- 4. INTERACTIVE PROJECT & BUILD ESTIMATOR ("CONFIGURE YOUR PROJECT")   -->
-  <!-- ===================================================================== -->
-  <section id="estimator" class="py-20 lg:py-28 bg-slate-900/55 border-y border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="max-w-3xl">
-        <span class="font-mono text-xs uppercase tracking-[0.2em] text-amber-400">Interactive Scope Builder</span>
-        <h2 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white">
-          Configure Your Project
-        </h2>
-        <p class="mt-4 text-slate-300 text-base sm:text-lg">
-          Select a service category and tier below to preview transparent starting scope, turnaround estimates, and key deliverables—then load your selection directly into the inquiry form.
-        </p>
-      </div>
-
-      <!-- Category Filter Tabs -->
-      <div class="mt-10 flex flex-wrap gap-2.5">
-        <button type="button" onclick="selectEstimatorCategory('web')" id="catTab-web" class="est-cat-tab px-5 py-3 rounded-xl font-semibold text-sm bg-sky-500 text-slate-950 shadow-glow-cyan transition-all">
-          Web Design & Modernization
-        </button>
-        <button type="button" onclick="selectEstimatorCategory('pc')" id="catTab-pc" class="est-cat-tab px-5 py-3 rounded-xl font-semibold text-sm bg-slate-900 border border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
-          Custom PC Workstations
-        </button>
-        <button type="button" onclick="selectEstimatorCategory('upgrade')" id="catTab-upgrade" class="est-cat-tab px-5 py-3 rounded-xl font-semibold text-sm bg-slate-900 border border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
-          Hardware Upgrade & Tune-Up
-        </button>
-      </div>
-
-      <!-- Estimator Interactive Panel -->
-      <div class="mt-8 grid lg:grid-cols-12 gap-8 items-start">
-        <!-- Left: Tier Selector Cards -->
-        <div id="estimatorTierList" class="lg:col-span-5 space-y-3.5">
-          <!-- Populated dynamically via JS -->
-        </div>
-
-        <!-- Right: Active Scope & Deliverables Breakdown -->
-        <div class="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-8 border-slate-700/80 shadow-xl">
-          <div class="flex flex-wrap items-start justify-between gap-4 pb-6 border-b border-slate-800">
-            <div>
-              <span id="estBadge" class="inline-block px-2.5 py-1 rounded-md bg-sky-500/15 border border-sky-500/30 font-mono text-[11px] uppercase tracking-wider text-sky-300">
-                Web Design
-              </span>
-              <h3 id="estTitle" class="mt-2 text-2xl font-bold text-white">
-                Full Business Redesign
-              </h3>
-              <p id="estSubtitle" class="mt-1 text-sm text-slate-400">
-                Complete custom multi-page web presence for growing Maryland businesses.
-              </p>
-            </div>
-
-            <div class="text-left sm:text-right bg-slate-950/80 border border-slate-800 rounded-2xl px-4 py-3">
-              <span class="block font-mono text-[11px] uppercase text-slate-400">Starting Investment</span>
-              <span id="estPrice" class="block text-2xl font-extrabold text-amber-400 mt-0.5">$1,450+</span>
-              <span id="estTurnaround" class="block font-mono text-[11px] text-sky-400 mt-0.5">Est. 2–3 Weeks</span>
-            </div>
-          </div>
-
-          <!-- Key Deliverables Checklist -->
-          <div class="py-6">
-            <h4 class="font-mono text-xs uppercase tracking-wider text-slate-400 mb-4">
-              Included Scope & Key Deliverables
-            </h4>
-            <ul id="estDeliverables" class="grid sm:grid-cols-2 gap-3 text-sm text-slate-200">
-              <!-- Populated dynamically via JS -->
-            </ul>
-          </div>
-
-          <!-- Hardware Note / Transparency Callout -->
-          <div id="estNoteBox" class="rounded-2xl bg-slate-950/75 border border-slate-800 p-4 text-xs text-slate-300 flex items-start gap-3">
-            <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p id="estNoteText">
-              All domain registrations, hosting accounts, and source assets remain 100% owned by your business from day one.
-            </p>
-          </div>
-
-          <!-- Action Bar -->
-          <div class="mt-6 pt-5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span class="text-xs text-slate-400">
-              Need custom specs? We tailor every quote during consultation.
-            </span>
-            <button
-              type="button"
-              onclick="loadEstimatorIntoForm()"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-bold text-sm shadow-glow-amber transition-all cursor-pointer">
-              <span>Load Into Inquiry Form</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================================== -->
-  <!-- 5. WHY LEGACY COMPUTING SERVICES & ENGINEERING PROCESS                -->
-  <!-- ===================================================================== -->
-  <section id="why-legacy" class="py-20 lg:py-28">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-12 gap-12 items-start">
-        <!-- Left Column: Narrative -->
-        <div class="lg:col-span-5 space-y-5">
-          <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-400">Why Legacy Computing</span>
-          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-            Enterprise systems discipline with local craftsmanship.
-          </h2>
-          <p class="text-slate-300 leading-relaxed">
-            Founded by <strong class="text-white">Scott James Kramer</strong> in Harford County, Legacy Computing Services LLC bridges the gap between impersonal big-box repair counters and overpriced enterprise agencies.
-          </p>
-          <p class="text-slate-400 text-sm leading-relaxed">
-            Every website deployed and every workstation assembled is treated as critical infrastructure—documented, hardened, stress-tested, and built to serve you reliably for years.
-          </p>
-
-          <!-- Process Mini-Timeline -->
-          <div id="process" class="pt-6 space-y-4">
-            <h3 class="font-mono text-xs uppercase tracking-widest text-amber-400">4-Step Engagement Workflow</h3>
-            <div class="space-y-3">
-              <div class="flex items-start gap-3.5">
-                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 border border-sky-500/40 text-sky-400">01</span>
-                <div>
-                  <p class="text-sm font-semibold text-white">Discovery & Honest Assessment</p>
-                  <p class="text-xs text-slate-400">We define clear goals, workload requirements, and exact budget parameters.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3.5">
-                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 border border-sky-500/40 text-sky-400">02</span>
-                <div>
-                  <p class="text-sm font-semibold text-white">Transparent Architecture & BOM</p>
-                  <p class="text-xs text-slate-400">Review a clear sitemap or itemized component bill-of-materials before work begins.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3.5">
-                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 border border-sky-500/40 text-sky-400">03</span>
-                <div>
-                  <p class="text-sm font-semibold text-white">Precision Build & Stress-Testing</p>
-                  <p class="text-xs text-slate-400">Clean code, responsive QA, thermal burn-in testing, and hardened OS configuration.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3.5">
-                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 border border-amber-500/40 text-amber-400">04</span>
-                <div>
-                  <p class="text-sm font-semibold text-white">Direct Handoff & Local Support</p>
-                  <p class="text-xs text-slate-400">Complete documentation, full ownership transfer, and ongoing Harford County support.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column: 4 Core Principles Cards -->
-        <div class="lg:col-span-7 grid sm:grid-cols-2 gap-6">
-          <div class="glass-card rounded-3xl p-6 sm:p-7 border-slate-800">
-            <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-mono font-bold text-sm">
-              01
-            </div>
-            <h3 class="mt-5 text-lg font-bold text-white">Integrity & Transparency</h3>
-            <p class="mt-2.5 text-sm text-slate-300 leading-relaxed">
-              Honest part pricing with zero hidden markups and zero unnecessary upsells. If an upgrade solves your bottleneck better than a new build, we tell you upfront.
-            </p>
-          </div>
-
-          <div class="glass-card rounded-3xl p-6 sm:p-7 border-slate-800">
-            <div class="w-11 h-11 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center font-mono font-bold text-sm">
-              02
-            </div>
-            <h3 class="mt-5 text-lg font-bold text-white">Security-First Mindset</h3>
-            <p class="mt-2.5 text-sm text-slate-300 leading-relaxed">
-              Clean OS installations free from vendor bloatware, hardened DNS/SSL web configurations, and sensible backup & credential hygiene baked into every project.
-            </p>
-          </div>
-
-          <div class="glass-card rounded-3xl p-6 sm:p-7 border-slate-800">
-            <div class="w-11 h-11 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center font-mono font-bold text-sm">
-              03
-            </div>
-            <h3 class="mt-5 text-lg font-bold text-white">Built for Longevity</h3>
-            <p class="mt-2.5 text-sm text-slate-300 leading-relaxed">
-              Standardized, serviceable, and upgradeable hardware architectures paired with clean, maintainable web code—so your investment scales cleanly over time.
-            </p>
-          </div>
-
-          <div class="glass-card rounded-3xl p-6 sm:p-7 border-slate-800">
-            <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-mono font-bold text-sm">
-              04
-            </div>
-            <h3 class="mt-5 text-lg font-bold text-white">Direct Local Accountability</h3>
-            <p class="mt-2.5 text-sm text-slate-300 leading-relaxed">
-              Work directly with the engineer and builder in Bel Air, Maryland—never an outsourced call center or rotating ticket queue.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Service Area Banner -->
-      <div id="service-area" class="mt-16 glass-card rounded-3xl p-6 sm:p-8 border-sky-500/25 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div class="space-y-1.5">
-          <div class="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-sky-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>Local Harford County & Regional Coverage</span>
-          </div>
-          <h3 class="text-xl font-bold text-white">Proudly serving Bel Air, Forest Hill, Aberdeen, Abingdon & Harford County, MD</h3>
-          <p class="text-sm text-slate-300">
-            Local pickup, drop-off, and on-site consultations available throughout Harford & Baltimore Counties—plus remote web engineering nationwide.
-          </p>
-        </div>
-
-        <div class="flex flex-wrap gap-2 shrink-0">
-          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200">Bel Air</span>
-          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200">Forest Hill</span>
-          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200">Aberdeen</span>
-          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200">Abingdon</span>
-          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200">Fallston</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================================== -->
-  <!-- 6. INTERACTIVE CONTACT & CONSULTATION FORM                            -->
-  <!-- ===================================================================== -->
-  <section id="contact" class="py-20 lg:py-28 bg-slate-900/60 border-t border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-12 gap-12 items-start">
-        <!-- Left Column: Direct Contact Info -->
-        <div class="lg:col-span-5 space-y-6">
-          <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-400">Start a Conversation</span>
-          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-            Request a Consultation or Custom Quote
-          </h2>
-          <p class="text-slate-300 leading-relaxed">
-            Tell us about your website goals, workstation workload, or hardware issue. We respond within one business day with clear, practical next steps.
-          </p>
-
-          <!-- Direct Email Copy Card -->
-          <div class="glass-card rounded-2xl p-5 border-slate-700/80 space-y-3">
-            <span class="font-mono text-[11px] uppercase tracking-wider text-slate-400">Direct Engineering Inbox</span>
-            <div class="flex items-center justify-between gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5">
-              <a href="mailto:info@legacycomputingservices.com" id="directEmailText" class="font-mono text-xs sm:text-sm text-sky-400 hover:text-sky-300 truncate">
-                info@legacycomputingservices.com
-              </a>
-              <button
-                type="button"
-                onclick="copyCompanyEmail()"
-                class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white shrink-0 transition-colors cursor-pointer">
-                Copy
-              </button>
-            </div>
-            <p class="text-xs text-slate-400">
-              Domain: <span class="font-mono text-slate-300">legacycomputingservices.com</span> • Bel Air, MD
-            </p>
-          </div>
-
-          <!-- Founder Quote Box -->
-          <div class="rounded-2xl bg-slate-950/70 border-l-4 border-amber-400 p-5">
-            <p class="text-sm italic text-slate-200 leading-relaxed">
-              “Whether it’s a local business’s first modern website or a custom workstation built from bare metal, our standard is simple: build it right, secure it properly, and stand behind every detail.”
-            </p>
-            <p class="mt-2.5 font-mono text-xs text-amber-400">
-              — Scott James Kramer, Founder
-            </p>
-          </div>
-        </div>
-
-        <!-- Right Column: Interactive Consultation Form -->
-        <div class="lg:col-span-7">
-          <div class="glass-card rounded-3xl p-6 sm:p-8 lg:p-10 border-slate-700/80 shadow-2xl">
-            <!-- Form State -->
-            <form id="consultationForm" class="space-y-5" novalidate>
-              <div class="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label for="clientName" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">
-                    Full Name <span class="text-amber-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="clientName"
-                    name="clientName"
-                    required
-                    placeholder="Alex Morgan"
-                    class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
-                </div>
-
-                <div>
-                  <label for="clientEmail" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">
-                    Email Address <span class="text-amber-400">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="clientEmail"
-                    name="clientEmail"
-                    required
-                    placeholder="alex@company.com"
-                    class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
-                </div>
-              </div>
-
-              <div class="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label for="clientPhone" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">
-                    Phone Number (Optional)
-                  </label>
-                  <input
-                    type="tel"
-                    id="clientPhone"
-                    name="clientPhone"
-                    placeholder="(410) 555-0194"
-                    class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
-                </div>
-
-                <div>
-                  <label for="serviceCategory" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">
-                    Service Category <span class="text-amber-400">*</span>
-                  </label>
-                  <select
-                    id="serviceCategory"
-                    name="serviceCategory"
-                    required
-                    class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm">
-                    <option value="Web Design — Starter Site">Web Design — Starter Site</option>
-                    <option value="Web Design — Full Business Redesign" selected>Web Design — Full Business Redesign</option>
-                    <option value="Web Design — Managed Hosting & Google Workspace">Web Design — Managed Hosting & Workspace</option>
-                    <option value="Custom PC Build — Office & Productivity Workstation">Custom PC — Office / Productivity</option>
-                    <option value="Custom PC Build — Enthusiast Gaming Rig">Custom PC — Enthusiast Gaming</option>
-                    <option value="Custom PC Build — Creator / CAD Workstation">Custom PC — Creator / CAD Workstation</option>
-                    <option value="Hardware Upgrade — NVMe SSD, RAM, GPU or Diagnostics">Hardware Upgrade / Diagnostics</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label for="budgetTimeline" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">
-                  Target Budget & Timeline
-                </label>
-                <input
-                  type="text"
-                  id="budgetTimeline"
-                  name="budgetTimeline"
-                  placeholder="e.g., $1,500–$2,500 • Looking to launch within 3 weeks"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
-              </div>
-
-              <div>
-                <label for="projectDetails" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">
-                  Project Details & Goals <span class="text-amber-400">*</span>
-                </label>
-                <textarea
-                  id="projectDetails"
-                  name="projectDetails"
-                  rows="4"
-                  required
-                  placeholder="Describe your current website, desired workstation performance, or hardware symptoms..."
-                  class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500"></textarea>
-              </div>
-
-              <!-- Validation Error Banner -->
-              <div id="formErrorBox" class="hidden rounded-xl bg-rose-500/15 border border-rose-500/40 px-4 py-3 text-xs text-rose-200">
-                Please complete all required fields (Name, valid Email, and Project Details) before submitting.
-              </div>
-
-              <button
-                type="submit"
-                class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-slate-950 font-bold text-base shadow-glow-cyan transition-all flex items-center justify-center gap-2 cursor-pointer">
-                <span>Submit Consultation Request</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </button>
-            </form>
-
-            <!-- Confirmation State (Hidden until submitted) -->
-            <div id="formSuccessState" class="hidden text-center py-8 space-y-5">
-              <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div class="space-y-2">
-                <span class="font-mono text-xs uppercase tracking-widest text-emerald-400">Inquiry Logged</span>
-                <h3 class="text-2xl font-bold text-white">Thank you, <span id="confirmedClientName">Client</span>!</h3>
-                <p class="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                  Your consultation request for <strong id="confirmedServiceName" class="text-sky-400">Custom Engineering</strong> has been prepared. Scott will review your specs and follow up shortly.
-                </p>
-              </div>
-              <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a id="mailtoFallbackLink" href="mailto:info@legacycomputingservices.com" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm">
-                  Open in Email Client →
-                </a>
-                <button type="button" onclick="resetConsultationForm()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium">
-                  Submit Another Request
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.08]">
+                <span data-text="company.mottoLead"></span>
+                <span class="block mt-1 bg-gradient-to-r from-sky-400 via-cyan-300 to-amber-300 bg-clip-text text-transparent" data-text="company.mottoAccent"></span>
+              </h1>
+              <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed" data-text="hero.sub"></p>
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                <button type="button" onclick="switchView('contact')" class="cta-bright inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl font-bold text-sm sm:text-base transition-all">
+                  <span data-text="hero.primaryCta"></span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </button>
+                <button type="button" onclick="switchView('services')" class="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-sky-400/50 text-white font-semibold text-sm sm:text-base transition-all">
+                  <span data-text="hero.secondaryCta"></span>
                 </button>
               </div>
             </div>
+
+            <div class="reveal lg:col-span-5">
+              <div class="glass-card rounded-3xl p-6 sm:p-8 border-slate-700/70 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 via-blue-500 to-amber-400"></div>
+                <img src="assets/legacy-computing-logo.jpg" alt="Legacy Computing Services. Protecting what matters. Building what’s next." width="612" height="538" class="w-full rounded-2xl" />
+                <p class="mt-4 text-xs text-slate-300">
+                  <span class="font-mono uppercase tracking-widest text-amber-400" data-text="company.place"></span>
+                  <span class="text-slate-500"> · </span>
+                  <span data-text="company.founderLine"></span>
+                </p>
+                <div id="hero-pillars" class="py-5 space-y-3"></div>
+                <div class="pt-4 border-t border-slate-800 flex items-center gap-2 text-xs text-slate-300">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span data-text="company.accepting"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ===================================================================== -->
-  <!-- 7. FOOTER                                                             -->
-  <!-- ===================================================================== -->
-  <footer class="bg-slate-950 border-t border-slate-800/90 pt-14 pb-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-slate-800/80">
-        <!-- Brand Column -->
-        <div class="lg:col-span-5 space-y-4">
-          <div class="flex items-center gap-3.5">
-            <div class="brand-logo-slot w-11 h-11 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center justify-center overflow-hidden">
-              <svg class="default-lcs-svg w-8 h-8" viewBox="0 0 48 48" fill="none">
-                <path d="M24 4L7 11.5V23.5C7 34.2 14.25 43.9 24 46.5C33.75 43.9 41 34.2 41 23.5V11.5L24 4Z" fill="#0F172A" stroke="#38BDF8" stroke-width="2.2"/>
-                <path d="M17 18V29H24.5" stroke="#F8FAFC" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M31 20.5C29.8 19.3 28.2 18.8 26.6 19.2C24.8 19.6 23.8 21.3 24.2 23C24.6 24.7 26.2 25.4 28.1 25.8C30.1 26.2 31.4 27.1 31.1 29.1C30.8 30.9 29 31.9 27 31.6C25.5 31.4 24.3 30.7 23.6 29.8" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
-              </svg>
-              <img class="uploaded-logo-img hidden w-full h-full object-contain p-1" alt="Legacy Computing Services Footer Logo" />
+      <div class="section-light relative z-20 -mt-8 pb-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id="home-highlights" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+        <div class="reveal glass-card rounded-3xl p-6 sm:p-8 border-amber-500/25 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300" data-text="company.motto"></p>
+            <h2 class="mt-2 text-2xl sm:text-3xl font-bold text-white" data-text="estimator.title"></h2>
+            <p class="mt-2 text-sm text-slate-300 max-w-2xl">See a starting price, a range, and what each tier includes before you ask for a quote.</p>
+          </div>
+          <button type="button" onclick="switchView('estimator')" class="cta-amber inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm shrink-0">
+            <span>Configure Your Project</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </button>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="view-services" class="view-section hidden">
+      <div class="page-band">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-400" data-text="servicesPage.eyebrow"></span>
+          <h1 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white max-w-3xl" data-text="servicesPage.title"></h1>
+          <p class="mt-4 text-slate-300 max-w-3xl" data-text="servicesPage.lede"></p>
+        </div>
+      </div>
+      <div class="section-light">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div id="services-grid" class="reveal grid grid-cols-1 lg:grid-cols-3 gap-7"></div>
+      </div>
+      </div>
+    </section>
+
+    <section id="view-estimator" class="view-section hidden">
+      <div class="page-band">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-amber-400" data-text="estimator.eyebrow"></span>
+          <h1 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white" data-text="estimator.title"></h1>
+          <p class="mt-4 text-slate-300 max-w-3xl" data-text="estimator.lede"></p>
+        </div>
+      </div>
+      <div class="section-light">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+        <aside class="callout-amber rounded-2xl p-5 sm:p-6">
+          <p id="estimator-mission" class="kicker font-mono text-[11px] uppercase tracking-[0.2em]" data-text="estimator.mission"></p>
+          <p class="mt-2 text-sm sm:text-base leading-relaxed" data-text="estimator.honestNote"></p>
+        </aside>
+
+        <div id="estimator-tabs" class="flex flex-wrap gap-2.5" role="tablist" aria-label="Estimate categories"></div>
+
+        <p id="estimator-not-sure" class="callout-sky rounded-2xl px-4 py-3 text-sm leading-relaxed"></p>
+
+        <div class="grid lg:grid-cols-12 gap-8 items-start">
+          <div id="estimator-tiers" class="lg:col-span-5 space-y-3.5"></div>
+          <div class="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-8 border-slate-700/80 shadow-xl">
+            <div class="flex flex-wrap items-start justify-between gap-4 pb-6 border-b border-slate-800">
+              <div class="min-w-0">
+                <span id="est-start" class="hidden mb-2 inline-block px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/40 font-mono text-[11px] uppercase tracking-wider text-amber-300">Start here</span>
+                <span id="est-badge" class="inline-block px-2.5 py-1 rounded-md bg-sky-500/15 border border-sky-500/30 font-mono text-[11px] uppercase tracking-wider text-sky-300"></span>
+                <h2 id="est-title" class="mt-2 text-2xl font-bold text-white"></h2>
+                <p class="mt-3 text-[11px] font-mono uppercase tracking-wider text-slate-400">Who it’s right for</p>
+                <p id="est-fit" class="mt-1 text-sm text-slate-300"></p>
+              </div>
+              <div class="keep-dark text-left sm:text-right bg-slate-950/80 border border-slate-800 rounded-2xl px-4 py-3">
+                <span class="block font-mono text-[11px] uppercase text-slate-400">Starting investment</span>
+                <span id="est-price" class="block text-2xl font-extrabold text-amber-400 mt-0.5"></span>
+                <span class="block font-mono text-[11px] uppercase text-slate-500 mt-2">Range</span>
+                <span id="est-range" class="block font-mono text-sm text-sky-300 mt-0.5"></span>
+                <span id="est-turnaround" class="block font-mono text-[11px] text-slate-400 mt-1"></span>
+              </div>
             </div>
-            <div>
-              <span class="block text-base font-bold text-white">Legacy Computing Services LLC</span>
-              <span class="block font-mono text-xs text-amber-400">Protecting what matters. Building what’s next.</span>
+            <div class="py-6">
+              <h3 class="font-mono text-xs uppercase tracking-wider text-slate-400 mb-4">Included scope &amp; key deliverables</h3>
+              <ul id="est-deliverables" class="grid sm:grid-cols-2 gap-3"></ul>
+            </div>
+            <p id="est-note" class="keep-dark rounded-2xl bg-slate-950/75 border border-slate-800 p-4 text-xs text-slate-300"></p>
+            <div class="mt-6 pt-5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span class="text-xs text-slate-400">Need custom specs? We tailor every quote during consultation.</span>
+              <button type="button" id="load-form-btn" class="cta-amber w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm">
+                <span>Load Into Inquiry Form</span>
+              </button>
             </div>
           </div>
-          <p class="text-sm text-slate-400 max-w-md leading-relaxed">
-            Bespoke web engineering, custom PC workstations, and precision hardware upgrades serving Bel Air and Harford County, Maryland.
-          </p>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="view-about" class="view-section hidden">
+      <div class="page-band">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-400" data-text="about.eyebrow"></span>
+          <h1 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white max-w-3xl" data-text="about.title"></h1>
+        </div>
+      </div>
+      <div class="section-light">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid lg:grid-cols-12 gap-12 items-start">
+          <div class="ink lg:col-span-5 space-y-5">
+            <p class="text-slate-300 leading-relaxed" data-text="about.lede"></p>
+            <p class="text-slate-400 text-sm leading-relaxed" data-text="about.body"></p>
+            <div class="pt-4 space-y-4">
+              <h2 class="font-mono text-xs uppercase tracking-widest text-amber-400" data-text="about.processEyebrow"></h2>
+              <div id="process-list" class="space-y-3"></div>
+            </div>
+          </div>
+          <div id="principles-grid" class="lg:col-span-7 grid sm:grid-cols-2 gap-6"></div>
         </div>
 
-        <!-- Quick Links -->
-        <div class="lg:col-span-3 space-y-3">
-          <h4 class="font-mono text-xs uppercase tracking-wider text-slate-300">Navigation</h4>
-          <ul class="space-y-2 text-sm text-slate-400">
-            <li><a href="#services" class="hover:text-sky-400 transition-colors">Core Services</a></li>
-            <li><a href="#estimator" class="hover:text-sky-400 transition-colors">Project & Build Estimator</a></li>
-            <li><a href="#why-legacy" class="hover:text-sky-400 transition-colors">Why Legacy Computing</a></li>
-            <li><a href="#process" class="hover:text-sky-400 transition-colors">Engagement Process</a></li>
-            <li><a href="#contact" class="hover:text-sky-400 transition-colors">Request Consultation</a></li>
+        <div class="mt-16 glass-card rounded-3xl p-6 sm:p-8 border-sky-500/25">
+          <div class="font-mono text-xs uppercase tracking-wider text-sky-400" data-text="serviceArea.eyebrow"></div>
+          <h2 class="mt-2 text-xl font-bold text-white" data-text="serviceArea.title"></h2>
+          <p class="mt-2 text-sm text-slate-300" data-text="serviceArea.body"></p>
+          <div id="about-towns" class="mt-4 flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="view-contact" class="view-section hidden">
+      <div class="page-band">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-sky-400" data-text="contact.eyebrow"></span>
+          <h1 class="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white" data-text="contact.title"></h1>
+          <p class="mt-4 text-slate-300 max-w-2xl" data-text="contact.lede"></p>
+        </div>
+      </div>
+      <div class="section-light">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid lg:grid-cols-12 gap-10 items-start">
+          <div class="lg:col-span-7">
+            <div class="glass-card rounded-3xl p-6 sm:p-8 border-slate-700/80">
+              <form id="consultationForm" class="space-y-5" novalidate onsubmit="handleContactSubmit(event)">
+                <p class="text-sm text-slate-300" data-text="contact.formNote"></p>
+                <div class="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label for="clientName" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">Full Name <span class="text-amber-400">*</span></label>
+                    <input type="text" id="clientName" name="clientName" autocomplete="name" required placeholder="Alex Morgan" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
+                  </div>
+                  <div>
+                    <label for="clientEmail" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">Email Address <span class="text-amber-400">*</span></label>
+                    <input type="email" id="clientEmail" name="clientEmail" autocomplete="email" required placeholder="alex@company.com" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
+                  </div>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label for="clientPhone" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">Phone Number (Optional)</label>
+                    <input type="tel" id="clientPhone" name="clientPhone" autocomplete="tel" placeholder="(410) 555-0194" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
+                  </div>
+                  <div>
+                    <label for="serviceCategory" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">Service Category <span class="text-amber-400">*</span></label>
+                    <select id="serviceCategory" name="serviceCategory" required class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm"></select>
+                  </div>
+                </div>
+                <div>
+                  <label for="budgetTimeline" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">Target Budget &amp; Timeline</label>
+                  <input type="text" id="budgetTimeline" name="budgetTimeline" placeholder="e.g., $1,500–$2,500 • Looking to launch within 3 weeks" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
+                </div>
+                <div>
+                  <label for="projectDetails" class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">Project Details &amp; Goals <span class="text-amber-400">*</span></label>
+                  <textarea id="projectDetails" name="projectDetails" rows="4" required placeholder="Describe your current website, desired workstation performance, or hardware symptoms..." class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500"></textarea>
+                </div>
+                <div id="formErrorBox" class="hidden rounded-xl bg-rose-500/15 border border-rose-500/40 px-4 py-3 text-xs text-rose-200" data-text="contact.error"></div>
+                <button type="submit" class="cta-bright w-full py-4 px-6 rounded-xl font-bold text-base transition-all">
+                  <span data-text="contact.submitLabel"></span>
+                </button>
+              </form>
+
+              <div id="formSuccessState" class="hidden text-center py-6 space-y-5">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-sky-500/15 border border-sky-400/40 text-sky-300 flex items-center justify-center">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <div class="space-y-2">
+                  <h2 id="success-title" class="text-2xl font-bold text-white" data-text="contact.successTitle"></h2>
+                  <p class="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+                    <span id="confirmedClientName">There</span>, your consultation for <strong id="confirmedServiceName" class="text-sky-300"></strong> is filled in.
+                    <span data-text="contact.successBody"></span>
+                  </p>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <a id="mailtoAgain" href="mailto:info@legacycomputingservices.com" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm" data-text="contact.againLabel"></a>
+                  <button type="button" onclick="resetConsultationForm()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium" data-text="contact.editLabel"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 space-y-6">
+            <div class="glass-card rounded-2xl p-5 border-slate-700/80 space-y-3">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-slate-400" data-text="contact.inboxLabel"></span>
+              <div class="keep-dark flex items-center justify-between gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5">
+                <a href="mailto:info@legacycomputingservices.com" id="directEmailText" class="font-mono text-xs sm:text-sm text-sky-400 hover:text-sky-300 truncate">info@legacycomputingservices.com</a>
+                <button type="button" onclick="copyCompanyEmail()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white shrink-0">Copy</button>
+              </div>
+              <p class="text-xs text-slate-400" data-text="contact.domainLine"></p>
+            </div>
+            <div class="keep-dark rounded-2xl bg-slate-950/70 border-l-4 border-amber-400 p-5">
+              <p class="text-sm italic text-slate-200 leading-relaxed">“<span data-text="quote.text"></span>”</p>
+              <p class="mt-2.5 font-mono text-xs text-amber-400" data-text="quote.by"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-slate-950 text-slate-300 border-t-4 border-amber-400 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-white/10">
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <img src="assets/legacy-computing-shield.jpg" alt="" width="48" height="48" class="w-12 h-12 rounded-lg object-cover" />
+            <div class="font-bold text-white leading-tight">Legacy Computing<br />Services LLC</div>
+          </div>
+          <p class="text-xs text-amber-300/90 font-mono" data-text="company.motto"></p>
+          <p class="text-xs text-slate-400 leading-relaxed" data-text="footer.blurb"></p>
+        </div>
+        <div>
+          <h2 class="font-mono text-xs font-bold text-white uppercase tracking-wider mb-3">Quick navigation</h2>
+          <ul class="space-y-2 text-sm">
+            <li><button type="button" onclick="switchView('home')" class="hover:text-white">Home</button></li>
+            <li><button type="button" onclick="switchView('services')" class="hover:text-white">Services</button></li>
+            <li><button type="button" onclick="switchView('estimator')" class="hover:text-white">Estimator</button></li>
+            <li><button type="button" onclick="switchView('about')" class="hover:text-white">Why Legacy</button></li>
+            <li><button type="button" onclick="switchView('contact')" class="hover:text-white">Contact</button></li>
           </ul>
         </div>
-
-        <!-- Service Area & Contact -->
-        <div class="lg:col-span-4 space-y-3">
-          <h4 class="font-mono text-xs uppercase tracking-wider text-slate-300">Service Area & Contact</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Bel Air, Forest Hill, Aberdeen, Abingdon, Fallston & Greater Harford County, Maryland.
-          </p>
-          <p class="text-sm font-mono text-sky-400">
-            info@legacycomputingservices.com
-          </p>
-          <p class="text-xs font-mono text-slate-500">
-            legacycomputingservices.com
-          </p>
+        <div>
+          <h2 class="font-mono text-xs font-bold text-white uppercase tracking-wider mb-3">Service area</h2>
+          <p class="text-sm text-slate-400 leading-relaxed" data-text="serviceArea.footerLine"></p>
+          <div id="footer-towns" class="mt-3 flex flex-wrap gap-2"></div>
+        </div>
+        <div>
+          <h2 class="font-mono text-xs font-bold text-white uppercase tracking-wider mb-3">Contact</h2>
+          <p class="text-sm text-slate-400">Bel Air, Maryland</p>
+          <a href="mailto:info@legacycomputingservices.com" class="mt-2 inline-block text-sm font-mono text-amber-300 hover:text-white break-all">info@legacycomputingservices.com</a>
+          <p class="mt-2 text-xs font-mono text-slate-500">legacycomputingservices.com</p>
         </div>
       </div>
-
-      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
         <p>© <span id="currentYear">2026</span> Legacy Computing Services LLC. All rights reserved.</p>
-        <p class="font-mono">Engineered in Harford County, Maryland</p>
+        <p class="font-mono" data-text="footer.tagline"></p>
       </div>
     </div>
   </footer>
 
-  <!-- ===================================================================== -->
-  <!-- JAVASCRIPT LOGIC: LOGO PREVIEWER, ESTIMATOR, MODALS & FORM            -->
-  <!-- ===================================================================== -->
-  <script>
-    // Set current copyright year
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  <div id="serviceModalBackdrop" onclick="closeServiceModal()" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="modalTitle" class="glass-card border-slate-700 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative">
+      <button type="button" onclick="closeServiceModal()" class="absolute top-5 right-5 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white" aria-label="Close">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+      <span id="modalEyebrow" class="font-mono text-xs uppercase tracking-widest text-sky-400"></span>
+      <h2 id="modalTitle" class="mt-1.5 text-2xl font-bold text-white"></h2>
+      <p id="modalSummary" class="mt-3 text-sm text-slate-300 leading-relaxed"></p>
+      <div class="mt-6 rounded-2xl bg-slate-950/80 border border-slate-800 p-5">
+        <h3 class="font-mono text-xs uppercase tracking-wider text-amber-400 mb-3">Included engineering standards</h3>
+        <ul id="modalList" class="space-y-2.5"></ul>
+      </div>
+      <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-800">
+        <span id="modalTurnaround" class="font-mono text-xs text-slate-400"></span>
+        <button type="button" id="modalCtaBtn" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm">Configure in Estimator →</button>
+      </div>
+    </div>
+  </div>
 
-    // -----------------------------------------------------------------------
-    // 1. LIVE LOGO UPLOAD & BRAND PREVIEW ENGINE
-    // -----------------------------------------------------------------------
-    const logoFileInput = document.getElementById('logoFileInput');
-    const logoDropZone = document.getElementById('logoDropZone');
-    const logoDrawer = document.getElementById('logoDrawer');
-    const logoDrawerBackdrop = document.getElementById('logoDrawerBackdrop');
+  <template id="tpl-pillar">
+    <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950/70 border border-slate-800/90 font-mono text-xs">
+      <span data-slot="code" class="text-slate-400"></span>
+      <span data-slot="label" class="pillar-label font-semibold text-right"></span>
+    </div>
+  </template>
+  <template id="tpl-highlight">
+    <button type="button" class="reveal glass-card glass-card-hover rounded-2xl p-5 flex items-center gap-4 text-left w-full">
+      <span data-slot="icon" class="highlight-icon w-12 h-12 rounded-xl border flex items-center justify-center shrink-0"></span>
+      <span>
+        <span data-slot="title" class="block font-bold text-white text-sm"></span>
+        <span data-slot="detail" class="block text-xs text-slate-400 mt-0.5"></span>
+      </span>
+    </button>
+  </template>
+  <template id="tpl-service">
+    <article class="service-card glass-card glass-card-hover rounded-3xl p-7 sm:p-8 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between">
+          <div data-slot="icon" class="service-icon w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center"></div>
+          <span data-slot="kicker" class="font-mono text-xs text-slate-400"></span>
+        </div>
+        <h2 data-slot="title" class="mt-6 text-xl font-bold text-white"></h2>
+        <p data-slot="summary" class="mt-3 text-sm text-slate-300 leading-relaxed"></p>
+        <ul data-slot="bullets" class="mt-6 space-y-2.5"></ul>
+      </div>
+      <div class="mt-8 pt-5 border-t border-slate-800/90 flex items-center justify-between gap-3">
+        <button type="button" data-action="inspect" class="text-sm font-semibold text-sky-400 hover:text-sky-300"><span data-slot="inspect"></span></button>
+        <button type="button" data-action="estimate" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white"><span data-slot="estimate"></span></button>
+      </div>
+    </article>
+  </template>
+  <template id="tpl-check">
+    <li class="flex items-start gap-2.5 text-sm text-slate-200">
+      <svg class="check-icon w-4 h-4 text-sky-400 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      <span data-slot="text"></span>
+    </li>
+  </template>
+  <template id="tpl-cat">
+    <button type="button" class="cat-tab px-5 py-3 rounded-xl font-semibold text-sm bg-slate-900 border border-slate-700 text-slate-300 hover:border-slate-500 transition-all"></button>
+  </template>
+  <template id="tpl-tier">
+    <button type="button" class="tier-btn w-full text-left p-5 rounded-2xl border border-slate-800 bg-slate-950/60 hover:border-slate-600 transition-all">
+      <span data-slot="start" class="hidden mb-2 inline-block px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/40 font-mono text-[11px] uppercase tracking-wider text-amber-300">Start here</span>
+      <span class="flex items-start justify-between gap-3">
+        <span data-slot="name" class="font-bold text-base text-slate-200"></span>
+        <span data-slot="price" class="font-mono text-xs font-semibold text-amber-400 whitespace-nowrap"></span>
+      </span>
+      <span data-slot="range" class="mt-1 block font-mono text-[11px] text-sky-300"></span>
+      <span data-slot="fit" class="mt-1.5 block text-xs text-slate-400 leading-relaxed"></span>
+    </button>
+  </template>
+  <template id="tpl-principle">
+    <div class="glass-card rounded-3xl p-6 sm:p-7 border-slate-800">
+      <div data-slot="n" class="principle-n w-11 h-11 rounded-xl border border-sky-500/30 bg-sky-500/15 text-sky-400 flex items-center justify-center font-mono font-bold text-sm"></div>
+      <h3 data-slot="title" class="mt-5 text-lg font-bold text-white"></h3>
+      <p data-slot="body" class="mt-2.5 text-sm text-slate-300 leading-relaxed"></p>
+    </div>
+  </template>
+  <template id="tpl-process">
+    <div class="flex items-start gap-3.5">
+      <span data-slot="n" class="step-n font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 border border-sky-500/40 text-sky-400"></span>
+      <div>
+        <p data-slot="title" class="text-sm font-semibold text-white"></p>
+        <p data-slot="detail" class="text-xs text-slate-400"></p>
+      </div>
+    </div>
+  </template>
+  <template id="tpl-town">
+    <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200"></span>
+  </template>
 
-    function openLogoDrawer() {
-      logoDrawerBackdrop.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        logoDrawerBackdrop.classList.remove('opacity-0');
-        logoDrawer.classList.remove('translate-x-full');
-      });
-    }
-
-    function closeLogoDrawer() {
-      logoDrawerBackdrop.classList.add('opacity-0');
-      logoDrawer.classList.add('translate-x-full');
-      setTimeout(() => {
-        logoDrawerBackdrop.classList.add('hidden');
-      }, 280);
-    }
-
-    // Handle file selection from input or drag-and-drop
-    logoFileInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        applyCustomLogoFile(e.target.files[0]);
-      }
-    });
-
-    logoDropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      logoDropZone.classList.add('border-sky-400', 'bg-sky-500/10');
-    });
-
-    logoDropZone.addEventListener('dragleave', () => {
-      logoDropZone.classList.remove('border-sky-400', 'bg-sky-500/10');
-    });
-
-    logoDropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      logoDropZone.classList.remove('border-sky-400', 'bg-sky-500/10');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        applyCustomLogoFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    function applyCustomLogoFile(file) {
-      if (!file.type.startsWith('image/')) {
-        showToast('Invalid File Type', 'Please upload a PNG, SVG, JPG, or WEBP logo file.', true);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const dataUrl = event.target.result;
-
-        // Hide default SVGs and show uploaded logo across navbar, hero, drawer, and footer
-        document.querySelectorAll('.default-lcs-svg').forEach(svg => svg.classList.add('hidden'));
-        document.querySelectorAll('.uploaded-logo-img').forEach(img => {
-          img.src = dataUrl;
-          img.classList.remove('hidden');
-        });
-
-        document.getElementById('logoFileMeta').textContent = file.name;
-        document.getElementById('navLogoBtnText').textContent = 'Logo Active';
-        showToast('Brand Logo Applied', `Previewing "${file.name}" live across header, hero, and footer.`);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function setLogoFit(paddingClass) {
-      document.querySelectorAll('.uploaded-logo-img').forEach(img => {
-        img.classList.remove('p-0.5', 'p-1', 'p-1.5', 'p-2.5');
-        img.classList.add(paddingClass);
-      });
-      document.querySelectorAll('.logo-fit-btn').forEach(btn => {
-        btn.classList.remove('bg-slate-800', 'border-sky-400/60', 'text-white');
-        btn.classList.add('bg-slate-900', 'border-slate-700', 'text-slate-300');
-      });
-      event.target.classList.remove('bg-slate-900', 'border-slate-700', 'text-slate-300');
-      event.target.classList.add('bg-slate-800', 'border-sky-400/60', 'text-white');
-    }
-
-    function resetDefaultLogo() {
-      document.querySelectorAll('.default-lcs-svg').forEach(svg => svg.classList.remove('hidden'));
-      document.querySelectorAll('.uploaded-logo-img').forEach(img => {
-        img.src = '';
-        img.classList.add('hidden');
-      });
-      logoFileInput.value = '';
-      document.getElementById('logoFileMeta').textContent = 'Default LCS Vector Shield';
-      document.getElementById('navLogoBtnText').textContent = 'Brand Logo';
-      showToast('Logo Reset', 'Restored the default LCS circuit-shield emblem.');
-    }
-
-    // -----------------------------------------------------------------------
-    // 2. MOBILE MENU & SMOOTH CLOSE
-    // -----------------------------------------------------------------------
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-
-    mobileMenuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-
-    document.querySelectorAll('.mobile-nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.add('hidden');
-      });
-    });
-
-    // -----------------------------------------------------------------------
-    // 3. SERVICE PILLAR DETAIL MODAL
-    // -----------------------------------------------------------------------
-    const serviceDetailsData = {
-      web: {
-        eyebrow: 'Pillar 01 // Web Engineering',
-        title: 'Web Design & Digital Modernization',
-        summary: 'Built from the ground up for speed, clarity, and mobile usability—giving Maryland small businesses, nonprofits, and independent professionals an authoritative web presence without bloated agency retainers.',
-        turnaround: 'Typical Turnaround: 1–3 Weeks',
-        estimatorPreset: 'web-redesign',
-        standards: [
-          'Custom mobile-first UI architecture with sub-second load speeds',
-          'Full domain DNS configuration, HTTPS/SSL hardening & Google Workspace setup',
-          'On-page local SEO schema for Bel Air & Harford County search visibility',
-          'Accessible contact & lead routing without front-desk administrative overhead',
-          '100% client ownership of domain, code, and digital assets'
-        ]
-      },
-      pc: {
-        eyebrow: 'Pillar 02 // Bespoke Systems',
-        title: 'Custom PC Building & Workstations',
-        summary: 'Every workstation is engineered around your exact software stack, acoustic expectations, and thermal envelope—using tier-one retail components and disciplined assembly practices.',
-        turnaround: 'Typical Turnaround: 5–10 Business Days',
-        estimatorPreset: 'pc-creator',
-        standards: [
-          'Itemized Bill of Materials (BOM) with transparent component pricing',
-          'Precision cable routing for unobstructed airflow and clean serviceability',
-          'BIOS/UEFI firmware updates, XMP/EXPO memory validation & custom fan curves',
-          'Multi-hour CPU/GPU thermal and stability burn-in testing prior to handoff',
-          'Clean Windows / Linux installation with zero OEM bloatware or trialware'
-        ]
-      },
-      upgrade: {
-        eyebrow: 'Pillar 03 // Diagnostics & Lifecycle',
-        title: 'Hardware Upgrades & Diagnostics',
-        summary: 'Before replacing an aging desktop or laptop, let us diagnose the real bottleneck. Strategic NVMe storage, memory, and thermal upgrades often deliver like-new responsiveness at a fraction of replacement cost.',
-        turnaround: 'Typical Turnaround: 1–3 Business Days',
-        estimatorPreset: 'hw-upgrade',
-        standards: [
-          'Bit-accurate OS & file cloning onto high-speed Gen4/Gen5 NVMe SSDs',
-          'Dual-channel DDR4/DDR5 RAM upgrades & GPU/PSU power validation',
-          'Complete internal dust extraction and high-performance thermal repasting',
-          'SMART drive health audit, memory diagnostics & startup optimization',
-          'Honest repair-vs-replace recommendation with clear upfront pricing'
-        ]
-      }
-    };
-
-    function openServiceModal(key) {
-      const data = serviceDetailsData[key];
-      if (!data) return;
-
-      document.getElementById('modalEyebrow').textContent = data.eyebrow;
-      document.getElementById('modalTitle').textContent = data.title;
-      document.getElementById('modalSummary').textContent = data.summary;
-      document.getElementById('modalTurnaround').textContent = data.turnaround;
-
-      const listEl = document.getElementById('modalList');
-      listEl.innerHTML = data.standards.map(item => `
-        <li class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-sky-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          <span>${item}</span>
-        </li>
-      `).join('');
-
-      document.getElementById('modalCtaBtn').onclick = () => {
-        closeServiceModal();
-        jumpToEstimator(data.estimatorPreset);
-      };
-
-      const backdrop = document.getElementById('serviceModalBackdrop');
-      backdrop.classList.remove('hidden');
-      backdrop.classList.add('flex');
-    }
-
-    function closeServiceModal() {
-      const backdrop = document.getElementById('serviceModalBackdrop');
-      backdrop.classList.add('hidden');
-      backdrop.classList.remove('flex');
-    }
-
-    // -----------------------------------------------------------------------
-    // 4. INTERACTIVE PROJECT & BUILD ESTIMATOR
-    // -----------------------------------------------------------------------
-    const estimatorCatalog = {
-      web: [
-        {
-          id: 'web-starter',
-          categoryLabel: 'Web Design',
-          name: 'Starter Site & Digital Launch',
-          shortDesc: 'Clean, high-converting single-page or 3-page launch site for new ventures.',
-          price: '$750+',
-          turnaround: 'Est. 1–2 Weeks',
-          formValue: 'Web Design — Starter Site',
-          budgetHint: '$750–$1,200 • Launch in 1–2 weeks',
-          deliverables: [
-            'Custom mobile-responsive design',
-            'Domain & SSL security setup',
-            'Direct lead/contact form integration',
-            'Google Business & local SEO basics',
-            'Speed & Core Web Vitals optimization',
-            'Full source & domain ownership'
-          ],
-          note: 'Ideal for local service providers, consultants, and community organizations needing a credible online presence fast.'
-        },
-        {
-          id: 'web-redesign',
-          categoryLabel: 'Web Design',
-          name: 'Full Business Redesign',
-          shortDesc: 'Multi-page modern web platform tailored for established Maryland businesses.',
-          price: '$1,450+',
-          turnaround: 'Est. 2–3 Weeks',
-          formValue: 'Web Design — Full Business Redesign',
-          budgetHint: '$1,450–$2,800 • Launch in 2–3 weeks',
-          deliverables: [
-            'Up to 6 custom-engineered pages',
-            'Interactive service & quote modules',
-            'Google Workspace email migration',
-            'Local Harford County SEO architecture',
-            'Copy structure & brand modernization',
-            '30-day post-launch priority support'
-          ],
-          note: 'All domain registrations, hosting accounts, and source assets remain 100% owned by your business from day one.'
-        },
-        {
-          id: 'web-managed',
-          categoryLabel: 'Web Care & Workspace',
-          name: 'Managed Hosting & Workspace',
-          shortDesc: 'Ongoing site updates, uptime monitoring, and Google Workspace administration.',
-          price: '$95 / mo',
-          turnaround: 'Setup in 48 Hours',
-          formValue: 'Web Design — Managed Hosting & Google Workspace',
-          budgetHint: '$95/mo Managed Plan • Immediate onboarding',
-          deliverables: [
-            'Managed cloud hosting & SSL renewal',
-            'Monthly content & image updates',
-            'Google Workspace user & DNS admin',
-            'Automated off-site backups',
-            'Uptime & security posture monitoring',
-            'Direct priority email & phone support'
-          ],
-          note: 'Eliminate technical overhead—focus on running your business while we keep your web presence fast and secure.'
-        }
-      ],
-      pc: [
-        {
-          id: 'pc-office',
-          categoryLabel: 'Custom PC Build',
-          name: 'Office & Productivity Workstation',
-          shortDesc: 'Whisper-quiet, ultra-responsive desktop built for multi-monitor business workflows.',
-          price: '$950+',
-          turnaround: 'Est. 5–7 Days',
-          formValue: 'Custom PC Build — Office & Productivity Workstation',
-          budgetHint: '$950–$1,400 (Parts + Assembly) • 1 week turnaround',
-          deliverables: [
-            'Multi-core modern CPU & 32GB DDR5 RAM',
-            'High-speed 1TB+ Gen4 NVMe SSD',
-            'Compact, whisper-quiet chassis',
-            'Clean Windows 11 Pro (zero bloatware)',
-            'Multi-display output readiness',
-            '24-hour thermal & memory validation'
-          ],
-          note: 'Includes itemized retail component receipts so you keep full manufacturer warranties on every part.'
-        },
-        {
-          id: 'pc-gaming',
-          categoryLabel: 'Custom PC Build',
-          name: 'Enthusiast Gaming Rig',
-          shortDesc: 'High-FPS 1440p/4K gaming PC with optimized airflow and clean cable craft.',
-          price: '$1,650+',
-          turnaround: 'Est. 5–10 Days',
-          formValue: 'Custom PC Build — Enthusiast Gaming Rig',
-          budgetHint: '$1,650–$2,800 (Parts + Assembly) • 5–10 days',
-          deliverables: [
-            'Custom GPU & CPU pairing for target FPS',
-            'High-airflow mesh case & acoustic tuning',
-            'EXPO/XMP memory & Resizable BAR tuned',
-            'Custom fan curves & GPU undervolt option',
-            'Clean OS & latest chipset/GPU drivers',
-            '3DMark & OCCT stability burn-in report'
-          ],
-          note: 'Zero proprietary pre-built shortcuts—every motherboard, PSU, and cooler is standard and easily upgradeable.'
-        },
-        {
-          id: 'pc-creator',
-          categoryLabel: 'Custom PC Build',
-          name: 'Creator / CAD Workstation',
-          shortDesc: 'Heavy-duty workstation engineered for 4K video editing, 3D CAD, and local AI.',
-          price: '$2,400+',
-          turnaround: 'Est. 7–10 Days',
-          formValue: 'Custom PC Build — Creator / CAD Workstation',
-          budgetHint: '$2,400–$4,500+ (Parts + Assembly) • 7–10 days',
-          deliverables: [
-            'High-core-count workstation processor',
-            '64GB–128GB high-bandwidth RAM',
-            'Dual NVMe scratch + project storage',
-            'High-VRAM GPU for CUDA/CAD workloads',
-            'Platinum-rated power supply & cooling',
-            'Sustained full-load thermal certification'
-          ],
-          note: 'Tailored specifically to Adobe Creative Cloud, SolidWorks, AutoCAD, DaVinci Resolve, or local LLM workloads.'
-        }
-      ],
-      upgrade: [
-        {
-          id: 'hw-upgrade',
-          categoryLabel: 'Hardware Lifecycle',
-          name: 'NVMe SSD, RAM & Performance Upgrade',
-          shortDesc: 'Dramatically accelerate boot times and multitasking without buying a new PC.',
-          price: '$125 + Parts',
-          turnaround: 'Est. 1–3 Days',
-          formValue: 'Hardware Upgrade — NVMe SSD, RAM, GPU or Diagnostics',
-          budgetHint: '$125 labor + vetted upgrade parts • 1–3 days',
-          deliverables: [
-            'Bit-accurate OS & data cloning to NVMe',
-            'RAM capacity & speed expansion',
-            'GPU & power supply compatibility check',
-            'Internal dust cleaning & airflow check',
-            'Fresh high-conductivity thermal paste',
-            'Full hardware stress & SMART verification'
-          ],
-          note: 'We verify exact motherboard and power supply compatibility before ordering any component.'
-        },
-        {
-          id: 'hw-diag',
-          categoryLabel: 'Root-Cause Diagnostics',
-          name: 'System Diagnostics & Thermal Tune-Up',
-          shortDesc: 'Resolve random crashes, overheating, thermal throttling, or boot failures.',
-          price: '$95 Flat',
-          turnaround: 'Est. 24–48 Hours',
-          formValue: 'Hardware Upgrade — NVMe SSD, RAM, GPU or Diagnostics',
-          budgetHint: '$95 diagnostic & tune-up • 24–48 hour turnaround',
-          deliverables: [
-            'Component-level stability & memory test',
-            'CPU/GPU thermal repasting & fan service',
-            'BIOS update & driver conflict resolution',
-            'Startup bloatware & background cleanup',
-            'Storage health & backup readiness check',
-            'Written findings & upgrade roadmap'
-          ],
-          note: 'If you proceed with a recommended hardware repair or upgrade, your diagnostic fee applies toward the labor.'
-        }
-      ]
-    };
-
-    let activeCategory = 'web';
-    let activeTierId = 'web-redesign';
-
-    function selectEstimatorCategory(category, presetTierId = null) {
-      activeCategory = category;
-      const tiers = estimatorCatalog[category];
-      activeTierId = presetTierId || tiers[0].id;
-
-      // Update category tab buttons
-      document.querySelectorAll('.est-cat-tab').forEach(btn => {
-        btn.classList.remove('bg-sky-500', 'text-slate-950', 'shadow-glow-cyan');
-        btn.classList.add('bg-slate-900', 'border', 'border-slate-700', 'text-slate-300');
-      });
-      const activeBtn = document.getElementById(`catTab-${category}`);
-      activeBtn.classList.remove('bg-slate-900', 'border', 'border-slate-700', 'text-slate-300');
-      activeBtn.classList.add('bg-sky-500', 'text-slate-950', 'shadow-glow-cyan');
-
-      renderEstimatorTiers();
-      renderActiveTierDetails();
-    }
-
-    function renderEstimatorTiers() {
-      const tiers = estimatorCatalog[activeCategory];
-      const container = document.getElementById('estimatorTierList');
-
-      container.innerHTML = tiers.map(tier => {
-        const isSelected = tier.id === activeTierId;
-        return `
-          <button
-            type="button"
-            onclick="selectEstimatorTier('${tier.id}')"
-            class="w-full text-left p-5 rounded-2xl transition-all cursor-pointer border ${
-              isSelected
-                ? 'bg-slate-900 border-sky-400 shadow-glow-cyan'
-                : 'bg-slate-950/60 border-slate-800 hover:border-slate-600'
-            }">
-            <div class="flex items-center justify-between gap-3">
-              <span class="font-bold text-base ${isSelected ? 'text-white' : 'text-slate-200'}">${tier.name}</span>
-              <span class="font-mono text-xs font-semibold ${isSelected ? 'text-amber-400' : 'text-slate-400'}">${tier.price}</span>
-            </div>
-            <p class="mt-1.5 text-xs text-slate-400 leading-relaxed">${tier.shortDesc}</p>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function selectEstimatorTier(tierId) {
-      activeTierId = tierId;
-      renderEstimatorTiers();
-      renderActiveTierDetails();
-    }
-
-    function renderActiveTierDetails() {
-      const tier = estimatorCatalog[activeCategory].find(t => t.id === activeTierId);
-      if (!tier) return;
-
-      document.getElementById('estBadge').textContent = tier.categoryLabel;
-      document.getElementById('estTitle').textContent = tier.name;
-      document.getElementById('estSubtitle').textContent = tier.shortDesc;
-      document.getElementById('estPrice').textContent = tier.price;
-      document.getElementById('estTurnaround').textContent = tier.turnaround;
-      document.getElementById('estNoteText').textContent = tier.note;
-
-      document.getElementById('estDeliverables').innerHTML = tier.deliverables.map(item => `
-        <li class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-sky-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          <span>${item}</span>
-        </li>
-      `).join('');
-    }
-
-    function jumpToEstimator(tierId) {
-      let targetCat = 'web';
-      if (tierId.startsWith('pc-')) targetCat = 'pc';
-      if (tierId.startsWith('hw-')) targetCat = 'upgrade';
-
-      selectEstimatorCategory(targetCat, tierId);
-      document.getElementById('estimator').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function loadEstimatorIntoForm() {
-      const tier = estimatorCatalog[activeCategory].find(t => t.id === activeTierId);
-      if (!tier) return;
-
-      const selectEl = document.getElementById('serviceCategory');
-      selectEl.value = tier.formValue;
-
-      const budgetEl = document.getElementById('budgetTimeline');
-      budgetEl.value = tier.budgetHint;
-
-      const detailsEl = document.getElementById('projectDetails');
-      if (!detailsEl.value.trim()) {
-        detailsEl.value = `Interested in: ${tier.name} (${tier.price}).\nKey goals / specs: `;
-      }
-
-      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-      setTimeout(() => detailsEl.focus(), 600);
-      showToast('Loaded Into Form', `"${tier.name}" pre-filled in the consultation form below.`);
-    }
-
-    // Initialize default estimator state on page load
-    selectEstimatorCategory('web', 'web-redesign');
-
-    // -----------------------------------------------------------------------
-    // 5. CONTACT FORM VALIDATION, SUBMISSION & CLIPBOARD UTILITY
-    // -----------------------------------------------------------------------
-    const consultationForm = document.getElementById('consultationForm');
-    const formErrorBox = document.getElementById('formErrorBox');
-
-    consultationForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById('clientName').value.trim();
-      const email = document.getElementById('clientEmail').value.trim();
-      const phone = document.getElementById('clientPhone').value.trim();
-      const service = document.getElementById('serviceCategory').value;
-      const budget = document.getElementById('budgetTimeline').value.trim();
-      const details = document.getElementById('projectDetails').value.trim();
-
-      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-      if (!name || !emailValid || !details) {
-        formErrorBox.classList.remove('hidden');
-        return;
-      }
-
-      formErrorBox.classList.add('hidden');
-
-      // Populate confirmation summary
-      document.getElementById('confirmedClientName').textContent = name;
-      document.getElementById('confirmedServiceName').textContent = service;
-
-      // Build clean mailto link with all project details
-      const subject = encodeURIComponent(`Consultation Request: ${service} — ${name}`);
-      const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nService: ${service}\nBudget/Timeline: ${budget || 'Flexible'}\n\nProject Details:\n${details}`
-      );
-      document.getElementById('mailtoFallbackLink').href = `mailto:info@legacycomputingservices.com?subject=${subject}&body=${body}`;
-
-      consultationForm.classList.add('hidden');
-      document.getElementById('formSuccessState').classList.remove('hidden');
-      showToast('Request Prepared', 'Your consultation details have been formatted.');
-    });
-
-    function resetConsultationForm() {
-      consultationForm.reset();
-      consultationForm.classList.remove('hidden');
-      document.getElementById('formSuccessState').classList.add('hidden');
-    }
-
-    function copyCompanyEmail() {
-      const emailText = 'info@legacycomputingservices.com';
-      const tempInput = document.createElement('input');
-      tempInput.value = emailText;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-
-      showToast('Email Copied', 'info@legacycomputingservices.com copied to clipboard.');
-    }
-
-    // -----------------------------------------------------------------------
-    // 6. NON-BLOCKING TOAST NOTIFICATION HELPER
-    // -----------------------------------------------------------------------
-    let toastTimeout;
-    function showToast(title, message, isError = false) {
-      const banner = document.getElementById('toastBanner');
-      const iconBox = document.getElementById('toastIcon');
-      document.getElementById('toastTitle').textContent = title;
-      document.getElementById('toastMessage').textContent = message;
-
-      if (isError) {
-        iconBox.className = 'w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0';
-      } else {
-        iconBox.className = 'w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0';
-      }
-
-      banner.classList.remove('translate-y-24', 'opacity-0');
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        banner.classList.add('translate-y-24', 'opacity-0');
-      }, 3600);
-    }
-  </script>
+  <script src="js/site-data.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

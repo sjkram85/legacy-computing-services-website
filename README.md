@@ -1,15 +1,17 @@
 # Legacy Computing Services
 
-Static single-page website for **Legacy Computing Services LLC** (Bel Air / Harford County, Maryland), owned by Scott.
+Static website for **Legacy Computing Services LLC** (Bel Air / Harford County, Maryland), owned by Scott.
 
-The site is one file, `index.html`: HTML, Tailwind CSS loaded from a CDN, and inline JavaScript. There is no build step and no backend.
+The page is plain HTML, Tailwind from a CDN, and vanilla JavaScript. There is no framework, build step, or backend. `index.html` is one page with hash-routed views (`#services`, `#estimator`, `#about`, `#contact`). Copy and prices live in `js/site-data.js`.
 
 ## Preview locally
 
-Open `index.html` in a browser, or serve this folder with a simple static server:
+Open `index.html` in a browser, or serve this folder:
 
 ```bash
 python3 -m http.server 8000
 ```
 
 Then visit [http://localhost:8000](http://localhost:8000).
+
+How to edit prices, services, and the other lists is in [docs/editing.md](docs/editing.md).
