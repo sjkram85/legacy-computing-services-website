@@ -20,7 +20,7 @@ window.LCS_PORTAL = {
 
   /* The long id in https://docs.google.com/spreadsheets/d/THIS_PART/edit
      Leave blank until you create the portal spreadsheet. */
-  spreadsheetId: "",
+  spreadsheetId: "14ZcwghtxRdwyD1UOh_sxXzvrhHnU2N9sg6ocQ-O7o0Q",
 
   /* The long id in https://drive.google.com/drive/folders/THIS_PART
      Leave blank until the company docs folder exists. */
