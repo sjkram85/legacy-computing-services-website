@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee portal | Legacy Computing Services</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Employee sign-in for Legacy Computing Services. This page stores no customer data." />
+  <meta name="theme-color" content="#0B131E" />
+  <link rel="icon" href="../assets/icons/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            cyber: {
+              obsidian: '#0B131E',
+              slate: '#111B29',
+              card: '#131E2D',
+              elevated: '#182538',
+              cyan: '#18A2D6',
+              teal: '#00B4D8',
+              silver: '#CBD5E1',
+              emerald: '#10B981'
+            }
+          },
+          boxShadow: {
+            'cyber-cyan': '0 0 34px -6px rgba(24, 162, 214, 0.34)',
+            'cyber-silver': '0 14px 34px -12px rgba(2, 6, 23, 0.75)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0B131E;
+      color: #F1F5F9;
+      overflow-x: hidden;
+    }
+    .bg-cyber-matrix {
+      background-color: #0B131E;
+      background-image:
+        radial-gradient(circle at 78% 22%, rgba(24, 162, 214, 0.16), transparent 44%),
+        radial-gradient(circle at 20% 80%, rgba(148, 163, 184, 0.08), transparent 45%),
+        linear-gradient(145deg, rgba(19, 30, 45, 0.92) 0%, rgba(11, 19, 30, 0.98) 100%),
+        linear-gradient(to right, rgba(24, 162, 214, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(24, 162, 214, 0.06) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+    .cyber-panel {
+      background: linear-gradient(155deg, rgba(24, 37, 56, 0.9), rgba(13, 22, 34, 0.96));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(203, 213, 225, 0.18);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+    }
+    .cyber-panel-hover {
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+    .cyber-panel-hover:hover {
+      transform: translateY(-3px);
+      border-color: rgba(24, 162, 214, 0.55);
+      box-shadow: 0 18px 36px -14px rgba(24, 162, 214, 0.26), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    }
+    .official-logo-stage {
+      background: radial-gradient(circle at 50% 35%, #1A283B 0%, #111B29 65%, #0B131E 100%);
+      border: 1px solid rgba(203, 213, 225, 0.24);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 40px -18px rgba(0, 0, 0, 0.85);
+    }
+    .nav-current {
+      color: #7DD3FC;
+      background: #182538;
+      font-weight: 700;
+    }
+    :focus-visible { outline: 2px solid #38BDF8; outline-offset: 2px; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0B131E; }
+    ::-webkit-scrollbar-thumb { background: #1E2D42; border-radius: 9999px; }
+    .print-sheet { color: #0B131E; background: #fff; }
+    .print-sheet table { width: 100%; border-collapse: collapse; }
+    .print-sheet th, .print-sheet td { text-align: left; padding: 0.55rem 0.4rem; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
+    .print-sheet th { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: #475569; }
+    @media print {
+      body { background: #fff !important; color: #0B131E !important; }
+      .no-print { display: none !important; }
+      .print-sheet { box-shadow: none !important; border: none !important; margin: 0 !important; max-width: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cyber-panel-hover { transition: none; }
+    }
+  </style>
+</head>
+<body class="antialiased min-h-screen font-sans selection:bg-sky-500/30 selection:text-sky-100">
+  <template id="shield-tpl">
+    <svg class="w-9 h-9" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="portalSilverRim" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#F8FAFC"/>
+          <stop offset="45%" stop-color="#94A3B8"/>
+          <stop offset="75%" stop-color="#E2E8F0"/>
+          <stop offset="100%" stop-color="#64748B"/>
+        </linearGradient>
+        <linearGradient id="portalNavyCore" x1="14" y1="10" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0D223D"/>
+          <stop offset="100%" stop-color="#071324"/>
+        </linearGradient>
+        <linearGradient id="portalCyanArrow" x1="16" y1="46" x2="54" y2="12" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0E7490"/>
+          <stop offset="55%" stop-color="#18A2D6"/>
+          <stop offset="100%" stop-color="#38BDF8"/>
+        </linearGradient>
+      </defs>
+      <path d="M32 6L12 14.5V30.5C12 44.2 20.5 55.8 32 59C43.5 55.8 52 44.2 52 30.5V14.5L32 6Z" fill="url(#portalNavyCore)" stroke="url(#portalSilverRim)" stroke-width="3.2"/>
+      <path d="M21 38V28L18 25" stroke="#CBD5E1" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="18" cy="24" r="2.2" stroke="#CBD5E1" stroke-width="1.6" fill="#0D223D"/>
+      <path d="M26 35V23L24 21" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="24" cy="20" r="2.2" stroke="#38BDF8" stroke-width="1.6" fill="#0D223D"/>
+      <path d="M31 31V18" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="31" cy="16" r="2.4" stroke="#38BDF8" stroke-width="1.7" fill="#0D223D"/>
+      <path d="M34 45V37L40 31" stroke="#18A2D6" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="41" cy="30" r="2.1" stroke="#18A2D6" stroke-width="1.6" fill="#0D223D"/>
+      <path d="M38 48V42L43 37" stroke="#CBD5E1" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="44" cy="36" r="2.1" stroke="#CBD5E1" stroke-width="1.6" fill="#0D223D"/>
+      <path d="M16 45L47 17" stroke="url(#portalCyanArrow)" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M39 14L53 12L50 26L46 20L39 14Z" fill="#18A2D6" stroke="#7DD3FC" stroke-width="1"/>
+    </svg>
+  </template>
+
+  <div id="app">
+    <main class="max-w-3xl mx-auto px-4 py-16">
+      <h1 class="font-display text-2xl font-bold text-white">Employee portal</h1>
+      <p class="mt-3 text-slate-300">Loading…</p>
+    </main>
+  </div>
+  <noscript>
+    <p class="max-w-3xl mx-auto px-4 py-6 text-slate-300">The employee portal needs JavaScript. This page still stores no company data.</p>
+  </noscript>
+  <script src="logic.js"></script>
+  <script src="config.js"></script>
+  <script src="portal.js"></script>
+</body>
+</html>

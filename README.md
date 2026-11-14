@@ -15,3 +15,9 @@ python3 -m http.server 8000
 Then visit [http://localhost:8000](http://localhost:8000).
 
 How to edit prices, services, and the other lists is in [docs/editing.md](docs/editing.md).
+
+## Employee portal
+
+Staff tools are at [portal/](portal/) (`https://legacycomputingservices.com/portal/`). The page is a sign-in shell. It does not store customer data in this repository. A discreet Employee Login link is in the site footer only. Links are relative, so they follow the custom domain. Do not change the `CNAME` file.
+
+Scott’s setup steps are in [docs/portal-setup.md](docs/portal-setup.md). Until the Google Client ID is filled in, the portal shows a setup message and a sample-data preview.
