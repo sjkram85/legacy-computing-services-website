@@ -136,10 +136,12 @@
     }
 
     /* Tailwind's display utilities override the hidden attribute. Keep the
-       unset chat widget, the closed panel, and the idle typing row off screen. */
+       unset chat widget, the closed panel, the idle typing row, and the
+       unshown chat teaser off screen. */
     #lcs-chat[hidden],
     #lcs-chat-panel[hidden],
-    #lcs-chat-typing[hidden] {
+    #lcs-chat-typing[hidden],
+    #lcs-chat-teaser[hidden] {
       display: none !important;
     }
 
@@ -166,6 +168,113 @@
 
     @media (prefers-reduced-motion: reduce) {
       .lcs-typing-dot { animation: none; opacity: 0.75; }
+    }
+
+    /* One-time help teaser beside the shield button. Hidden until the chat script shows it. */
+    .lcs-chat-teaser {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.15rem;
+      max-width: 16.25rem;
+      margin-bottom: 0.2rem;
+      padding: 0.55rem 0.3rem 0.55rem 0.7rem;
+      border-radius: 0.95rem;
+      background: #131e2d;
+      border: 1px solid rgba(24, 162, 214, 0.4);
+      box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      font-size: 0.8125rem;
+      line-height: 1.35;
+    }
+
+    .lcs-chat-teaser::after {
+      content: "";
+      position: absolute;
+      right: -6px;
+      bottom: 1.15rem;
+      width: 0.7rem;
+      height: 0.7rem;
+      background: #131e2d;
+      border-right: 1px solid rgba(24, 162, 214, 0.4);
+      border-bottom: 1px solid rgba(24, 162, 214, 0.4);
+      transform: rotate(-45deg);
+      pointer-events: none;
+    }
+
+    @keyframes lcs-teaser-in {
+      from { opacity: 0; transform: translate3d(0.45rem, 0.35rem, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    #lcs-chat-teaser:not([hidden]) {
+      animation: lcs-teaser-in 0.4s ease-out both;
+    }
+
+    .lcs-chat-teaser-ask,
+    .lcs-chat-teaser-dismiss {
+      font: inherit;
+      color: inherit;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .lcs-chat-teaser-ask {
+      flex: 1 1 auto;
+      min-width: 0;
+      text-align: left;
+      line-height: inherit;
+    }
+
+    .lcs-chat-teaser-ask:hover { color: #fff; }
+
+    .lcs-chat-teaser-dismiss {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-top: -0.1rem;
+      border-radius: 999px;
+      color: #cbd5e1;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .lcs-chat-teaser-dismiss:hover {
+      color: #fff;
+      background: rgba(148, 163, 184, 0.16);
+    }
+
+    .lcs-chat-teaser-ask:focus-visible,
+    .lcs-chat-teaser-dismiss:focus-visible {
+      outline: 2px solid #18A2D6;
+      outline-offset: 2px;
+      border-radius: 0.35rem;
+    }
+
+    @media (max-width: 639px) {
+      .lcs-chat-teaser {
+        max-width: min(10.75rem, calc(100vw - 6.75rem));
+        padding: 0.4rem 0.15rem 0.4rem 0.55rem;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        border-radius: 0.8rem;
+      }
+
+      .lcs-chat-teaser-dismiss {
+        width: 1.35rem;
+        height: 1.35rem;
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #lcs-chat-teaser:not([hidden]) { animation: none; }
     }
 
     /*
@@ -2033,23 +2142,36 @@
         </button>
       </form>
     </section>
-    <button
-      type="button"
-      id="lcs-chat-toggle"
-      aria-expanded="false"
-      aria-controls="lcs-chat-panel"
-      aria-haspopup="dialog"
-      aria-label="Open chat assistant"
-      class="official-logo-stage flex h-14 w-14 items-center justify-center rounded-2xl shadow-cyber-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300">
-      <img src="assets/legacy-computing-shield.png" alt="" width="36" height="40" class="h-10 w-9 object-contain" />
-    </button>
+    <div class="flex max-w-full flex-nowrap items-end justify-end gap-2">
+      <div
+        id="lcs-chat-teaser"
+        class="lcs-chat-teaser"
+        hidden
+        role="status"
+        aria-live="polite">
+        <button type="button" id="lcs-chat-teaser-ask" class="lcs-chat-teaser-ask">Questions about your computer or business IT? Ask us.</button>
+        <button type="button" id="lcs-chat-teaser-dismiss" class="lcs-chat-teaser-dismiss" aria-label="Dismiss chat suggestion">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <button
+        type="button"
+        id="lcs-chat-toggle"
+        aria-expanded="false"
+        aria-controls="lcs-chat-panel"
+        aria-haspopup="dialog"
+        aria-label="Open chat assistant"
+        class="official-logo-stage flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-cyber-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300">
+        <img src="assets/legacy-computing-shield.png" alt="" width="36" height="40" class="h-10 w-9 object-contain" />
+      </button>
+    </div>
   </div>
 
   <script>
     (function initLcsChat() {
       var CONTACT_EMAIL = 'scott@legacycomputingservices.com';
       var FALLBACK = 'Sorry, we couldn\u2019t get an answer just now. Please use the contact form or email ' + CONTACT_EMAIL + '.';
-      var GREETING = 'Hi \u2014 we\u2019re Legacy Computing Services, a Proud Maryland Company in Bel Air. Ask about websites, custom PCs, upgrades, tech support, business IT, or everyday computer help. For a quote or a time to meet, use the contact form or email ' + CONTACT_EMAIL + '.';
+      var GREETING = 'Hi, we\u2019re Legacy Computing Services in Bel Air. Ask about websites, custom PCs, upgrades, tech support, business IT, or everyday computer help. For a quote or a time to meet, use the contact form or email ' + CONTACT_EMAIL + '.';
 
       var root = document.getElementById('lcs-chat');
       var panel = document.getElementById('lcs-chat-panel');
@@ -2073,12 +2195,95 @@
       }
       if (!endpoint) return;
 
+      var teaser = document.getElementById('lcs-chat-teaser');
+      var teaserAsk = document.getElementById('lcs-chat-teaser-ask');
+      var teaserDismiss = document.getElementById('lcs-chat-teaser-dismiss');
       var transcript = [];
       var isOpen = false;
       var greeted = false;
       var sending = false;
+      var chatOpened = false;
+      var teaserShowTimer = 0;
+      var teaserHideTimer = 0;
+      var TEASER_SESSION_KEY = 'lcs-chat-teaser-dismissed';
+      var TEASER_LOCAL_KEY = 'lcs-chat-teaser-shown-at';
+      var TEASER_DELAY_MS = 20000;
+      var TEASER_HIDE_MS = 12000;
+      var TEASER_DAY_MS = 24 * 60 * 60 * 1000;
 
       root.hidden = false;
+
+      function storageGet(store, key) {
+        try {
+          return store.getItem(key);
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function storageSet(store, key, value) {
+        try {
+          store.setItem(key, value);
+        } catch (err) {}
+      }
+
+      function teaserDismissedThisVisit() {
+        return storageGet(sessionStorage, TEASER_SESSION_KEY) === '1';
+      }
+
+      function teaserShownThisDay() {
+        var raw = storageGet(localStorage, TEASER_LOCAL_KEY);
+        var at = raw ? parseInt(raw, 10) : 0;
+        if (!at) return false;
+        var age = Date.now() - at;
+        return age >= 0 && age < TEASER_DAY_MS;
+      }
+
+      function teaserBlocked() {
+        return chatOpened || isOpen || teaserDismissedThisVisit() || teaserShownThisDay();
+      }
+
+      function rememberTeaser() {
+        storageSet(sessionStorage, TEASER_SESSION_KEY, '1');
+        if (!teaserShownThisDay()) {
+          storageSet(localStorage, TEASER_LOCAL_KEY, String(Date.now()));
+        }
+      }
+
+      function clearTeaserTimers() {
+        if (teaserShowTimer) {
+          window.clearTimeout(teaserShowTimer);
+          teaserShowTimer = 0;
+        }
+        if (teaserHideTimer) {
+          window.clearTimeout(teaserHideTimer);
+          teaserHideTimer = 0;
+        }
+      }
+
+      function hideTeaser(options) {
+        clearTeaserTimers();
+        if (!teaser) return;
+        var active = document.activeElement;
+        var focusWasInside = !!(active && teaser.contains(active));
+        teaser.hidden = true;
+        if (focusWasInside && !(options && options.skipFocus)) toggle.focus();
+      }
+
+      function showTeaser() {
+        teaserShowTimer = 0;
+        if (teaserBlocked() || !teaser || !teaserAsk || !teaserDismiss) return;
+        rememberTeaser();
+        teaser.hidden = false;
+        teaserHideTimer = window.setTimeout(function () {
+          hideTeaser();
+        }, TEASER_HIDE_MS);
+      }
+
+      function scheduleTeaser() {
+        if (!teaser || !teaserAsk || !teaserDismiss || teaserBlocked()) return;
+        teaserShowTimer = window.setTimeout(showTeaser, TEASER_DELAY_MS);
+      }
 
       function scrollLog() {
         log.scrollTop = log.scrollHeight;
@@ -2164,6 +2369,9 @@
       }
 
       function openPanel() {
+        chatOpened = true;
+        hideTeaser({ skipFocus: true });
+        rememberTeaser();
         if (isOpen) return;
         isOpen = true;
         panel.hidden = false;
@@ -2283,6 +2491,19 @@
         if (!isOpen || root.contains(event.target)) return;
         closePanel({ skipFocus: true });
       });
+      if (teaser && teaserAsk && teaserDismiss) {
+        teaser.addEventListener('click', function (event) {
+          if (teaserDismiss.contains(event.target)) return;
+          openPanel();
+        });
+        teaserDismiss.addEventListener('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          hideTeaser();
+          rememberTeaser();
+        });
+      }
+      scheduleTeaser();
     })();
   </script>
 </body>
