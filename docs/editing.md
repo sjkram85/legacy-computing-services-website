@@ -15,8 +15,9 @@ Then visit http://localhost:8000. Hash routes also work on a fresh load, for exa
 | `index.html` | Layout only: header, the five views, footer, form shell, and HTML templates. |
 | `js/site-data.js` | All editable copy: services, prices, ranges, process steps, towns, and the contact categories. |
 | `js/app.js` | Hash router (`switchView` / `routeFromHash`), the estimator, and the contact form. |
-| `assets/logo-shield.svg` | The shield used in the header, hero, and footer. |
-| `assets/icons/` | Favicon and the Open Graph image. |
+| `assets/legacy-computing-logo.jpg` | Full logo lockup, used large in the home hero. |
+| `assets/legacy-computing-shield.jpg` | Shield cropped from that same file, used in the header and footer. |
+| `assets/icons/` | Favicon, Apple touch icon, and Open Graph image, scaled from the shield crop. |
 
 ## Change a price or a tier
 
