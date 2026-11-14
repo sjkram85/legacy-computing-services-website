@@ -533,6 +533,42 @@
     };
   }
 
+  function calendarEmbedUrl(calendarId, options) {
+    var id = clean(calendarId);
+    if (!id || isPlaceholder(id)) return '';
+    var opts = options || {};
+    var mode = opts.mode === 'AGENDA' ? 'AGENDA' : 'WEEK';
+    var tz = clean(opts.timeZone) || 'America/New_York';
+    return 'https://calendar.google.com/calendar/embed?src=' + encodeURIComponent(id)
+      + '&ctz=' + encodeURIComponent(tz)
+      + '&mode=' + mode
+      + '&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=0B131E';
+  }
+
+  function drivePreviewUrl(file, edit) {
+    if (!file || file.sample) return '';
+    var id = clean(file.id);
+    if (!id || isPlaceholder(id)) return '';
+    var mime = clean(file.mimeType);
+    if (mime === 'application/vnd.google-apps.folder') return '';
+    if (mime === 'application/vnd.google-apps.document') {
+      return 'https://docs.google.com/document/d/' + encodeURIComponent(id) + (edit ? '/edit?rm=minimal' : '/preview');
+    }
+    if (mime === 'application/vnd.google-apps.spreadsheet') {
+      return 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(id) + (edit ? '/edit?rm=minimal' : '/preview');
+    }
+    if (mime === 'application/vnd.google-apps.presentation') {
+      return 'https://docs.google.com/presentation/d/' + encodeURIComponent(id) + (edit ? '/edit?rm=minimal' : '/preview');
+    }
+    return 'https://drive.google.com/file/d/' + encodeURIComponent(id) + '/preview';
+  }
+
+  function spreadsheetEmbedUrl(value) {
+    var id = googleId(value);
+    if (!id) return '';
+    return 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(id) + '/edit?rm=minimal';
+  }
+
   function emptyData() {
     var data = {};
     SHEETS.forEach(function (sheet) { data[sheet.title] = []; });
@@ -562,6 +598,9 @@
     colLetter: colLetter,
     isoDate: isoDate,
     sampleBundle: sampleBundle,
+    calendarEmbedUrl: calendarEmbedUrl,
+    drivePreviewUrl: drivePreviewUrl,
+    spreadsheetEmbedUrl: spreadsheetEmbedUrl,
     emptyData: emptyData
   };
 });

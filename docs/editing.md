@@ -45,7 +45,7 @@ Views are `home`, `services`, `estimator`, `about`, and `contact`. A tier opens 
 
 ## Contact form
 
-The live form is in `index.html`. Submit does not send mail by itself. It fills a mailto link to `info@legacycomputingservices.com` and shows **Open in Email App**. Nothing is delivered until the visitor presses Send in their email app.
+The live form is in `index.html`. Submit does not send mail by itself. It fills a mailto link to `scott@legacycomputingservices.com` and shows **Open in Email App**. Nothing is delivered until the visitor presses Send in their email app.
 
 An optional copy into the employee portal’s Inquiries sheet stays off until `inquiriesWebhookUrl` in `portal/config.js` is a Google Apps Script URL. The mailto link is built either way. See [portal-setup.md](portal-setup.md).
 

@@ -142,4 +142,41 @@ test('sample bundle is labeled and uses no live addresses', function () {
   assert.ok(sample.events[0].summary.indexOf('SAMPLE') === 0);
 });
 
+test('calendar embed and in-page file previews', function () {
+  assert.strictEqual(lib.calendarEmbedUrl('', { mode: 'WEEK' }), '');
+  assert.strictEqual(lib.calendarEmbedUrl('YOUR_CALENDAR_ID', { mode: 'WEEK' }), '');
+  const week = lib.calendarEmbedUrl('person@example.test', { mode: 'WEEK', timeZone: 'America/New_York' });
+  assert.ok(week.indexOf('https://calendar.google.com/calendar/embed?') === 0);
+  assert.ok(week.indexOf('src=' + encodeURIComponent('person@example.test')) !== -1);
+  assert.ok(week.indexOf('ctz=' + encodeURIComponent('America/New_York')) !== -1);
+  assert.ok(week.indexOf('mode=WEEK') !== -1);
+  assert.ok(week.indexOf('bgcolor=0B131E') !== -1);
+  assert.ok(lib.calendarEmbedUrl('person@example.test', { mode: 'AGENDA' }).indexOf('mode=AGENDA') !== -1);
+
+  assert.strictEqual(
+    lib.drivePreviewUrl({ id: 'file1', mimeType: 'application/pdf' }, false),
+    'https://drive.google.com/file/d/file1/preview'
+  );
+  assert.strictEqual(
+    lib.drivePreviewUrl({ id: 'doc1', mimeType: 'application/vnd.google-apps.document' }, false),
+    'https://docs.google.com/document/d/doc1/preview'
+  );
+  assert.strictEqual(
+    lib.drivePreviewUrl({ id: 'doc1', mimeType: 'application/vnd.google-apps.document' }, true),
+    'https://docs.google.com/document/d/doc1/edit?rm=minimal'
+  );
+  assert.strictEqual(
+    lib.drivePreviewUrl({ id: 'sheet1', mimeType: 'application/vnd.google-apps.spreadsheet' }, true),
+    'https://docs.google.com/spreadsheets/d/sheet1/edit?rm=minimal'
+  );
+  assert.strictEqual(
+    lib.drivePreviewUrl({ id: 'slides1', mimeType: 'application/vnd.google-apps.presentation' }, false),
+    'https://docs.google.com/presentation/d/slides1/preview'
+  );
+  assert.strictEqual(lib.drivePreviewUrl({ id: 'folder1', mimeType: 'application/vnd.google-apps.folder' }, false), '');
+  assert.strictEqual(lib.drivePreviewUrl({ id: 'x', sample: true, mimeType: 'application/pdf' }, false), '');
+  assert.strictEqual(lib.spreadsheetEmbedUrl('abc_123'), 'https://docs.google.com/spreadsheets/d/abc_123/edit?rm=minimal');
+  assert.strictEqual(lib.spreadsheetEmbedUrl(''), '');
+});
+
 console.log('all logic tests passed');
