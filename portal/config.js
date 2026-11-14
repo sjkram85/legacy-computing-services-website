@@ -24,7 +24,7 @@ window.LCS_PORTAL = {
 
   /* The long id in https://drive.google.com/drive/folders/THIS_PART
      Leave blank until the company docs folder exists. */
-  driveFolderId: "",
+  driveFolderId: "16Iou2GSjYW95HuCmUJmKgZz0SAjI5sl2",
 
   /* Optional. Calendar embedded on the dashboard.
      Leave blank to use the signed-in employee's primary calendar (their email).
