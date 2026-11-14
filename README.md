@@ -21,3 +21,7 @@ How to edit prices, services, and the other lists is in [docs/editing.md](docs/e
 Staff tools are at [portal/](portal/) (`https://legacycomputingservices.com/portal/`). The page is a sign-in shell. It does not store customer data in this repository. A discreet Employee Login link is in the site footer only. Links are relative, so they follow the custom domain. Do not change the `CNAME` file.
 
 Scott’s setup steps are in [docs/portal-setup.md](docs/portal-setup.md). Until the Google Client ID is filled in, the portal shows a setup message and a sample-data preview.
+
+## Homepage chat
+
+A shield button at the bottom right can open a short assistant for questions about the company’s services. The Gemini API key is not in this repository. It stays in a Google Apps Script web app, and the homepage only stores that app’s public `/exec` URL in `window.LCS_CHAT_ENDPOINT` near the top of `index.html`. While that value is empty, the button is hidden. Setup is in [docs/chatbot-setup.md](docs/chatbot-setup.md).
