@@ -179,4 +179,80 @@ test('calendar embed and in-page file previews', function () {
   assert.strictEqual(lib.spreadsheetEmbedUrl(''), '');
 });
 
+test('intake form opens a gmail draft and can add a column', function () {
+  const columns = lib.columnsOf('Tickets');
+  assert.strictEqual(columns[columns.length - 1].header, 'Intake Sent');
+  assert.strictEqual(columns[columns.length - 1].key, 'intakeSent');
+
+  const parsed = lib.rowsFromValues([
+    ['Issue', 'ID', 'Customer', 'Notes'],
+    ['Fix the printer', 't1', 'Ada Example', 'Keep this']
+  ], columns);
+  assert.strictEqual(parsed.rows[0].issue, 'Fix the printer');
+  assert.strictEqual(parsed.rows[0].intakeSent, '');
+  assert.ok(parsed.missingHeaders.indexOf('Intake Sent') !== -1);
+  assert.strictEqual(parsed.rows[0].notes, 'Keep this');
+
+  const withDate = lib.rowsFromValues([
+    ['ID', 'Customer', 'Issue', 'Intake Sent', 'Extra'],
+    ['t1', 'Ada Example', 'Fix the printer', '2026-11-15', 'leave me']
+  ], columns);
+  assert.strictEqual(withDate.rows[0].intakeSent, '2026-11-15');
+  withDate.rows[0].issue = 'Fix the printer drawer';
+  assert.deepStrictEqual(
+    lib.recordToCells(withDate.rows[0], withDate.headerRow, columns),
+    ['t1', 'Ada Example', 'Fix the printer drawer', '2026-11-15', 'leave me']
+  );
+
+  const oldHeader = ['ID', 'Created', 'Updated', 'Customer', 'Issue', 'Status', 'Priority', 'Assigned to', 'Opened', 'Due', 'Notes'];
+  const plan = lib.headersToAppend(oldHeader, columns);
+  assert.deepStrictEqual(plan.headers, ['Intake Sent']);
+  assert.strictEqual(plan.startColumn, 12);
+  const again = lib.headersToAppend(withDate.headerRow, columns);
+  assert.ok(again.headers.indexOf('Intake Sent') === -1);
+  assert.ok(again.headers.indexOf('Created') !== -1);
+  assert.deepStrictEqual(
+    lib.headersToAppend(oldHeader.concat(['Intake Sent']), columns).headers,
+    []
+  );
+
+  assert.strictEqual(lib.customerEmail([
+    { name: 'Ada Example', email: '' },
+    { name: 'Ada Example', email: 'ada.example@example.test' }
+  ], ' ada example '), 'ada.example@example.test');
+  assert.strictEqual(lib.customerEmail([{ name: 'Ada Example', email: 'not-an-email' }], 'Ada Example'), '');
+  assert.strictEqual(lib.customerEmail([{ name: 'Ben Sample', email: 'ben.sample@example.test' }], 'Ada Example'), '');
+
+  const form = 'https://docs.google.com/forms/d/e/1FAIpQLSdlt6J9Ew889ZO0dq4z6yzTrxb1FSuutsxvAiVGYX-5679tSQ/viewform';
+  assert.strictEqual(lib.intakeFormUrl({ intakeFormUrl: form + '?entry.123=no&usp=sf_link' }), form);
+  assert.strictEqual(lib.intakeFormUrl({ intakeFormUrl: '' }), '');
+  assert.strictEqual(lib.intakeFormUrl({ intakeFormUrl: 'YOUR_INTAKE_FORM_URL' }), '');
+  assert.strictEqual(lib.intakeFormUrl({ intakeFormUrl: 'https://evil.example/viewform' }), '');
+
+  const url = lib.intakeComposeUrl({ intakeFormUrl: form + '?entry.999=hidden' }, 'ada.example@example.test');
+  const parsedUrl = new URL(url);
+  assert.strictEqual(parsedUrl.origin + parsedUrl.pathname, 'https://mail.google.com/mail/');
+  assert.strictEqual(parsedUrl.searchParams.get('view'), 'cm');
+  assert.strictEqual(parsedUrl.searchParams.get('fs'), '1');
+  assert.strictEqual(parsedUrl.searchParams.get('to'), 'ada.example@example.test');
+  assert.strictEqual(
+    parsedUrl.searchParams.get('su'),
+    'Legacy Computing Services \u2013 Client Intake & Service Agreement'
+  );
+  const body = parsedUrl.searchParams.get('body');
+  assert.ok(body.indexOf('Before we begin work') !== -1);
+  assert.ok(body.indexOf('client intake and service agreement') !== -1);
+  assert.ok(body.indexOf(form) !== -1);
+  assert.ok(body.indexOf('Legacy Computing Services') !== -1);
+  assert.ok(body.indexOf('scott@legacycomputingservices.com') !== -1);
+  assert.strictEqual(body.indexOf('entry.'), -1);
+  assert.strictEqual(url.indexOf('entry.'), -1);
+  assert.strictEqual(lib.intakeComposeUrl({ intakeFormUrl: form }, 'not-an-email'), '');
+  assert.strictEqual(lib.intakeComposeUrl({ intakeFormUrl: '' }, 'ada.example@example.test'), '');
+
+  const sample = lib.sampleBundle(new Date('2026-11-14T12:00:00'));
+  assert.ok(sample.Tickets.some(function (row) { return row.intakeSent; }));
+  assert.ok(sample.Tickets.some(function (row) { return !row.intakeSent; }));
+});
+
 console.log('all logic tests passed');

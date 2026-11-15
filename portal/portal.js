@@ -46,7 +46,8 @@
     sheetsError: '',
     customerQuery: '',
     ticketFilter: 'Open work',
-    inquiryFilter: 'New'
+    inquiryFilter: 'New',
+    intakeDialog: null
   };
 
   var expiryTimer = 0;
@@ -126,6 +127,8 @@
     var app = document.getElementById('app');
     app.replaceChildren(state.mode === 'gate' ? renderGate() : renderApp());
     window.scrollTo(0, y);
+    var intakeEmail = document.getElementById('intake-dialog-email');
+    if (intakeEmail) intakeEmail.focus();
   }
 
   function go() {
@@ -150,6 +153,7 @@
 
   function applyHash() {
     state.viewer = null;
+    state.intakeDialog = null;
     var parts = hashParts();
     if (parts[0] === 'print' && (parts[1] === 'quote' || parts[1] === 'invoice')) {
       state.section = 'print';
@@ -191,6 +195,7 @@
     record.created = (existing && existing.created) || record.created || stamp();
     record.updated = stamp();
     if (existing && existing._row) record._row = existing._row;
+    if (existing && existing._cells && record._cells == null) record._cells = existing._cells;
     if (state.mode === 'demo') record.sample = true;
     return record;
   }
@@ -287,7 +292,18 @@
     if (state.banner.tone === 'bad') tone = 'border-rose-400/50 bg-rose-500/10 text-rose-100';
     if (state.banner.tone === 'warn') tone = 'border-amber-400/50 bg-amber-500/10 text-amber-100';
     if (state.banner.tone === 'ok') tone = 'border-emerald-400/40 bg-emerald-500/10 text-emerald-100';
-    return el('div', { class: 'rounded-2xl border px-4 py-3 text-sm leading-relaxed ' + tone, role: 'status' }, [state.banner.text]);
+    var node = el('div', { class: 'rounded-2xl border px-4 py-3 text-sm leading-relaxed ' + tone, role: 'status' });
+    node.appendChild(document.createTextNode(state.banner.text || ''));
+    if (safeHttp(state.banner.href)) {
+      node.appendChild(document.createTextNode(' '));
+      node.appendChild(el('a', {
+        href: state.banner.href,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: 'font-semibold underline'
+      }, [state.banner.hrefLabel || 'Open']));
+    }
+    return node;
   }
 
   function demoBanner() {
@@ -445,6 +461,8 @@
     if (state.busy) main.appendChild(el('p', { class: 'text-sm text-sky-300', role: 'status' }, [state.busy]));
     main.appendChild(renderSection());
     page.appendChild(main);
+    var dialog = renderIntakeDialog();
+    if (dialog) page.appendChild(dialog);
     return page;
   }
 
@@ -707,6 +725,8 @@
       var meta = el('span', { class: 'mt-1 flex flex-wrap items-center gap-2' });
       meta.appendChild(el('span', { class: 'text-xs text-slate-400' }, [row.customer || 'No customer']));
       meta.appendChild(badge(row.status));
+      var sent = intakeBadge(row);
+      if (sent) meta.appendChild(sent);
       if (row.sample) meta.appendChild(sampleChip());
       item.appendChild(meta);
       item.addEventListener('click', function () { go('tickets', row.id); });
@@ -726,18 +746,26 @@
       return box;
     }
     var parsed = state.parsed[title];
-    if (parsed && parsed.missingHeaders && parsed.missingHeaders.length && !(parsed.rows || []).length) {
+    var blocking = blockingHeaders(parsed);
+    if (blocking.length && !(parsed.rows || []).length) {
       var warn = el('div', { class: 'space-y-3' });
-      warn.appendChild(emptyNote('The ' + title + ' header row is missing: ' + parsed.missingHeaders.join(', ') + '. Adding headers will not overwrite existing data rows.'));
+      warn.appendChild(emptyNote('The ' + title + ' header row is missing: ' + blocking.join(', ') + '. Adding headers will not overwrite existing data rows.'));
       warn.appendChild(button('Add missing tabs and headers', SECONDARY, repairSheets));
       return warn;
     }
     return null;
   }
 
+  function blockingHeaders(parsed) {
+    if (!parsed || !parsed.missingHeaders || !parsed.missingHeaders.length) return [];
+    return parsed.missingHeaders.filter(function (name) {
+      return String(name).trim().toLowerCase() !== 'intake sent';
+    });
+  }
+
   function renderTickets() {
     var page = el('div', { class: 'space-y-5' });
-    var head = sectionHead('Jobs', 'Tickets', 'Customer, issue, status, priority, who has it, dates, and notes. Stored on the Tickets tab.');
+    var head = sectionHead('Jobs', 'Tickets', 'Customer, issue, status, priority, who has it, dates, and notes. Stored on the Tickets tab. Send intake form opens a Gmail draft. This page does not send the email.');
     head.appendChild(button('Add ticket', PRIMARY, function () { go('tickets', 'new'); }));
     page.appendChild(head);
     var blocked = sheetBlocked('Tickets');
@@ -787,6 +815,8 @@
     var tags = el('div', { class: 'flex flex-wrap gap-2' });
     tags.appendChild(badge(row.status));
     tags.appendChild(badge(row.priority));
+    var sent = intakeBadge(row);
+    if (sent) tags.appendChild(sent);
     if (row.sample) tags.appendChild(sampleChip());
     top.appendChild(tags);
     card.appendChild(top);
@@ -795,8 +825,162 @@
     ]);
     card.appendChild(meta);
     if (row.notes) card.appendChild(el('p', { class: 'mt-3 text-sm text-slate-300 whitespace-pre-wrap' }, [row.notes]));
-    card.appendChild(el('div', { class: 'mt-4' }, [button('Update', SECONDARY, function () { go('tickets', row.id); })]));
+    var actions = el('div', { class: 'mt-4 flex flex-wrap gap-3' });
+    actions.appendChild(button('Update', SECONDARY, function () { go('tickets', row.id); }));
+    actions.appendChild(intakeButton(row));
+    card.appendChild(actions);
     return card;
+  }
+
+  function intakeBadge(row) {
+    if (!row || !Lib.clean(row.intakeSent)) return null;
+    var when = formatDay(row.intakeSent) || Lib.clean(row.intakeSent);
+    return el('span', {
+      class: 'inline-flex items-center px-2.5 py-1 rounded-md border border-emerald-400/40 bg-emerald-500/15 font-mono text-[11px] tracking-wide text-emerald-200'
+    }, ['Intake sent ' + when]);
+  }
+
+  function intakeButton(row) {
+    var node = button('Send intake form', SECONDARY, function () { startIntake(row); });
+    node.title = 'Opens a Gmail draft for you to review and send. This page does not send email.';
+    return node;
+  }
+
+  function startIntake(row) {
+    if (!row) return;
+    var email = Lib.customerEmail(state.data.Customers, row.customer);
+    if (!Lib.looksLikeEmail(email)) {
+      state.intakeDialog = { ticketId: row.id, customer: row.customer };
+      paint(true);
+      return;
+    }
+    openIntakeCompose(row, email);
+  }
+
+  function intakeRecord(row) {
+    return stampUpdate({
+      id: row.id,
+      _row: row._row,
+      created: row.created,
+      customer: row.customer,
+      issue: row.issue,
+      status: row.status,
+      priority: row.priority,
+      assignedTo: row.assignedTo,
+      openedOn: row.openedOn,
+      dueOn: row.dueOn,
+      notes: row.notes,
+      intakeSent: Lib.isoDate(0),
+      _cells: row._cells
+    }, row);
+  }
+
+  function openTab(url) {
+    var link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  function openIntakeCompose(row, email) {
+    var url = Lib.intakeComposeUrl(cfg(), email);
+    if (!url) {
+      state.intakeDialog = null;
+      state.banner = {
+        tone: 'bad',
+        text: 'The intake form link in portal/config.js is missing or is not a public Google Form link. Nothing was opened, and this page did not send email.'
+      };
+      paint(true);
+      return;
+    }
+    openTab(url);
+    var record = intakeRecord(row);
+    var when = formatDay(record.intakeSent) || record.intakeSent;
+    state.intakeDialog = null;
+    if (state.mode === 'demo') {
+      demoUpsert('Tickets', record);
+      state.banner = {
+        tone: 'ok',
+        text: 'Gmail opened in a new tab so you can review and send the intake form. This page did not send the email. Intake sent ' + when + ' is shown on the ticket. Sample only — nothing was written to Google.',
+        href: url,
+        hrefLabel: 'Open the Gmail draft again'
+      };
+      paint(true);
+      return;
+    }
+    state.busy = 'Saving the intake date…';
+    state.banner = null;
+    paint(true);
+    ensureIntakeColumn().then(function () {
+      return writeIntakeCell(record);
+    }).then(function () {
+      return loadSheets();
+    }).then(function () {
+      state.busy = '';
+      state.banner = {
+        tone: 'ok',
+        text: 'Gmail opened in a new tab so you can review and send the intake form. This page did not send the email. Intake sent ' + when + ' was saved on the ticket.',
+        href: url,
+        hrefLabel: 'Open the Gmail draft again'
+      };
+      paint(true);
+    }).catch(function (err) {
+      state.busy = '';
+      state.banner = {
+        tone: 'bad',
+        text: 'Gmail opened, but the intake date was not saved. ' + friendly(err),
+        href: url,
+        hrefLabel: 'Open the Gmail draft again'
+      };
+      paint(true);
+    });
+  }
+
+  function renderIntakeDialog() {
+    if (!state.intakeDialog) return null;
+    var row = findRow('Tickets', state.intakeDialog.ticketId);
+    if (!row) return null;
+    var who = row.customer || 'this customer';
+    var overlay = el('div', {
+      class: 'fixed inset-0 z-50 bg-slate-950/75 flex items-end sm:items-center justify-center p-4',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'intake-dialog-title'
+    });
+    var panel = el('form', { class: 'cyber-panel rounded-3xl p-6 w-full max-w-lg space-y-4' });
+    panel.appendChild(el('h2', { id: 'intake-dialog-title', class: 'font-display text-xl font-bold text-white' }, ['Send intake form']));
+    panel.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
+      'No email is saved for ' + who + '. Type an address and Gmail will open a draft of the client intake and service agreement. You review it and press Send. This page does not send the email, and it does not save this address on the customer.'
+    ]));
+    var input = textInput('intake-dialog-email', '', { type: 'email', placeholder: 'name@example.com' });
+    panel.appendChild(field('Email', input));
+    panel.appendChild(formError());
+    var actions = el('div', { class: 'flex flex-col sm:flex-row gap-3' });
+    actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Open in Gmail']));
+    actions.appendChild(button('Cancel', SECONDARY, function () {
+      state.intakeDialog = null;
+      paint(true);
+    }));
+    panel.appendChild(actions);
+    panel.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var email = input.value.trim();
+      if (!Lib.looksLikeEmail(email)) {
+        showFormError(panel, 'Enter an email address.');
+        return;
+      }
+      openIntakeCompose(row, email);
+    });
+    overlay.addEventListener('click', function (event) {
+      if (event.target !== overlay) return;
+      state.intakeDialog = null;
+      paint(true);
+    });
+    overlay.appendChild(panel);
+    return overlay;
   }
 
   function formError() {
@@ -827,10 +1011,45 @@
     grid.appendChild(field('Due', textInput('dueOn', record.dueOn, { type: 'date' })));
     form.appendChild(grid);
     form.appendChild(field('Notes', areaInput('notes', record.notes, 'What you want the next person to know')));
+    if (!existing) {
+      var sendRow = el('label', { class: 'flex items-start gap-3 text-sm text-slate-200 cursor-pointer' });
+      var sendBox = el('input', { type: 'checkbox', id: 'sendIntake', name: 'sendIntake', class: 'mt-1 h-4 w-4 accent-cyan-500' });
+      sendRow.appendChild(sendBox);
+      var sendCopy = el('span');
+      sendCopy.appendChild(document.createTextNode('Send intake form to customer'));
+      sendCopy.appendChild(el('span', { class: 'block text-xs text-slate-400 mt-1 leading-relaxed' }, [
+        'When you save, Gmail opens a draft for you to review and send. This page does not send the email.'
+      ]));
+      sendRow.appendChild(sendCopy);
+      form.appendChild(sendRow);
+      var intakeEmail = textInput('intakeEmail', '', { type: 'email', placeholder: 'name@example.com' });
+      var intakeEmailWrap = field('Email for the Gmail draft', intakeEmail, 'Filled from the customer list when the name matches. Otherwise type one. This address is not saved on the customer.');
+      intakeEmailWrap.id = 'intake-email-field';
+      intakeEmailWrap.classList.add('hidden');
+      form.appendChild(intakeEmailWrap);
+      var intakeEmailTouched = false;
+      intakeEmail.addEventListener('input', function () { intakeEmailTouched = true; });
+      var syncIntakeEmail = function () {
+        intakeEmailWrap.classList.toggle('hidden', !sendBox.checked);
+        if (!sendBox.checked || intakeEmailTouched) return;
+        intakeEmail.value = Lib.customerEmail(state.data.Customers, form.elements.customer.value);
+      };
+      sendBox.addEventListener('change', syncIntakeEmail);
+      form.elements.customer.addEventListener('input', syncIntakeEmail);
+    }
+    if (existing) {
+      var alreadySent = intakeBadge(existing);
+      if (alreadySent) form.appendChild(alreadySent);
+    }
     form.appendChild(formError());
     var actions = el('div', { class: 'flex flex-col sm:flex-row gap-3' });
     var save = el('button', { type: 'submit', class: PRIMARY }, ['Save ticket']);
     actions.appendChild(save);
+    if (existing) {
+      actions.appendChild(button('Send intake form', SECONDARY, function () {
+        startIntake(existing);
+      }));
+    }
     actions.appendChild(button('Cancel', SECONDARY, function () { go('tickets'); }));
     form.appendChild(actions);
     form.addEventListener('submit', function (event) {
@@ -853,24 +1072,66 @@
       assignedTo: form.elements.assignedTo.value.trim(),
       openedOn: form.elements.openedOn.value,
       dueOn: form.elements.dueOn.value,
-      notes: form.elements.notes.value.trim()
+      notes: form.elements.notes.value.trim(),
+      intakeSent: (existing && existing.intakeSent) || ''
     };
     if (!record.customer || !record.issue) {
       showFormError(form, 'Enter a customer and an issue.');
       return;
     }
-    saveAndReturn('Tickets', record, existing, 'tickets', form, 'Ticket saved.');
+    var wantSend = !!(form.elements.sendIntake && form.elements.sendIntake.checked);
+    var composeUrl = '';
+    if (wantSend) {
+      var typed = form.elements.intakeEmail ? form.elements.intakeEmail.value.trim() : '';
+      var emailField = document.getElementById('intake-email-field');
+      if (typed && !Lib.looksLikeEmail(typed)) {
+        if (emailField) emailField.classList.remove('hidden');
+        showFormError(form, 'Enter a valid email address for the intake form, or clear it to use the customer list.');
+        return;
+      }
+      var email = typed || Lib.customerEmail(state.data.Customers, record.customer);
+      if (!Lib.looksLikeEmail(email)) {
+        if (emailField) emailField.classList.remove('hidden');
+        if (form.elements.intakeEmail) form.elements.intakeEmail.focus();
+        showFormError(form, 'No email is on file for that customer. Type an email to open the intake form in Gmail.');
+        return;
+      }
+      composeUrl = Lib.intakeComposeUrl(cfg(), email);
+      if (!composeUrl) {
+        showFormError(form, 'The intake form link in portal/config.js is missing or is not a public Google Form link. Nothing was opened.');
+        return;
+      }
+      openTab(composeUrl);
+      record.intakeSent = Lib.isoDate(0);
+    }
+    var when = record.intakeSent ? (formatDay(record.intakeSent) || record.intakeSent) : '';
+    var message = wantSend
+      ? 'Ticket saved. Gmail opened in a new tab so you can review and send the intake form. This page did not send the email. Intake sent ' + when + ' is on the ticket.'
+      : 'Ticket saved.';
+    saveAndReturn('Tickets', record, existing, 'tickets', form, message, {
+      prepare: wantSend ? ensureIntakeColumn : null,
+      composeUrl: composeUrl
+    });
   }
 
-  function saveAndReturn(title, record, existing, section, form, message) {
+  function saveAndReturn(title, record, existing, section, form, message, options) {
+    options = options || {};
     var submit = form.querySelector('[type="submit"]');
     submit.disabled = true;
-    persistRecord(title, record, existing).then(function () {
-      state.banner = { tone: 'ok', text: state.mode === 'demo' ? message + ' Sample only — nothing was sent to Google.' : message };
+    Promise.resolve(options.prepare ? options.prepare() : null).then(function () {
+      return persistRecord(title, record, existing);
+    }).then(function () {
+      var text = state.mode === 'demo' ? message + ' Sample only — nothing was sent to Google.' : message;
+      state.banner = { tone: 'ok', text: text };
+      if (safeHttp(options.composeUrl)) {
+        state.banner.href = options.composeUrl;
+        state.banner.hrefLabel = 'Open the Gmail draft again';
+      }
       go(section);
     }).catch(function (err) {
       submit.disabled = false;
-      showFormError(form, friendly(err));
+      var prefix = options.composeUrl ? 'Gmail opened, but the ticket was not saved. ' : '';
+      showFormError(form, prefix + friendly(err));
     });
   }
 
@@ -1566,6 +1827,7 @@
     state.busy = '';
     state.sheetsError = '';
     state.calendarError = '';
+    state.intakeDialog = null;
     if (location.hash && location.hash !== '#') location.hash = '';
     paint();
   }
@@ -1810,7 +2072,8 @@
         return null;
       }
       var query = present.map(function (spec) {
-        return 'ranges=' + encodeURIComponent(spec.title + '!A1:' + Lib.colLetter(spec.columns.length));
+        var width = Math.max(spec.columns.length, 26);
+        return 'ranges=' + encodeURIComponent(spec.title + '!A1:' + Lib.colLetter(width));
       }).join('&');
       return googleFetch('https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(id) + '/values:batchGet?' + query).then(function (batch) {
         var next = Lib.emptyData();
@@ -1834,6 +2097,58 @@
     var current = state.headers[title];
     if (current && current.some(function (cell) { return String(cell || '').trim(); })) return current;
     return columns.map(function (col) { return col.header; });
+  }
+
+  function sheetValuesUrl(range) {
+    return 'https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(spreadsheetId()) + '/values/' + encodeURIComponent(range) + '?valueInputOption=RAW';
+  }
+
+  function ensureIntakeColumn() {
+    if (state.mode === 'demo') return Promise.resolve();
+    var headers = (state.headers.Tickets || []).slice();
+    var hasIntake = headers.some(function (cell) {
+      return String(cell || '').trim().toLowerCase() === 'intake sent';
+    });
+    if (hasIntake) return Promise.resolve();
+    var hasAny = headers.some(function (cell) { return String(cell || '').trim(); });
+    if (!hasAny) {
+      var full = Lib.columnsOf('Tickets').map(function (col) { return col.header; });
+      var fullRange = 'Tickets!A1:' + Lib.colLetter(full.length) + '1';
+      return googleFetch(sheetValuesUrl(fullRange), {
+        method: 'PUT',
+        body: { range: fullRange, majorDimension: 'ROWS', values: [full] }
+      }).then(function () {
+        state.headers.Tickets = full;
+      });
+    }
+    var plan = Lib.headersToAppend(headers, [{ header: 'Intake Sent' }]);
+    var start = Lib.colLetter(plan.startColumn);
+    var end = Lib.colLetter(plan.startColumn + plan.headers.length - 1);
+    var range = 'Tickets!' + start + '1:' + end + '1';
+    return googleFetch(sheetValuesUrl(range), {
+      method: 'PUT',
+      body: { range: range, majorDimension: 'ROWS', values: [plan.headers] }
+    }).then(function () {
+      var next = headers.map(function (cell) { return String(cell == null ? '' : cell); });
+      next = next.slice(0, plan.startColumn - 1);
+      while (next.length < plan.startColumn - 1) next.push('');
+      plan.headers.forEach(function (name) { next.push(name); });
+      state.headers.Tickets = next;
+    });
+  }
+
+  function writeIntakeCell(record) {
+    var headers = headerRowFor('Tickets');
+    var index = -1;
+    headers.forEach(function (header, i) {
+      if (String(header || '').trim().toLowerCase() === 'intake sent') index = i;
+    });
+    if (index === -1 || !record._row) return upsert('Tickets', record);
+    var range = 'Tickets!' + Lib.colLetter(index + 1) + record._row;
+    return googleFetch(sheetValuesUrl(range), {
+      method: 'PUT',
+      body: { range: range, majorDimension: 'ROWS', values: [[record.intakeSent]] }
+    });
   }
 
   function upsert(title, record) {
@@ -1991,6 +2306,7 @@
       'Share this file only with employees. Leave general access Restricted. Do not choose Anyone with the link.',
       'Do not rename these tabs: Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems.',
       'Do not delete or rename the header row on those tabs. The portal reads the header names.',
+      'The Tickets tab can gain an Intake Sent column at the end of the header row. Do not rename it. Other header cells stay as they are.',
       'Quote and invoice lines are stored on QuoteItems and InvoiceItems.',
       'The public website does not read this file. Inquiries show up after the Apps Script is connected, or when you type one in the portal.',
       'Paste the spreadsheet ID into portal/config.js. It is the long code between /d/ and /edit in the address bar.'
@@ -2101,20 +2417,33 @@
       Lib.SHEETS.forEach(function (spec) {
         writes = writes.then(function () {
           var parsed = state.parsed[spec.title];
+          var header = (parsed && parsed.headerRow) || [];
           var hasData = parsed && parsed.rows && parsed.rows.length;
-          var badHeader = !parsed || (parsed.missingHeaders && parsed.missingHeaders.length);
-          if (hasData || !badHeader) return null;
-          var range = spec.title + '!A1:' + Lib.colLetter(spec.columns.length) + '1';
-          return googleFetch('https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(spreadsheetId()) + '/values/' + encodeURIComponent(range) + '?valueInputOption=RAW', {
+          var hasAnyHeader = header.some(function (cell) { return String(cell || '').trim(); });
+          var columns = Lib.columnsOf(spec.title);
+          if (!hasAnyHeader) {
+            if (hasData) return null;
+            var range = spec.title + '!A1:' + Lib.colLetter(columns.length) + '1';
+            return googleFetch(sheetValuesUrl(range), {
+              method: 'PUT',
+              body: { range: range, majorDimension: 'ROWS', values: [columns.map(function (col) { return col.header; })] }
+            });
+          }
+          var plan = Lib.headersToAppend(header, columns);
+          if (!plan.headers.length) return null;
+          var start = Lib.colLetter(plan.startColumn);
+          var end = Lib.colLetter(plan.startColumn + plan.headers.length - 1);
+          var appendRange = spec.title + '!' + start + '1:' + end + '1';
+          return googleFetch(sheetValuesUrl(appendRange), {
             method: 'PUT',
-            body: { range: range, majorDimension: 'ROWS', values: [spec.columns.map(function (col) { return col[1]; })] }
+            body: { range: appendRange, majorDimension: 'ROWS', values: [plan.headers] }
           });
         });
       });
       return writes.then(loadSheets);
     }).then(function () {
       state.busy = '';
-      state.banner = { tone: 'ok', text: 'Missing tabs and empty header rows were added. Existing data rows were left alone.' };
+      state.banner = { tone: 'ok', text: 'Missing tabs were added. Missing header names were added without changing existing header cells or data rows.' };
       paint(true);
     }).catch(function (err) {
       state.busy = '';
@@ -2135,6 +2464,11 @@
     });
     document.addEventListener('keydown', function (event) {
       if (event.key !== 'Escape' || state.mode === 'gate') return;
+      if (state.intakeDialog) {
+        state.intakeDialog = null;
+        paint(true);
+        return;
+      }
       if (state.viewer) {
         state.viewer = null;
         paint(true);

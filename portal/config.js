@@ -36,5 +36,11 @@ window.LCS_PORTAL = {
      When set, it must be a Google Apps Script web app URL ending in /exec.
      See docs/portal-setup.md and apps-script/inquiries.gs.
      The address will be public once it is saved in this file. */
-  inquiriesWebhookUrl: "https://script.google.com/macros/s/AKfycbxXent-Sa4smfBZmx8SguDFRKu8CWtB8c7AaqPYQUik2XrL3NEhjSUuIy_380BVN6evFA/exec"
+  inquiriesWebhookUrl: "https://script.google.com/macros/s/AKfycbxXent-Sa4smfBZmx8SguDFRKu8CWtB8c7AaqPYQUik2XrL3NEhjSUuIy_380BVN6evFA/exec",
+
+  /* Public Google Form for the client intake and service agreement.
+     Not a secret. The portal only places this link in a Gmail draft.
+     It does not submit the form and it does not add entry. prefill fields.
+     Leave blank, or leave a YOUR_... placeholder, to turn the button off. */
+  intakeFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdlt6J9Ew889ZO0dq4z6yzTrxb1FSuutsxvAiVGYX-5679tSQ/viewform"
 };
