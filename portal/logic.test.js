@@ -255,4 +255,287 @@ test('intake form opens a gmail draft and can add a column', function () {
   assert.ok(sample.Tickets.some(function (row) { return !row.intakeSent; }));
 });
 
+test('proposals sheet is appended and existing tabs stay put', function () {
+  const titles = lib.SHEETS.map(function (sheet) { return sheet.title; });
+  assert.deepStrictEqual(titles.slice(0, 7), [
+    'Tickets', 'Customers', 'Inquiries', 'Quotes', 'QuoteItems', 'Invoices', 'InvoiceItems'
+  ]);
+  assert.strictEqual(titles[titles.length - 1], 'Proposals');
+  const headers = lib.columnsOf('Proposals').map(function (col) { return col.header; });
+  assert.deepStrictEqual(headers, [
+    'ID', 'Prospect name', 'Business', 'Email', 'Phone', 'Title', 'Status',
+    'Created', 'Sent', 'Expires', 'Total', 'Doc URL', 'Notes',
+    'Sections', 'Line items', 'Customer ID', 'Job ID'
+  ]);
+  assert.deepStrictEqual(lib.CHOICES.proposalStatus, ['Draft', 'Sent', 'Accepted', 'Declined']);
+  const tickets = lib.columnsOf('Tickets').map(function (col) { return col.header; });
+  assert.strictEqual(tickets[tickets.length - 1], 'Intake Sent');
+  assert.ok(tickets.indexOf('Sections') === -1);
+});
+
+test('proposal json round trip does not invent a total', function () {
+  const written = lib.writeProposal({
+    id: 'p1',
+    prospectName: 'Pat Preview',
+    business: 'Sample Bakery',
+    email: 'pat.preview@example.test',
+    phone: '(410) 555-0142',
+    title: 'SAMPLE: website refresh',
+    status: 'Draft',
+    expires: '2026-12-01',
+    overview: 'A fake overview',
+    scope: 'One page\nA form',
+    timeline: 'Two weeks',
+    terms: 'Pay on completion',
+    notes: 'Internal only',
+    lines: [
+      { description: 'Sample page', qty: '2', unitPrice: '25' },
+      { description: 'Blank price', qty: '1', unitPrice: '' }
+    ]
+  });
+  assert.strictEqual(written.total, '');
+  const again = lib.readProposal(written);
+  assert.strictEqual(again.overview, 'A fake overview');
+  assert.strictEqual(again.scope, 'One page\nA form');
+  assert.strictEqual(again.lines.length, 2);
+  assert.strictEqual(again.sectionsOk, true);
+  assert.strictEqual(again.linesOk, true);
+
+  const priced = lib.writeProposal({
+    prospectName: 'Pat Preview',
+    title: 'Priced',
+    lines: [{ description: 'Visit', qty: '1', unitPrice: '10' }]
+  });
+  assert.strictEqual(priced.total, '10');
+  assert.strictEqual(lib.proposalQuoteGrid(again.lines).rows[0][0], 'Description');
+  assert.strictEqual(lib.proposalQuoteGrid([{ description: 'Visit', qty: '1', unitPrice: '10' }]).totals.total, 10);
+
+  const broken = lib.readProposal({ sections: '{', lineItems: '{"no":"array"}', prospectName: 'Pat' });
+  assert.strictEqual(broken.sectionsOk, false);
+  assert.strictEqual(broken.linesOk, false);
+  assert.strictEqual(broken.overview, '');
+  const kept = lib.writeProposal(Object.assign({}, broken, { keepBrokenSections: true, keepBrokenLines: true }));
+  assert.strictEqual(kept.sections, '{');
+  assert.strictEqual(kept.lineItems, '{"no":"array"}');
+});
+
+test('accepting a proposal makes a customer and a job once', function () {
+  const proposal = lib.writeProposal({
+    id: 'sample-proposal-1',
+    prospectName: 'Pat Preview',
+    business: 'Sample Bakery',
+    email: 'ada.example@example.test',
+    title: 'SAMPLE: website refresh',
+    overview: 'SAMPLE overview',
+    lines: [{ description: 'Visit', qty: '1', unitPrice: '10' }]
+  });
+  const customers = [{ id: 'c1', name: 'Ada Example', email: 'ada.example@example.test', company: 'Sample Bakery' }];
+  const first = lib.planProposalAcceptance(proposal, customers, []);
+  assert.strictEqual(first.error, '');
+  assert.strictEqual(first.creatingCustomer, false);
+  assert.strictEqual(first.customer.id, 'c1');
+  assert.strictEqual(first.creatingTicket, true);
+  assert.strictEqual(first.ticket.customer, 'Ada Example');
+  assert.strictEqual(first.ticket.status, 'Open');
+  assert.strictEqual(first.ticket.priority, 'Normal');
+  assert.ok(first.ticket.notes.indexOf('sample-proposal-1') !== -1);
+  assert.strictEqual(first.proposal.status, 'Accepted');
+  assert.strictEqual(first.proposal.customerId, 'c1');
+
+  const savedTicket = Object.assign({ id: 't9' }, first.ticket);
+  const savedProposal = Object.assign({}, proposal, { customerId: 'c1', jobId: 't9', status: 'Accepted' });
+  const second = lib.planProposalAcceptance(savedProposal, customers, [savedTicket]);
+  assert.strictEqual(second.creatingCustomer, false);
+  assert.strictEqual(second.creatingTicket, false);
+  assert.strictEqual(second.ticket.id, 't9');
+
+  const fresh = lib.planProposalAcceptance(lib.writeProposal({
+    id: 'p-new',
+    prospectName: 'New Person',
+    email: 'new.person@example.test',
+    business: 'Sample Shop',
+    title: 'SAMPLE: new work',
+    phone: '(410) 555-0199'
+  }), [], []);
+  assert.strictEqual(fresh.creatingCustomer, true);
+  assert.strictEqual(fresh.customer.name, 'New Person');
+  assert.strictEqual(fresh.customer.email, 'new.person@example.test');
+  assert.strictEqual(fresh.customer.company, 'Sample Shop');
+  assert.strictEqual(fresh.ticket.issue, 'SAMPLE: new work');
+  assert.strictEqual(lib.planProposalAcceptance({ prospectName: '' }, [], []).error.length > 0, true);
+});
+
+test('proposal doc requests carry the shield, brand line, and quote table', function () {
+  const record = lib.writeProposal({
+    prospectName: 'Pat Preview',
+    business: 'Sample Bakery',
+    email: 'pat.preview@example.test',
+    phone: '(410) 555-0142',
+    title: 'SAMPLE: website refresh',
+    created: '2026-11-15',
+    expires: '2026-11-29',
+    overview: 'SAMPLE overview for a fake website refresh.',
+    scope: 'SAMPLE: one new page',
+    timeline: 'SAMPLE: two weeks after approval.',
+    terms: 'SAMPLE terms. Not a real agreement.',
+    lines: [
+      { description: 'Sample page (not a real price)', qty: '2', unitPrice: '25' },
+      { description: 'Sample visit (not a real price)', qty: '1', unitPrice: '10' }
+    ]
+  });
+  const view = lib.proposalView(record);
+  assert.strictEqual(view.grid.totals.total, 60);
+  const opening = lib.proposalOpeningRequests(view);
+  const image = opening.requests.filter(function (req) { return req.insertInlineImage; })[0];
+  assert.ok(image);
+  assert.strictEqual(image.insertInlineImage.uri, lib.PROPOSAL_BRAND.logoUrl);
+  assert.strictEqual(
+    image.insertInlineImage.uri,
+    'https://legacycomputingservices.com/assets/legacy-computing-shield.png'
+  );
+  const text = opening.requests.filter(function (req) { return req.insertText; }).map(function (req) {
+    return req.insertText.text;
+  }).join('');
+  assert.ok(text.indexOf('Legacy Computing Services LLC') !== -1);
+  assert.ok(text.indexOf("Protecting what matters. Building what's next.") !== -1);
+  assert.ok(text.indexOf('Bel Air, MD | scott@legacycomputingservices.com | legacycomputingservices.com') !== -1);
+  assert.ok(text.indexOf('Prepared for') !== -1);
+  assert.ok(text.indexOf('Pat Preview') !== -1);
+  assert.ok(text.indexOf('OVERVIEW') !== -1);
+  assert.ok(text.indexOf('SAMPLE overview for a fake website refresh.') !== -1);
+  assert.ok(text.indexOf('SCOPE & DELIVERABLES') !== -1);
+  assert.ok(text.indexOf('TIMELINE') !== -1);
+  assert.ok(text.indexOf('QUOTE') !== -1);
+  assert.ok(text.indexOf('Valid until:') !== -1);
+  const table = opening.requests.filter(function (req) { return req.insertTable; })[0];
+  assert.strictEqual(table.insertTable.rows, view.grid.rows.length);
+  assert.strictEqual(table.insertTable.columns, 4);
+  assert.strictEqual(table.insertTable.location.index, opening.tableIndex);
+  const closing = lib.proposalClosingText(view);
+  assert.ok(closing.indexOf('TERMS') !== -1);
+  assert.ok(closing.indexOf('SAMPLE terms. Not a real agreement.') !== -1);
+  assert.ok(closing.indexOf('ACCEPTANCE') !== -1);
+  assert.ok(closing.indexOf('Client signature:') !== -1);
+  assert.ok(closing.indexOf('Pat Preview') !== -1);
+  assert.strictEqual(lib.proposalDocName(record), 'Proposal — SAMPLE: website refresh — Pat Preview');
+
+  const doc = {
+    body: {
+      content: [
+        { startIndex: 1, endIndex: 8, paragraph: { elements: [{ startIndex: 1, endIndex: 8, textRun: { content: 'QUOTE\n' } }] } },
+        {
+          startIndex: 8,
+          endIndex: 30,
+          table: {
+            rows: 2,
+            columns: 2,
+            tableRows: [
+              {
+                tableCells: [
+                  { startIndex: 10, content: [{ startIndex: 11, endIndex: 12, paragraph: { elements: [{ textRun: { content: '\n' } }] } }] },
+                  { startIndex: 14, content: [{ startIndex: 15, endIndex: 16, paragraph: { elements: [{ textRun: { content: '\n' } }] } }] }
+                ]
+              },
+              {
+                tableCells: [
+                  { startIndex: 18, content: [{ startIndex: 19, endIndex: 20, paragraph: { elements: [{ textRun: { content: '\n' } }] } }] },
+                  { startIndex: 22, content: [{ startIndex: 23, endIndex: 24, paragraph: { elements: [{ textRun: { content: '\n' } }] } }] }
+                ]
+              }
+            ]
+          }
+        },
+        { startIndex: 30, endIndex: 31, paragraph: { elements: [{ startIndex: 30, endIndex: 31, textRun: { content: '\n' } }] } }
+      ]
+    }
+  };
+  const fills = lib.proposalFillRequests(doc, [['Description', 'Qty'], ['Total', '$10.00']], closing);
+  assert.ok(fills.length >= 5);
+  const indexes = fills.map(function (req) { return req.insertText.location.index; });
+  const sorted = indexes.slice().sort(function (a, b) { return b - a; });
+  assert.deepStrictEqual(indexes, sorted);
+  assert.strictEqual(fills[0].insertText.location.index, 30);
+  assert.ok(fills[0].insertText.text.indexOf('TERMS') !== -1);
+  assert.strictEqual(fills[fills.length - 1].insertText.text, 'Description');
+
+  const polishDoc = {
+    body: {
+      content: [
+        { startIndex: 1, endIndex: 8, paragraph: { elements: [{ startIndex: 1, endIndex: 7, textRun: { content: 'TERMS\n' } }] } },
+        {
+          startIndex: 8,
+          endIndex: 20,
+          table: {
+            tableRows: [
+              {
+                tableCells: [
+                  { content: [{ startIndex: 10, endIndex: 22, paragraph: { elements: [{ textRun: { content: 'Description\n' } }] } }] },
+                  { content: [{ startIndex: 24, endIndex: 28, paragraph: { elements: [{ textRun: { content: 'Qty\n' } }] } }] }
+                ]
+              },
+              {
+                tableCells: [
+                  { content: [{ startIndex: 30, endIndex: 36, paragraph: { elements: [{ textRun: { content: 'Total\n' } }] } }] },
+                  { content: [{ startIndex: 38, endIndex: 44, paragraph: { elements: [{ textRun: { content: '$10.00\n' } }] } }] }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  };
+  const polish = lib.proposalPolishRequests(polishDoc);
+  const headerBg = polish.filter(function (req) {
+    return req.updateTableCellStyle && req.updateTableCellStyle.tableCellStyle.backgroundColor;
+  })[0];
+  assert.ok(headerBg);
+  assert.deepStrictEqual(
+    headerBg.updateTableCellStyle.tableCellStyle.backgroundColor.color.rgbColor,
+    lib.PROPOSAL_BRAND.navy
+  );
+  const terms = polish.filter(function (req) {
+    return req.updateParagraphStyle && req.updateParagraphStyle.paragraphStyle.namedStyleType === 'HEADING_2';
+  });
+  assert.ok(terms.length >= 1);
+});
+
+test('proposal send opens a gmail draft and sample rows stay fake', function () {
+  const record = lib.writeProposal({
+    prospectName: 'Pat Preview',
+    email: 'pat.preview@example.test',
+    title: 'SAMPLE: website refresh',
+    expires: '2026-11-29',
+    docUrl: 'https://docs.google.com/document/d/sample-proposal/edit'
+  });
+  const url = lib.proposalComposeUrl(record);
+  const parsed = new URL(url);
+  assert.strictEqual(parsed.origin + parsed.pathname, 'https://mail.google.com/mail/');
+  assert.strictEqual(parsed.searchParams.get('view'), 'cm');
+  assert.strictEqual(parsed.searchParams.get('fs'), '1');
+  assert.strictEqual(parsed.searchParams.get('to'), 'pat.preview@example.test');
+  assert.strictEqual(parsed.searchParams.get('su'), 'Proposal: SAMPLE: website refresh');
+  const body = parsed.searchParams.get('body');
+  assert.ok(body.indexOf('https://docs.google.com/document/d/sample-proposal/edit') !== -1);
+  assert.ok(body.indexOf('Hello Pat,') !== -1);
+  assert.ok(body.indexOf('Nov 29, 2026') !== -1);
+  assert.ok(body.indexOf('scott@legacycomputingservices.com') !== -1);
+  assert.strictEqual(lib.proposalComposeUrl(Object.assign({}, record, { email: 'nope' })), '');
+  assert.strictEqual(lib.proposalComposeUrl(Object.assign({}, record, { docUrl: '' })), '');
+  assert.strictEqual(lib.googleDocId(record.docUrl), 'sample-proposal');
+  assert.strictEqual(lib.googleDocId('https://example.com/not-a-doc'), '');
+
+  const sample = lib.sampleBundle(new Date('2026-11-14T12:00:00'));
+  assert.strictEqual(sample.Proposals.length, 2);
+  assert.ok(sample.Proposals.every(function (row) { return /example\.test$/.test(row.email); }));
+  assert.ok(sample.Proposals.every(function (row) { return row.sample && /sample/i.test(row.notes); }));
+  const blobs = JSON.stringify(sample);
+  assert.ok(!/legacycomputingservices\.com/.test(blobs));
+  const parsedSample = lib.readProposal(sample.Proposals[0]);
+  assert.strictEqual(parsedSample.lines.length, 2);
+  assert.strictEqual(parsedSample.status, 'Draft');
+  assert.strictEqual(sample.Proposals[1].status, 'Sent');
+  assert.ok(sample.Proposals[1].docUrl.indexOf('docs.google.com/document') !== -1);
+});
+
 console.log('all logic tests passed');
