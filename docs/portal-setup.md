@@ -15,8 +15,9 @@ Put only these values in `portal/config.js`:
 - The spreadsheet ID
 - The Drive folder ID
 - Optionally, the Apps Script web address for website inquiries
+- The public client intake form link (`intakeFormUrl`)
 
-Do **not** put a client secret, a password, customer names, or prices in that file.
+Do **not** put a client secret, a password, customer names, or prices in that file. The intake form link is a public Google Form address, not a password.
 
 Do **not** turn the spreadsheet or the Drive folder to “Anyone with the link.”
 
@@ -100,7 +101,7 @@ You can also skip adding them by hand. The first time you sign in, Google shows 
 3. Click the pencil to edit.
 4. Replace `YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` with the Client ID you copied. Keep the quotes.
 5. Leave `allowedDomain` as `legacycomputingservices.com` unless the company domain changes. That one line is the only place the allowed domain is set.
-6. Leave `spreadsheetId`, `driveFolderId`, `calendarId`, and `inquiriesWebhookUrl` empty for now. Blank `calendarId` embeds each signed-in employee’s own primary calendar.
+6. Leave `spreadsheetId`, `driveFolderId`, `calendarId`, and `inquiriesWebhookUrl` empty for now. Blank `calendarId` embeds each signed-in employee’s own primary calendar. `intakeFormUrl` is the public client intake form. It can stay filled in. The portal does not submit that form.
 7. Commit the change to the `main` branch.
 
 Wait a minute or two for GitHub Pages to update. Then open the portal at `https://legacycomputingservices.com/portal/`.
@@ -125,7 +126,7 @@ The spreadsheet has these tabs. Do not rename them. Do not delete the first row.
 | Tab | Header row |
 | --- | --- |
 | Start here | Instructions only. The portal does not read this tab. |
-| Tickets | ID, Created, Updated, Customer, Issue, Status, Priority, Assigned to, Opened, Due, Notes |
+| Tickets | ID, Created, Updated, Customer, Issue, Status, Priority, Assigned to, Opened, Due, Notes, Intake Sent |
 | Customers | ID, Created, Updated, Name, Email, Phone, Company, Town, Notes |
 | Inquiries | ID, Received, Name, Email, Phone, Service, Budget, Details, Status, Source, Notes |
 | Quotes | ID, Number, Created, Updated, Customer, Status, Issued, Valid until, Tax, Notes |
@@ -143,7 +144,21 @@ Statuses the portal offers:
 - Quotes: Draft, Sent, Accepted, Declined
 - Invoices: Draft, Sent, Paid, Void
 
-If a tab is missing later, sign in and click **Add missing tabs and headers**. That fills empty tabs. It does not overwrite rows that already have data.
+If a tab is missing later, sign in and click **Add missing tabs and headers**. That fills empty tabs. It does not overwrite rows that already have data. If a header name is missing, such as **Intake Sent**, that button adds it at the end of the header row. It does not rename or overwrite the header cells that are already there.
+
+### Client intake form
+
+`intakeFormUrl` in `portal/config.js` is the public Google Form for the client intake and service agreement. It is not a secret. The portal does not fill in the form, and it does not add `entry.` prefill fields. The plain link is enough.
+
+On each ticket, **Send intake form** opens Gmail in a new tab. The draft goes to the email on the Customers tab when that customer’s name matches the ticket. If there is no email, type one. The typed address is only for the Gmail window. It is not saved on the customer.
+
+You review the draft and press Send in Gmail. The portal does not send email.
+
+The subject is `Legacy Computing Services – Client Intake & Service Agreement`. The note asks the customer to complete the intake and service agreement before work begins, includes the form link, and is signed Legacy Computing Services, scott@legacycomputingservices.com.
+
+Opening the draft writes today’s date in **Intake Sent** on that ticket and shows an “Intake sent” badge. If that column is not on the header row yet, the portal adds **Intake Sent** at the end of the header. It does not rename or overwrite the other headers, and it does not rewrite the other cells on the ticket.
+
+On a new ticket, check **Send intake form to customer** to open the same Gmail draft when you save.
 
 ### If the button fails
 
@@ -191,6 +206,7 @@ They then get:
 - Shortcuts to Gmail, Drive, Calendar, Meet, and the Admin console, each opening in a new tab (Admin only works for Workspace admins). Gmail cannot be embedded.
 - The company calendar embedded on the dashboard, plus a short upcoming list when Calendar access was granted
 - Tickets, customers, inquiries, quotes, and invoices from the spreadsheet
+- **Send intake form** on each ticket. It opens a Gmail draft. It does not send the email from this page.
 - A Spreadsheet tab that embeds that same Google Sheet for editing
 - A print view for a quote or invoice. The browser’s print dialog can save a PDF. The portal does not upload that PDF.
 - The docs list, once the folder ID is set, with an in-page preview

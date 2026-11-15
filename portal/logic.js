@@ -21,7 +21,8 @@
         ['assignedTo', 'Assigned to'],
         ['openedOn', 'Opened'],
         ['dueOn', 'Due'],
-        ['notes', 'Notes']
+        ['notes', 'Notes'],
+        ['intakeSent', 'Intake Sent']
       ]
     },
     {
@@ -295,6 +296,9 @@
       });
       if (blank) continue;
       var record = { _row: r + 1 };
+      record._cells = raw.map(function (cell) {
+        return cell == null ? '' : String(cell);
+      });
       columns.forEach(function (col) {
         var at = index[col.header.toLowerCase()];
         record[col.key] = at == null || raw[at] == null ? '' : String(raw[at]);
@@ -305,18 +309,93 @@
   }
 
   function recordToCells(record, headerRow, columns) {
-    return headerRow.map(function (header) {
+    var raw = record && record._cells;
+    return headerRow.map(function (header, i) {
+      var name = String(header == null ? '' : header).trim();
       var match = null;
-      for (var i = 0; i < columns.length; i++) {
-        if (columns[i].header.toLowerCase() === String(header).trim().toLowerCase()) {
-          match = columns[i];
-          break;
+      if (name) {
+        for (var c = 0; c < columns.length; c++) {
+          if (columns[c].header.toLowerCase() === name.toLowerCase()) {
+            match = columns[c];
+            break;
+          }
         }
       }
-      if (!match) return '';
+      if (!match) {
+        if (raw && i < raw.length && raw[i] != null) return String(raw[i]);
+        return '';
+      }
       var value = record[match.key];
       return value == null ? '' : String(value);
     });
+  }
+
+  function headersToAppend(headerRow, columns) {
+    var headers = (headerRow || []).map(function (cell) {
+      return String(cell == null ? '' : cell).trim();
+    });
+    var have = {};
+    headers.forEach(function (name) {
+      if (name) have[name.toLowerCase()] = true;
+    });
+    var missing = (columns || []).filter(function (col) {
+      return col && col.header && !have[String(col.header).toLowerCase()];
+    }).map(function (col) { return col.header; });
+    var last = 0;
+    headers.forEach(function (name, i) {
+      if (name) last = i + 1;
+    });
+    return { startColumn: last + 1, headers: missing };
+  }
+
+  function looksLikeEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean(value));
+  }
+
+  function intakeFormUrl(config) {
+    var url = clean(config && config.intakeFormUrl);
+    if (!url || isPlaceholder(url)) return '';
+    var match = url.match(/^(https:\/\/docs\.google\.com\/forms\/d\/e\/[A-Za-z0-9_-]+\/viewform)\/?(?:\?[^#]*)?(?:#.*)?$/i);
+    if (!match) return '';
+    return match[1];
+  }
+
+  function customerEmail(customers, customerName) {
+    var name = clean(customerName).toLowerCase();
+    if (!name) return '';
+    var found = '';
+    (customers || []).forEach(function (row) {
+      if (found || !row) return;
+      if (clean(row.name).toLowerCase() !== name) return;
+      var email = clean(row.email);
+      if (looksLikeEmail(email)) found = email;
+    });
+    return found;
+  }
+
+  function intakeMessage(formUrl) {
+    return [
+      'Hello,',
+      '',
+      'Before we begin work, please complete the client intake and service agreement. It takes a few minutes, and it lets us start with the right details:',
+      '',
+      formUrl,
+      '',
+      'Thank you,',
+      'Legacy Computing Services',
+      'scott@legacycomputingservices.com'
+    ].join('\n');
+  }
+
+  function intakeComposeUrl(config, to) {
+    var formUrl = intakeFormUrl(config);
+    var email = clean(to);
+    if (!formUrl || !looksLikeEmail(email)) return '';
+    var subject = 'Legacy Computing Services \u2013 Client Intake & Service Agreement';
+    return 'https://mail.google.com/mail/?view=cm&fs=1'
+      + '&to=' + encodeURIComponent(email)
+      + '&su=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(intakeMessage(formUrl));
   }
 
   function nextDocumentNumber(numbers, prefix) {
@@ -400,6 +479,7 @@
           openedOn: today,
           dueOn: soon,
           notes: 'Fake ticket for the preview. Not a real job.',
+          intakeSent: '',
           sample: true
         },
         {
@@ -414,6 +494,7 @@
           openedOn: today,
           dueOn: '',
           notes: 'Fake ticket for the preview.',
+          intakeSent: today,
           sample: true
         },
         {
@@ -428,6 +509,7 @@
           openedOn: today,
           dueOn: '',
           notes: 'Fake closed ticket.',
+          intakeSent: '',
           sample: true
         }
       ],
@@ -594,6 +676,11 @@
     documentTotals: documentTotals,
     rowsFromValues: rowsFromValues,
     recordToCells: recordToCells,
+    headersToAppend: headersToAppend,
+    looksLikeEmail: looksLikeEmail,
+    intakeFormUrl: intakeFormUrl,
+    customerEmail: customerEmail,
+    intakeComposeUrl: intakeComposeUrl,
     nextDocumentNumber: nextDocumentNumber,
     colLetter: colLetter,
     isoDate: isoDate,
