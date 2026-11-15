@@ -281,8 +281,10 @@
       Hero shield only. The arrow was measured in the emblem viewBox (0 0 160 160):
       teal shaft M38 114 L123 39 (stroke 8.5, round cap) starts at about (34.8, 116.8),
       and the head tip is (139, 26). Travel percents are those points divided by 160.
-      The surge is 3.5s, half of the 7s spin, so it repeats twice per revolution.
-      A -2.66s delay (76% of 3.5s) puts the rim hold on the face-on frames.
+      The surge timeline is 7s, the same as the shield spin, so there is one
+      climb, wrap, and retract per revolution. That motion still occupies the
+      first 3.5s; the rest of the timeline is idle. A -2.66s delay puts the
+      rim hold on the face-on frame.
       Spin, travel, burst, and rim glow use transform and opacity only.
     */
     .hero-shield-perspective {
@@ -303,7 +305,7 @@
       inset: 0;
       z-index: 1;
       pointer-events: none;
-      --surge-duration: 3.5s;
+      --surge-duration: 7s;
       --surge-delay: -2.66s;
     }
 
@@ -450,30 +452,30 @@
 
     @keyframes hero-surge-travel {
       0% { transform: translate(21.76%, 73.01%); opacity: 0; }
-      6% { transform: translate(25.8%, 69.5%); opacity: 1; }
-      16% { transform: translate(34.2%, 62.1%); opacity: 1; }
-      28% { transform: translate(46.5%, 51.4%); opacity: 1; }
-      38% { transform: translate(61.4%, 38.5%); opacity: 1; }
-      46% { transform: translate(76.8%, 25.1%); opacity: 1; }
-      52% { transform: translate(86.88%, 16.25%); opacity: 1; }
-      60% { transform: translate(86.88%, 16.25%); opacity: 0; }
+      3% { transform: translate(25.8%, 69.5%); opacity: 1; }
+      8% { transform: translate(34.2%, 62.1%); opacity: 1; }
+      14% { transform: translate(46.5%, 51.4%); opacity: 1; }
+      19% { transform: translate(61.4%, 38.5%); opacity: 1; }
+      23% { transform: translate(76.8%, 25.1%); opacity: 1; }
+      26% { transform: translate(86.88%, 16.25%); opacity: 1; }
+      30% { transform: translate(86.88%, 16.25%); opacity: 0; }
       100% { transform: translate(21.76%, 73.01%); opacity: 0; }
     }
 
     @keyframes hero-surge-flash {
-      0%, 46% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-      53% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.88); }
-      62% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+      0%, 23% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      26.5% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.88); }
+      31% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
     }
 
-    /* Spread from the arrow tip around the rim, hold, then pull back into the tip. */
+    /* Spread from the arrow tip around the rim, hold, then pull back into the tip. The rest of the 7s timeline is idle. */
     @keyframes hero-aura-spread {
-      0%, 50% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
-      58% { opacity: 0.78; transform: translate(-50%, -50%) scale(0.38); }
-      70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      82% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      94% { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
+      0%, 25% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+      29% { opacity: 0.78; transform: translate(-50%, -50%) scale(0.38); }
+      35% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      41% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      47% { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
     }
 
