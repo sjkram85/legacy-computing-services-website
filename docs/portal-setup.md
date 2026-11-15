@@ -29,7 +29,7 @@ That check runs in the browser. A person who rewrites the page on their own comp
 
 The sign-in token stays in the browser tab for about an hour. Closing the tab drops it. The website does not save the token.
 
-The token can read and edit Google Sheets that this signed-in person can already open, and it can list Drive file names. Share the portal spreadsheet and the docs folder with employees. Do not rely on the page to hide some other spreadsheet that the same person can already open in Drive.
+The token can read and edit Google Sheets that this signed-in person can already open. It can also create and edit Google Docs, file a proposal Doc in the company docs folder, and, when you click the button on that proposal, set that one Doc so anyone with the link can view it. Share the portal spreadsheet and the docs folder with employees, and leave both Restricted. Do not rely on the page to hide some other spreadsheet that the same person can already open in Drive. The “anyone with the link” button changes only the proposal Doc you clicked. It does not change the spreadsheet or the docs folder.
 
 ## 1. Open Google Cloud as the company
 
@@ -45,14 +45,15 @@ The token can read and edit Google Sheets that this signed-in person can already
 4. If it asks for an organization, choose legacycomputingservices.com.
 5. Create it, then make sure that project is selected at the top of the page.
 
-## 3. Turn on the three APIs
+## 3. Turn on the four APIs
 
 1. Go to **APIs & Services**, then **Library**.
 2. Search for **Google Sheets API**. Open it. Click **Enable**.
 3. Do the same for **Google Drive API**.
 4. Do the same for **Google Calendar API**.
+5. Do the same for **Google Docs API**.
 
-The portal lists file names from Drive. It does not download file contents. Calendar is used for the Upcoming list on the dashboard. The Gmail, Drive, Calendar, Meet, and Admin buttons are ordinary Google links.
+The portal lists file names from Drive. Proposal Docs are created in the company docs folder (or a Proposals folder inside it). Calendar is used for the Upcoming list on the dashboard. The Gmail, Drive, Calendar, Meet, and Admin buttons are ordinary Google links. The portal does not send email.
 
 ## 4. Set the consent screen to Internal
 
@@ -68,9 +69,12 @@ If **Internal** is missing, you are signed in with the wrong Google account, or 
 Add these scopes if the screen has a scopes or data-access step. Names in the list may be the long URL or a sentence:
 
 - `.../auth/spreadsheets` — see and edit spreadsheets this person can already open
-- `.../auth/drive.metadata.readonly` — see file names and links in Drive
+- `.../auth/drive` — see, edit, and create Drive files this person can already open, so a proposal Doc can be filed in the company docs folder and, when you click the button, shared as anyone with the link can view
+- `.../auth/documents` — create and edit the proposal Doc itself (logo, sections, and the quote table)
 - `.../auth/calendar.readonly` — see events on their calendar
 - openid, email, and profile — so the page can read the account and the company domain
+
+`.../auth/documents` is the Google Docs scope. The Drive scope above replaces the older file-name-only scope (`drive.metadata.readonly`). An existing sign-in will be asked for the new Docs and Drive access the first time you create a proposal Doc or change its link. Internal apps still do not need Google’s public verification review.
 
 You can also skip adding them by hand. The first time you sign in, Google shows the same permissions and you accept them. Internal apps do not need Google’s public verification review.
 
@@ -115,7 +119,7 @@ The page should now show **Sign in with Google** instead of “Not configured ye
 ## 7. Create the spreadsheet from the portal
 
 1. Open the portal and sign in with your company account.
-2. If Google asks for permission, accept Sheets, Drive file info, and Calendar.
+2. If Google asks for permission, accept Sheets, Drive, Docs, and Calendar.
 3. On the dashboard, click **Create the portal spreadsheet**.
 4. Google creates a spreadsheet in **your** Drive named `Legacy Computing Services — Portal`.
 5. The page shows an ID. Click **Copy ID**.
@@ -133,6 +137,7 @@ The spreadsheet has these tabs. Do not rename them. Do not delete the first row.
 | QuoteItems | ID, Quote ID, Quote number, Description, Qty, Unit price |
 | Invoices | ID, Number, Created, Updated, Customer, Status, Issued, Due, Quote number, Tax, Notes |
 | InvoiceItems | ID, Invoice ID, Invoice number, Description, Qty, Unit price |
+| Proposals | ID, Prospect name, Business, Email, Phone, Title, Status, Created, Sent, Expires, Total, Doc URL, Notes, Sections, Line items, Customer ID, Job ID |
 
 Quote and invoice totals are added up in the portal from the quantity and unit price you type. A blank price stays blank. The portal does not invent a price. Leave **Tax** blank when there is no tax. There is no default tax rate.
 
@@ -142,6 +147,7 @@ Statuses the portal offers:
 - Priority: Low, Normal, High, Urgent
 - Inquiries: New, Reviewed, Replied, Closed
 - Quotes: Draft, Sent, Accepted, Declined
+- Proposals: Draft, Sent, Accepted, Declined
 - Invoices: Draft, Sent, Paid, Void
 
 If a tab is missing later, sign in and click **Add missing tabs and headers**. That fills empty tabs. It does not overwrite rows that already have data. If a header name is missing, such as **Intake Sent**, that button adds it at the end of the header row. It does not rename or overwrite the header cells that are already there.
@@ -159,6 +165,27 @@ The subject is `Legacy Computing Services – Client Intake & Service Agreement`
 Opening the draft writes today’s date in **Intake Sent** on that ticket and shows an “Intake sent” badge. If that column is not on the header row yet, the portal adds **Intake Sent** at the end of the header. It does not rename or overwrite the other headers, and it does not rewrite the other cells on the ticket.
 
 On a new ticket, check **Send intake form to customer** to open the same Gmail draft when you save.
+
+### Proposals
+
+The Proposals tab is for a prospect who does not have a customer row or a ticket yet. Open **Proposals** in the portal and add one. If that tab is missing, the page adds it and writes the header row. Other tabs stay as they are, including their header cells. **Add missing tabs and headers** does the same thing for every tab, including Proposals.
+
+Sections and Line items are JSON the portal writes. You do not need to edit that JSON by hand. Customer ID and Job ID stay blank until you mark the proposal accepted. Job ID is the ID on the Tickets tab.
+
+The editor has the client, a project overview, scope and deliverables, a timeline, price lines (description, quantity, unit price), terms, and an expiration date. The total is added up from the lines. A blank price stays blank. The portal does not invent a price. Internal notes stay on the row. They are left out of the Google Doc.
+
+**Preview layout** shows the proposal on this page. **Create Google Doc** builds the real Doc with the signed-in person’s Google access:
+
+- The file goes in a **Proposals** folder inside the company docs folder (`driveFolderId`). If that folder ID is blank, the Proposals folder is created in that person’s My Drive instead.
+- The top of the Doc is the Legacy shield, loaded from the public site address `https://legacycomputingservices.com/assets/legacy-computing-shield.png`, then **Legacy Computing Services LLC**, the tagline **Protecting what matters. Building what's next.**, and **Bel Air, MD | scott@legacycomputingservices.com | legacycomputingservices.com**.
+- Then: prepared for, date, valid until, overview, scope and deliverables, timeline, a quote table (line items, subtotal, total), terms, and a signature block.
+- The Doc link is saved in **Doc URL**. Creating again makes a new Doc and updates the link. The older Doc is left in Drive.
+
+The Doc stays restricted until you click **Anyone with the link can view**. That uses Drive permissions on that Doc only. The spreadsheet and the docs folder stay Restricted. Do that before a prospect who does not have a company Google account tries to open the link.
+
+**Send** opens Gmail in a new tab with a draft to the prospect and the Doc link. You read it and press Send in Gmail. This page does not send email. The status becomes Sent, and the Sent column is filled with today’s date. If the proposal is already Accepted or Declined, the draft still opens and the status stays as it is.
+
+**Mark accepted** saves the prospect as a customer (it reuses a customer with the same email, or the same name) and opens a ticket for the work. It then offers **Send intake form**, which is the same Gmail draft used on tickets. **Mark declined** sets the status to Declined. Declined is also in the status list on the proposal. A customer or ticket that was already created stays on those tabs.
 
 ### If the button fails
 
@@ -205,8 +232,9 @@ They then get:
 
 - Shortcuts to Gmail, Drive, Calendar, Meet, and the Admin console, each opening in a new tab (Admin only works for Workspace admins). Gmail cannot be embedded.
 - The company calendar embedded on the dashboard, plus a short upcoming list when Calendar access was granted
-- Tickets, customers, inquiries, quotes, and invoices from the spreadsheet
-- **Send intake form** on each ticket. It opens a Gmail draft. It does not send the email from this page.
+- Tickets, customers, inquiries, proposals, quotes, and invoices from the spreadsheet
+- **Proposals**, including a Google Doc in the company docs folder and a Gmail draft. The page does not send the email.
+- **Send intake form** on each ticket, and again after a proposal is accepted. It opens a Gmail draft. It does not send the email from this page.
 - A Spreadsheet tab that embeds that same Google Sheet for editing
 - A print view for a quote or invoice. The browser’s print dialog can save a PDF. The portal does not upload that PDF.
 - The docs list, once the folder ID is set, with an in-page preview
@@ -253,7 +281,7 @@ The form will create its own response tab. The trigger copies a row onto **Inqui
 - **Not configured yet** — the Client ID is missing or still the placeholder. Finish step 6.
 - **Pop-up blocked** — allow pop-ups for the site and click Sign in again.
 - **Not a company account** — the Google account’s hosted domain is not `legacycomputingservices.com`. Use the company account, not Gmail.
-- **Google API is turned off** — go back to step 3 and enable Sheets, Drive, and Calendar on the same Cloud project as the Client ID.
+- **Google API is turned off** — go back to step 3 and enable Sheets, Drive, Docs, and Calendar on the same Cloud project as the Client ID. Proposal Docs need Docs and Drive.
 - **Google refused this file** — the spreadsheet or folder is not shared with the person who signed in, or the ID in `portal/config.js` is wrong.
 - **Redirect URI mismatch or origin error** — the address in the browser bar’s origin is not in the JavaScript origins list. Origins have no path. Add `https://legacycomputingservices.com`, `https://www.legacycomputingservices.com`, and `https://sjkram85.github.io`. `https://legacycomputingservices.com/portal` is not an origin.
 - **Sign-in expired** — sign out and sign in again. Tokens last about an hour.

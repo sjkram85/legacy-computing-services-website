@@ -7,7 +7,8 @@
   var IDENTITY_SCOPES = 'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
   var DATA_SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive.metadata.readonly',
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/documents',
     'https://www.googleapis.com/auth/calendar.readonly'
   ].join(' ');
 
@@ -47,6 +48,10 @@
     customerQuery: '',
     ticketFilter: 'Open work',
     inquiryFilter: 'New',
+    proposalFilter: 'Open',
+    proposalSheetReady: false,
+    proposalSheetWorking: false,
+    proposalSheetFailed: '',
     intakeDialog: null
   };
 
@@ -129,6 +134,7 @@
     window.scrollTo(0, y);
     var intakeEmail = document.getElementById('intake-dialog-email');
     if (intakeEmail) intakeEmail.focus();
+    if (state.mode === 'live' && state.section === 'proposals') scheduleProposalSheet();
   }
 
   function go() {
@@ -155,14 +161,14 @@
     state.viewer = null;
     state.intakeDialog = null;
     var parts = hashParts();
-    if (parts[0] === 'print' && (parts[1] === 'quote' || parts[1] === 'invoice')) {
+    if (parts[0] === 'print' && (parts[1] === 'quote' || parts[1] === 'invoice' || parts[1] === 'proposal')) {
       state.section = 'print';
       state.printKind = parts[1];
       state.printId = parts[2] || '';
       state.editorId = '';
       return;
     }
-    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, quotes: 1, invoices: 1, docs: 1, sheet: 1 };
+    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1, invoices: 1, docs: 1, sheet: 1 };
     state.section = known[parts[0]] ? parts[0] : 'home';
     state.editorId = parts[1] || '';
     state.printKind = '';
@@ -303,12 +309,16 @@
         class: 'font-semibold underline'
       }, [state.banner.hrefLabel || 'Open']));
     }
+    if (state.banner.actionLabel && typeof state.banner.action === 'function') {
+      node.appendChild(document.createTextNode(' '));
+      node.appendChild(button(state.banner.actionLabel, 'font-semibold underline', state.banner.action));
+    }
     return node;
   }
 
   function demoBanner() {
     return el('div', { class: 'rounded-2xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 leading-relaxed' }, [
-      'Sample data. Not connected to Google. Every name, ticket, and dollar amount on this screen is fake and is not a company record.'
+      'Sample data. Not connected to Google. Every name, ticket, proposal, and dollar amount on this screen is fake and is not a company record.'
     ]);
   }
 
@@ -394,7 +404,7 @@
     card.appendChild(el('p', { class: 'font-mono text-xs uppercase tracking-[0.2em] text-cyan-400' }, ['Staff only']));
     card.appendChild(el('h1', { class: 'font-display text-3xl sm:text-4xl font-bold text-white' }, ['Sign in with your company Google account']));
     card.appendChild(el('p', { class: 'text-slate-300 leading-relaxed' }, [
-      'This page is public and stores no customer list, no prices, and no files. After sign-in, Google Sheets, Drive, and Calendar are opened with your own Google access. If a file is not shared with you, Google will not show it.'
+      'This page is public and stores no customer list, no prices, and no files. After sign-in, Google Sheets, Drive, Docs, and Calendar are opened with your own Google access. If a file is not shared with you, Google will not show it.'
     ]));
     card.appendChild(el('p', { class: 'font-mono text-sm text-sky-300' }, ['Allowed accounts: @' + domain]));
 
@@ -427,7 +437,7 @@
       var steps = el('ol', { class: 'list-decimal pl-5 text-sm text-slate-300 space-y-1.5' });
       [
         'Create a Google Cloud project with the Workspace admin account and set the consent screen to Internal.',
-        'Enable the Sheets, Drive, and Calendar APIs, then create a Web OAuth client.',
+        'Enable the Sheets, Drive, Docs, and Calendar APIs, then create a Web OAuth client.',
         'Paste the Client ID into portal/config.js. Leave the spreadsheet ID blank for now.',
         'Sign in here and use Create the portal spreadsheet, then share that file with employees.'
       ].forEach(function (step) { steps.appendChild(el('li', {}, [step])); });
@@ -494,6 +504,7 @@
       ['tickets', 'Tickets'],
       ['customers', 'Customers'],
       ['inquiries', 'Inquiries'],
+      ['proposals', 'Proposals'],
       ['quotes', 'Quotes'],
       ['invoices', 'Invoices'],
       ['docs', 'Docs'],
@@ -501,7 +512,7 @@
     ].forEach(function (item) {
       var on = state.section === item[0];
       if (state.section === 'print') {
-        on = (state.printKind === 'invoice' && item[0] === 'invoices') || (state.printKind === 'quote' && item[0] === 'quotes');
+        on = (state.printKind === 'invoice' && item[0] === 'invoices') || (state.printKind === 'quote' && item[0] === 'quotes') || (state.printKind === 'proposal' && item[0] === 'proposals');
       }
       var node = button(item[1], 'shrink-0 px-3 py-2 rounded-xl text-sm font-semibold ' + (on ? 'nav-current' : 'text-slate-300 hover:bg-slate-900'), function () {
         go(item[0]);
@@ -517,6 +528,7 @@
     if (state.section === 'tickets') return state.editorId ? renderTicketEditor() : renderTickets();
     if (state.section === 'customers') return state.editorId ? renderCustomerEditor() : renderCustomers();
     if (state.section === 'inquiries') return state.editorId ? renderInquiryEditor() : renderInquiries();
+    if (state.section === 'proposals') return state.editorId ? renderProposalEditor() : renderProposals();
     if (state.section === 'quotes') return state.editorId ? renderDocEditor('quote') : renderDocList('quote');
     if (state.section === 'invoices') return state.editorId ? renderDocEditor('invoice') : renderDocList('invoice');
     if (state.section === 'docs') return renderDocs();
@@ -567,7 +579,7 @@
     if (!spreadsheetId()) {
       box.appendChild(el('h2', { class: 'font-display text-2xl font-bold text-white' }, ['Create the portal spreadsheet']));
       box.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
-        'No spreadsheet ID is in portal/config.js. This button creates a Google Sheet in your Drive with the Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, and InvoiceItems tabs and their header rows. It does not add sample customers or prices.'
+        'No spreadsheet ID is in portal/config.js. This button creates a Google Sheet in your Drive with the Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems, and Proposals tabs and their header rows. It does not add sample customers or prices.'
       ]));
       var create = button(state.busy ? 'Working…' : 'Create the portal spreadsheet', PRIMARY, createSpreadsheet);
       create.disabled = Boolean(state.busy);
@@ -633,10 +645,14 @@
     var fresh = (state.data.Inquiries || []).filter(function (row) { return !row.status || row.status === 'New'; }).length;
     var openQuotes = (state.data.Quotes || []).filter(function (row) { return row.status === 'Draft' || row.status === 'Sent'; }).length;
     var unpaid = (state.data.Invoices || []).filter(function (row) { return row.status === 'Draft' || row.status === 'Sent'; }).length;
-    var stats = el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3' });
+    var openProposals = (state.data.Proposals || []).filter(function (row) {
+      return !row.status || row.status === 'Draft' || row.status === 'Sent';
+    }).length;
+    var stats = el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3' });
     stats.appendChild(statCard('Open tickets', openTickets, 'tickets'));
     stats.appendChild(statCard('Customers', (state.data.Customers || []).length, 'customers'));
     stats.appendChild(statCard('New inquiries', fresh, 'inquiries'));
+    stats.appendChild(statCard('Open proposals', openProposals, 'proposals'));
     stats.appendChild(statCard('Open quotes', openQuotes, 'quotes'));
     stats.appendChild(statCard('Unpaid invoices', unpaid, 'invoices'));
     page.appendChild(stats);
@@ -1506,7 +1522,8 @@
       row.querySelector('[data-line-total]').textContent = math.ok ? Lib.formatUSD(math.amount) : 'Price not entered';
     });
     var box = form.querySelector('[data-doc-total]');
-    box.replaceChildren(totalsNode(Lib.documentTotals(readLines(form), form.elements.tax.value)));
+    var tax = form.elements.tax ? form.elements.tax.value : '';
+    box.replaceChildren(totalsNode(Lib.documentTotals(readLines(form), tax)));
   }
 
   function saveDocument(kind, form, existing) {
@@ -1711,7 +1728,680 @@
     return page;
   }
 
+  function proposalTotalLabel(row) {
+    var read = Lib.readProposal(row);
+    var totals = Lib.documentTotals(read.linesOk ? read.lines : [], '');
+    if (totals.complete) return Lib.formatUSD(totals.total);
+    if (Lib.parseNumber(row.total) != null && (!read.linesOk || !read.lines.length)) return Lib.formatUSD(Lib.parseNumber(row.total));
+    if (totals.priced) return Lib.formatUSD(totals.subtotal) + ' partial';
+    return 'Total not entered';
+  }
+
+  function proposalsNeedSheet() {
+    if (state.mode !== 'live' || !spreadsheetId() || state.sheetsError) return false;
+    if (state.sheetIds.Proposals == null) return true;
+    var parsed = state.parsed.Proposals;
+    var header = parsed && parsed.headerRow;
+    if (!header || !header.some(function (cell) { return String(cell || '').trim(); })) return true;
+    return Lib.headersToAppend(header, Lib.columnsOf('Proposals')).headers.length > 0;
+  }
+
+  function scheduleProposalSheet() {
+    if (state.proposalSheetWorking || state.proposalSheetReady || state.proposalSheetFailed) return;
+    if (!proposalsNeedSheet()) {
+      state.proposalSheetReady = true;
+      return;
+    }
+    if (state.busy) return;
+    state.proposalSheetWorking = true;
+    state.busy = 'Adding the Proposals tab…';
+    paint(true);
+    ensureSheet('Proposals').then(function () {
+      state.proposalSheetWorking = false;
+      state.proposalSheetReady = true;
+      state.busy = '';
+      state.banner = {
+        tone: 'ok',
+        text: 'The Proposals tab is ready. Missing header names were added at the end of that row. Other tabs were left as they were.'
+      };
+      paint(true);
+    }).catch(function (err) {
+      state.proposalSheetWorking = false;
+      state.proposalSheetFailed = friendly(err);
+      state.busy = '';
+      paint(true);
+    });
+  }
+
+  function renderProposals() {
+    var page = el('div', { class: 'space-y-5' });
+    var head = sectionHead('Prospects', 'Proposals', 'Client, scope, timeline, and price lines are stored on the Proposals tab. Sections and line items are JSON in that row. Create Google Doc writes a Doc in Drive. Send opens a Gmail draft. This page does not send email.');
+    head.appendChild(button('New proposal', PRIMARY, function () { go('proposals', 'new'); }));
+    page.appendChild(head);
+    if (state.mode === 'live' && spreadsheetId() && state.proposalSheetFailed) {
+      page.appendChild(emptyNote(state.proposalSheetFailed));
+      page.appendChild(button('Try adding the Proposals tab again', SECONDARY, function () {
+        state.proposalSheetFailed = '';
+        state.proposalSheetReady = false;
+        scheduleProposalSheet();
+      }));
+      return page;
+    }
+    if (state.mode === 'live' && proposalsNeedSheet()) {
+      page.appendChild(emptyNote('Preparing the Proposals tab. Existing tabs stay as they are.'));
+      return page;
+    }
+    var blocked = sheetBlocked('Proposals');
+    if (blocked) {
+      page.appendChild(blocked);
+      return page;
+    }
+    var filters = [
+      ['Open', function (row) { return !row.status || row.status === 'Draft' || row.status === 'Sent'; }],
+      ['All', function () { return true; }],
+      ['Draft', function (row) { return !row.status || row.status === 'Draft'; }],
+      ['Sent', function (row) { return row.status === 'Sent'; }],
+      ['Accepted', function (row) { return row.status === 'Accepted'; }],
+      ['Declined', function (row) { return row.status === 'Declined'; }]
+    ];
+    page.appendChild(filterBar(filters, state.proposalFilter, function (label) {
+      state.proposalFilter = label;
+      paint(true);
+    }));
+    var chosen = filters.filter(function (item) { return item[0] === state.proposalFilter; })[0] || filters[0];
+    var rows = (state.data.Proposals || []).filter(chosen[1]);
+    if (!rows.length) {
+      page.appendChild(emptyNote(state.proposalFilter === 'All' || state.proposalFilter === 'Open'
+        ? 'No proposals yet. Add one when you are writing a prospect. Nothing is priced for you.'
+        : 'No proposals with that status.'));
+      return page;
+    }
+    var list = el('div', { class: 'space-y-3' });
+    rows.forEach(function (row) {
+      list.appendChild(proposalCard(row));
+    });
+    page.appendChild(list);
+    return page;
+  }
+
+  function proposalCard(row) {
+    var card = el('article', { class: 'cyber-panel rounded-2xl p-5' });
+    var top = el('div', { class: 'flex flex-wrap items-start justify-between gap-3' });
+    var copy = el('div', { class: 'min-w-0' });
+    copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [row.title || 'Untitled proposal']));
+    copy.appendChild(el('p', { class: 'text-sm text-slate-300 mt-1' }, [
+      [row.prospectName || 'No prospect', row.business].filter(Boolean).join(' · ')
+    ]));
+    var meta = [row.email, row.expires ? 'Expires ' + formatDay(row.expires) : '', row.sent ? 'Sent ' + formatDay(row.sent) : ''].filter(Boolean).join(' · ');
+    if (meta) copy.appendChild(el('p', { class: 'text-xs text-slate-400 mt-1' }, [meta]));
+    top.appendChild(copy);
+    var side = el('div', { class: 'flex flex-col items-end gap-2' });
+    side.appendChild(badge(row.status || 'Draft'));
+    if (row.sample) side.appendChild(sampleChip());
+    side.appendChild(el('p', { class: 'font-display font-bold text-white' }, [proposalTotalLabel(row)]));
+    top.appendChild(side);
+    card.appendChild(top);
+    var actions = el('div', { class: 'mt-4 flex flex-wrap gap-2' });
+    actions.appendChild(button('Edit', SECONDARY, function () { go('proposals', row.id); }));
+    actions.appendChild(button('Preview', SECONDARY, function () { go('print', 'proposal', row.id); }));
+    actions.appendChild(button('Send', SECONDARY, function () { sendProposal(row); }));
+    if (Lib.googleDocId(row.docUrl)) {
+      actions.appendChild(button('Anyone with the link can view', SECONDARY, function () { shareProposalDoc(row); }));
+    }
+    if (row.status !== 'Accepted') {
+      actions.appendChild(button('Mark accepted', PRIMARY, function () { acceptProposal(row); }));
+    }
+    if (row.status !== 'Declined') {
+      actions.appendChild(button('Mark declined', SECONDARY, function () { declineProposal(row); }));
+    }
+    if (row.status === 'Accepted' && row.jobId) {
+      actions.appendChild(button('Send intake form', SECONDARY, function () {
+        var ticket = findRow('Tickets', row.jobId);
+        if (ticket) startIntake(ticket);
+        else {
+          state.banner = { tone: 'bad', text: 'The ticket for this proposal is not in the current list. Open Tickets and use Send intake form there.' };
+          paint(true);
+        }
+      }));
+    }
+    card.appendChild(actions);
+    if (safeHttp(row.docUrl)) {
+      card.appendChild(el('a', {
+        href: row.docUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: 'inline-flex mt-3 text-sm font-semibold text-sky-300'
+      }, ['Open the Google Doc']));
+    }
+    return card;
+  }
+
+  function renderProposalEditor() {
+    var existing = state.editorId === 'new' ? null : findRow('Proposals', state.editorId);
+    if (state.editorId !== 'new' && !existing) return missingRecord('proposals', 'That proposal is not in the current list.');
+    var read = existing ? Lib.readProposal(existing) : {
+      status: 'Draft',
+      expires: Lib.isoDate(30),
+      lines: [],
+      sectionsOk: true,
+      linesOk: true
+    };
+    var page = el('div', { class: 'space-y-5' });
+    page.appendChild(sectionHead('Prospects', existing ? 'Edit proposal' : 'New proposal', 'Type the prices you mean to offer. A blank price stays blank, and the total stays incomplete until every line has a quantity and a price.'));
+    if (existing && (!read.sectionsOk || !read.linesOk)) {
+      page.appendChild(el('p', { class: 'rounded-2xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100' }, [
+        'Sections or line items on this row are not valid JSON. Saving replaces those cells with the fields below.'
+      ]));
+    }
+    var form = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-5', autocomplete: 'off', id: 'proposal-form' });
+    form.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Client']));
+    var client = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
+    client.appendChild(field('Prospect name', textInput('prospectName', read.prospectName, { required: true, placeholder: 'Name' })));
+    client.appendChild(field('Business', textInput('business', read.business, { placeholder: 'Business name' })));
+    client.appendChild(field('Email', textInput('email', read.email, { type: 'email', placeholder: 'name@example.com' })));
+    client.appendChild(field('Phone', textInput('phone', read.phone, { placeholder: '(410) 555-0100' })));
+    form.appendChild(client);
+    form.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Proposal']));
+    var meta = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
+    meta.appendChild(field('Title', textInput('title', read.title, { required: true, placeholder: 'Website refresh' })));
+    var statuses = Lib.CHOICES.proposalStatus.slice();
+    if (read.status && statuses.indexOf(read.status) === -1) statuses.unshift(read.status);
+    meta.appendChild(field('Status', selectInput('status', read.status || 'Draft', statuses)));
+    meta.appendChild(field('Expiration date', textInput('expires', read.expires, { type: 'date' }), 'Shown on the Doc as valid until. Clear it if the offer has no end date.'));
+    form.appendChild(meta);
+    form.appendChild(field('Project overview', areaInput('overview', read.overview, 'What the project is and why it matters')));
+    form.appendChild(field('Scope and deliverables', areaInput('scope', read.scope, 'One deliverable per line')));
+    form.appendChild(field('Timeline', areaInput('timeline', read.timeline, 'Milestones and dates')));
+    form.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Pricing']));
+    var host = el('div', { 'data-lines': '1', class: 'space-y-3' });
+    (read.lines.length ? read.lines : [{ qty: '1', description: '', unitPrice: '' }]).forEach(function (line) {
+      host.appendChild(lineRow(line));
+    });
+    form.appendChild(host);
+    form.appendChild(button('Add a line', SECONDARY, function () {
+      host.appendChild(lineRow({ qty: '1', description: '', unitPrice: '' }));
+      updateDocPreview(form);
+    }));
+    var total = el('div', { 'data-doc-total': '1' });
+    form.appendChild(total);
+    form.appendChild(field('Terms', areaInput('terms', read.terms, 'Payment, revisions, and what is included')));
+    form.appendChild(field('Internal notes', areaInput('notes', read.notes, 'Staff notes stay on this row'), 'The Google Doc includes the overview, scope, timeline, quote, and terms.'));
+    if (read.docUrl) {
+      form.appendChild(el('p', { class: 'text-sm text-slate-300' }, ['Saved Doc: ' + read.docUrl]));
+    }
+    form.appendChild(formError());
+    var actions = el('div', { class: 'flex flex-col sm:flex-row flex-wrap gap-3' });
+    actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Save proposal']));
+    actions.appendChild(button('Cancel', SECONDARY, function () { go('proposals'); }));
+    actions.appendChild(button('Preview layout', SECONDARY, function () {
+      afterProposalCommit(form, existing, function (saved) { go('print', 'proposal', saved.id); });
+    }));
+    actions.appendChild(button('Create Google Doc', SECONDARY, function () {
+      afterProposalCommit(form, existing, function (saved) { return createProposalDocument(saved); });
+    }));
+    actions.appendChild(button('Send', SECONDARY, function () {
+      afterProposalCommit(form, existing, function (saved) { return sendProposal(saved); });
+    }));
+    actions.appendChild(button('Anyone with the link can view', SECONDARY, function () {
+      afterProposalCommit(form, existing, function (saved) { shareProposalDoc(saved); });
+    }));
+    actions.appendChild(button('Mark accepted', PRIMARY, function () {
+      afterProposalCommit(form, existing, function (saved) { return acceptProposal(saved); });
+    }));
+    actions.appendChild(button('Mark declined', SECONDARY, function () {
+      afterProposalCommit(form, existing, function (saved) { return declineProposal(saved); });
+    }));
+    form.appendChild(actions);
+    form.addEventListener('input', function () { updateDocPreview(form); });
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var status = form.elements.status.value;
+      if (status === 'Accepted') {
+        afterProposalCommit(form, existing, function (saved) { return acceptProposal(saved); });
+        return;
+      }
+      if (status === 'Declined') {
+        afterProposalCommit(form, existing, function (saved) { return declineProposal(saved); });
+        return;
+      }
+      afterProposalCommit(form, existing, function () {
+        state.banner = {
+          tone: 'ok',
+          text: state.mode === 'demo' ? 'Proposal saved in this sample preview only.' : 'Proposal saved to the spreadsheet.'
+        };
+        go('proposals');
+      });
+    });
+    page.appendChild(form);
+    updateDocPreview(form);
+    return page;
+  }
+
+  function proposalFromForm(form, existing) {
+    var read = existing ? Lib.readProposal(existing) : {};
+    return Lib.writeProposal({
+      id: read.id,
+      _row: read._row,
+      _cells: read._cells,
+      prospectName: form.elements.prospectName.value.trim(),
+      business: form.elements.business.value.trim(),
+      email: form.elements.email.value.trim(),
+      phone: form.elements.phone.value.trim(),
+      title: form.elements.title.value.trim(),
+      status: form.elements.status.value,
+      created: read.created,
+      sent: read.sent,
+      expires: form.elements.expires.value,
+      docUrl: read.docUrl,
+      notes: form.elements.notes.value,
+      overview: form.elements.overview.value,
+      scope: form.elements.scope.value,
+      timeline: form.elements.timeline.value,
+      terms: form.elements.terms.value,
+      lines: readLines(form),
+      customerId: read.customerId,
+      jobId: read.jobId,
+      sample: read.sample
+    });
+  }
+
+  function afterProposalCommit(form, existing, next) {
+    var record = proposalFromForm(form, existing);
+    if (!record.prospectName || !record.title) {
+      showFormError(form, 'Enter the prospect name and a proposal title.');
+      return;
+    }
+    var nameless = readLines(form).filter(function (line) { return line.unitPrice && !line.description; });
+    if (nameless.length) {
+      showFormError(form, 'Each line with a price needs a description.');
+      return;
+    }
+    if (record.email && !Lib.looksLikeEmail(record.email)) {
+      showFormError(form, 'Enter a valid email, or leave email blank until you know it.');
+      return;
+    }
+    var submit = form.querySelector('[type="submit"]');
+    if (submit) submit.disabled = true;
+    persistRecord('Proposals', record, existing).then(function () {
+      return findRow('Proposals', record.id) || record;
+    }).then(next).catch(function (err) {
+      if (submit) submit.disabled = false;
+      showFormError(form, friendly(err));
+    });
+  }
+
+  function sendProposal(record) {
+    var read = Lib.readProposal(record);
+    if (!Lib.looksLikeEmail(read.email)) {
+      state.banner = { tone: 'bad', text: 'Enter a valid prospect email before opening Gmail. This page does not send email.' };
+      paint(true);
+      return Promise.resolve();
+    }
+    var url = Lib.proposalComposeUrl(read);
+    if (!url) {
+      state.banner = { tone: 'bad', text: 'Create the Google Doc first so the Gmail draft can include the link. This page does not send email.' };
+      paint(true);
+      return Promise.resolve();
+    }
+    openTab(url);
+    var keepStatus = read.status === 'Accepted' || read.status === 'Declined';
+    var next = Lib.writeProposal(Object.assign({}, read, {
+      status: keepStatus ? read.status : 'Sent',
+      sent: keepStatus ? read.sent : Lib.isoDate(0)
+    }));
+    var when = formatDay(next.sent) || next.sent || 'today';
+    return persistRecord('Proposals', next, record).then(function () {
+      state.banner = {
+        tone: 'ok',
+        text: keepStatus
+          ? 'Gmail opened a draft with the Doc link. This page did not send it. Status stayed ' + read.status + '. If the prospect cannot open the Doc, choose Anyone with the link can view.'
+          : 'Gmail opened a draft with the Doc link. This page did not send it. You press Send in Gmail. Status is Sent as of ' + when + '. If the prospect cannot open the Doc, choose Anyone with the link can view.',
+        href: url,
+        hrefLabel: 'Open the Gmail draft again'
+      };
+      go('proposals');
+    }).catch(function (err) {
+      state.banner = {
+        tone: 'bad',
+        text: 'Gmail opened, but the proposal was not marked Sent. ' + friendly(err),
+        href: url,
+        hrefLabel: 'Open the Gmail draft again'
+      };
+      paint(true);
+    });
+  }
+
+  function shareProposalDoc(record) {
+    var read = Lib.readProposal(record);
+    var id = Lib.googleDocId(read.docUrl);
+    if (!id) {
+      state.banner = { tone: 'bad', text: 'Create the Google Doc first. Then you can allow anyone with the link to view it.' };
+      paint(true);
+      return;
+    }
+    if (state.mode === 'demo' || id === 'sample-proposal') {
+      state.banner = {
+        tone: 'warn',
+        text: 'Sample only. On a real Doc this sets anyone with the link to view. The spreadsheet and the docs folder stay restricted. This page does not email the prospect.'
+      };
+      paint(true);
+      return;
+    }
+    state.busy = 'Updating Doc access…';
+    paint(true);
+    ensureProposalScopes().then(function () {
+      return googleFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '/permissions?supportsAllDrives=true&fields=' + encodeURIComponent('permissions(id,type,role)'));
+    }).then(function (data) {
+      var list = (data && data.permissions) || [];
+      var already = list.some(function (item) { return item.type === 'anyone'; });
+      if (already) return { already: true };
+      return googleFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '/permissions?supportsAllDrives=true', {
+        method: 'POST',
+        body: { type: 'anyone', role: 'reader' }
+      });
+    }).then(function (result) {
+      state.busy = '';
+      state.banner = {
+        tone: 'ok',
+        text: result && result.already
+          ? 'Anyone with the link can already view this Doc. The spreadsheet stays restricted. This page does not email the prospect.'
+          : 'Anyone with the link can now view this Doc. The spreadsheet and the company docs folder stay restricted. This page does not email the prospect.',
+        href: read.docUrl,
+        hrefLabel: 'Open the Doc'
+      };
+      paint(true);
+    }).catch(function (err) {
+      state.busy = '';
+      state.banner = { tone: 'bad', text: friendly(err) };
+      paint(true);
+    });
+  }
+
+  function acceptProposal(record) {
+    var plan = Lib.planProposalAcceptance(record, state.data.Customers, state.data.Tickets);
+    if (plan.error) {
+      state.banner = { tone: 'bad', text: plan.error };
+      paint(true);
+      return Promise.resolve();
+    }
+    if (!plan.customer.id) plan.customer.id = newId();
+    if (!plan.ticket.id) plan.ticket.id = newId();
+    state.busy = state.mode === 'demo' ? 'Saving the sample customer and ticket…' : 'Saving the customer and ticket…';
+    paint(true);
+    var chain = Promise.resolve();
+    if (plan.creatingCustomer) chain = chain.then(function () { return persistRecord('Customers', plan.customer, null); });
+    if (plan.creatingTicket) chain = chain.then(function () { return persistRecord('Tickets', plan.ticket, null); });
+    var proposalId = Lib.readProposal(record).id;
+    return chain.then(function () {
+      var current = findRow('Proposals', proposalId) || record;
+      var next = Lib.writeProposal(Object.assign({}, Lib.readProposal(current), {
+        status: 'Accepted',
+        customerId: plan.customer.id,
+        jobId: plan.ticket.id
+      }));
+      return persistRecord('Proposals', next, current);
+    }).then(function () {
+      state.busy = '';
+      var name = plan.customer.name || 'The prospect';
+      state.banner = {
+        tone: 'ok',
+        text: name + ' is a customer and a ticket is open for this proposal. Send intake form opens a Gmail draft of the client intake. This page does not send the email.',
+        actionLabel: 'Send intake form',
+        action: function () {
+          var ticket = findRow('Tickets', plan.ticket.id);
+          if (ticket) startIntake(ticket);
+          else {
+            state.banner = { tone: 'bad', text: 'The new ticket is not in the current list. Open Tickets and use Send intake form there.' };
+            paint(true);
+          }
+        }
+      };
+      go('proposals', proposalId);
+    }).catch(function (err) {
+      state.busy = '';
+      state.banner = { tone: 'bad', text: friendly(err) };
+      paint(true);
+    });
+  }
+
+  function declineProposal(record) {
+    var read = Lib.readProposal(record);
+    var next = Lib.writeProposal(Object.assign({}, read, { status: 'Declined' }));
+    var extra = (read.customerId || read.jobId) ? ' The customer and ticket already created stay on those tabs.' : '';
+    return persistRecord('Proposals', next, record).then(function () {
+      state.banner = { tone: 'ok', text: 'Proposal marked Declined.' + extra };
+      go('proposals');
+    }).catch(function (err) {
+      state.banner = { tone: 'bad', text: friendly(err) };
+      paint(true);
+    });
+  }
+
+  function ensureProposalScopes() {
+    if (state.mode === 'demo') return Promise.resolve();
+    var documents = 'https://www.googleapis.com/auth/documents';
+    var drive = 'https://www.googleapis.com/auth/drive';
+    if (hasScope(documents) && hasScope(drive)) return Promise.resolve();
+    return requestDataAccess({ prompt: 'consent', quiet: true }).then(function () {
+      if (!hasScope(documents) || !hasScope(drive)) {
+        throw new Error('Google Docs and Drive access are needed to create a proposal Doc and set its link. Sign in again and accept both.');
+      }
+    });
+  }
+
+  function proposalsFolder() {
+    var parent = driveFolderId();
+    var q = "name = 'Proposals' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
+    if (parent) q += " and '" + parent + "' in parents";
+    else q += " and 'root' in parents";
+    var url = 'https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent(q)
+      + '&fields=' + encodeURIComponent('files(id,name)')
+      + '&pageSize=10&supportsAllDrives=true&includeItemsFromAllDrives=true';
+    return googleFetch(url).then(function (data) {
+      if (data && data.files && data.files[0]) return data.files[0].id;
+      var body = { name: 'Proposals', mimeType: 'application/vnd.google-apps.folder' };
+      if (parent) body.parents = [parent];
+      return googleFetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true', {
+        method: 'POST',
+        body: body
+      }).then(function (folder) { return folder.id; });
+    });
+  }
+
+  function createProposalDocument(record) {
+    var read = Lib.readProposal(record);
+    if (!read.sectionsOk || !read.linesOk) {
+      state.banner = { tone: 'bad', text: 'Sections or line items on this row are not valid JSON. Save the proposal first so those cells can be rewritten.' };
+      paint(true);
+      return Promise.resolve();
+    }
+    var view = Lib.proposalView(record);
+    if (state.mode === 'demo') {
+      var demoUrl = read.docUrl || 'https://docs.google.com/document/d/sample-proposal/edit';
+      var demoRecord = Lib.writeProposal(Object.assign({}, read, { docUrl: demoUrl }));
+      return persistRecord('Proposals', demoRecord, record).then(function () {
+        state.banner = {
+          tone: 'warn',
+          text: 'Sample layout only. No Google Doc was created and nothing was put in Drive. The preview shows the proposal the Doc would contain.'
+        };
+        go('print', 'proposal', demoRecord.id || read.id);
+      });
+    }
+    state.busy = 'Creating the Google Doc…';
+    state.banner = null;
+    paint(true);
+    var fileId = '';
+    return ensureProposalScopes().then(function () {
+      return proposalsFolder();
+    }).then(function (folderId) {
+      var body = {
+        name: Lib.proposalDocName(record),
+        mimeType: 'application/vnd.google-apps.document'
+      };
+      if (folderId) body.parents = [folderId];
+      return googleFetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true', {
+        method: 'POST',
+        body: body
+      });
+    }).then(function (file) {
+      fileId = file.id;
+      var opening = Lib.proposalOpeningRequests(view);
+      return googleFetch('https://docs.googleapis.com/v1/documents/' + encodeURIComponent(fileId) + ':batchUpdate', {
+        method: 'POST',
+        body: { requests: opening.requests }
+      });
+    }).then(function () {
+      return googleFetch('https://docs.googleapis.com/v1/documents/' + encodeURIComponent(fileId));
+    }).then(function (doc) {
+      var fills = Lib.proposalFillRequests(doc, view.grid.rows, Lib.proposalClosingText(view));
+      if (!fills.length) throw new Error('The quote table was not added to the Google Doc.');
+      return googleFetch('https://docs.googleapis.com/v1/documents/' + encodeURIComponent(fileId) + ':batchUpdate', {
+        method: 'POST',
+        body: { requests: fills }
+      });
+    }).then(function () {
+      return googleFetch('https://docs.googleapis.com/v1/documents/' + encodeURIComponent(fileId));
+    }).then(function (doc) {
+      var polish = Lib.proposalPolishRequests(doc);
+      if (!polish.length) return null;
+      return googleFetch('https://docs.googleapis.com/v1/documents/' + encodeURIComponent(fileId) + ':batchUpdate', {
+        method: 'POST',
+        body: { requests: polish }
+      });
+    }).then(function () {
+      var url = 'https://docs.google.com/document/d/' + fileId + '/edit';
+      var current = findRow('Proposals', read.id) || record;
+      var next = Lib.writeProposal(Object.assign({}, Lib.readProposal(current), { docUrl: url }));
+      return persistRecord('Proposals', next, current).then(function () { return url; });
+    }).then(function (url) {
+      state.busy = '';
+      var where = driveFolderId()
+        ? 'It is in the Proposals folder inside the company docs folder.'
+        : 'It is in a Proposals folder in your Drive. Set driveFolderId in portal/config.js to file new Docs in the company folder.';
+      state.banner = {
+        tone: 'ok',
+        text: 'Google Doc created. ' + where + ' The link is saved on this row. The Doc stays restricted until you choose Anyone with the link can view. This page does not email it.',
+        href: url,
+        hrefLabel: 'Open the Doc'
+      };
+      go('proposals', read.id);
+    }).catch(function (err) {
+      state.busy = '';
+      var extra = fileId ? ' A Doc file may already be in Drive.' : '';
+      state.banner = { tone: 'bad', text: friendly(err) + extra };
+      paint(true);
+    });
+  }
+
+  function proposalLinesBlock(text) {
+    var wrap = el('div', { class: 'space-y-1' });
+    String(text || 'Not specified.').split('\n').forEach(function (line) {
+      wrap.appendChild(el('p', {}, [line]));
+    });
+    return wrap;
+  }
+
+  function proposalQuoteTable(grid) {
+    var table = el('table');
+    var head = el('thead', {}, [el('tr')]);
+    grid.rows[0].forEach(function (cell, index) {
+      head.firstChild.appendChild(el('th', { class: index ? 'num' : '' }, [cell]));
+    });
+    table.appendChild(head);
+    var body = el('tbody');
+    grid.rows.slice(1).forEach(function (row, index) {
+      var isTotal = index === grid.rows.length - 2;
+      var isSub = index === grid.rows.length - 3;
+      var tr = el('tr', { class: isTotal ? 'proposal-total' : (isSub ? 'proposal-subtotal' : '') });
+      row.forEach(function (cell, cellIndex) {
+        tr.appendChild(el('td', { class: cellIndex ? 'num' : '' }, [cell]));
+      });
+      body.appendChild(tr);
+    });
+    table.appendChild(body);
+    return table;
+  }
+
+  function renderProposalPrint() {
+    var record = findRow('Proposals', state.printId);
+    if (!record) return missingRecord('proposals', 'That proposal is not in the current list.');
+    var view = Lib.proposalView(record);
+    var page = el('div', { class: 'space-y-4' });
+    var tools = el('div', { class: 'no-print flex flex-wrap gap-2' });
+    tools.appendChild(button('Back', SECONDARY, function () { go('proposals', record.id); }));
+    tools.appendChild(button('Print or save as PDF', PRIMARY, function () { window.print(); }));
+    if (safeHttp(record.docUrl)) {
+      tools.appendChild(el('a', {
+        href: record.docUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: SECONDARY
+      }, ['Open the Google Doc']));
+    }
+    page.appendChild(tools);
+    page.appendChild(el('p', { class: 'no-print text-xs text-slate-400' }, [
+      state.mode === 'demo' || record.sample
+        ? 'Sample layout of the Google Doc. No Doc was created in Drive from this preview. Dollar amounts are fake.'
+        : 'This is the same layout Create Google Doc writes into Drive, including the shield from the public website.'
+    ]));
+    var sheet = el('article', { class: 'proposal-sheet max-w-3xl rounded-3xl p-6 sm:p-10' });
+    var brand = el('header', { class: 'text-center' });
+    brand.appendChild(el('img', {
+      src: '../assets/legacy-computing-shield.png',
+      alt: 'Legacy Computing Services shield',
+      width: '70',
+      height: '78',
+      class: 'mx-auto h-20 w-auto'
+    }));
+    brand.appendChild(el('p', { class: 'proposal-company' }, [Lib.PROPOSAL_BRAND.company]));
+    brand.appendChild(el('p', { class: 'proposal-tagline' }, [Lib.PROPOSAL_BRAND.tagline]));
+    brand.appendChild(el('p', { class: 'proposal-contact' }, [Lib.PROPOSAL_BRAND.contact]));
+    sheet.appendChild(brand);
+    sheet.appendChild(el('p', { class: 'proposal-kicker' }, ['Proposal']));
+    sheet.appendChild(el('h1', { class: 'proposal-title' }, [view.title]));
+    var prepared = el('section', { class: 'proposal-block' });
+    prepared.appendChild(el('h2', {}, ['Prepared for']));
+    prepared.appendChild(proposalLinesBlock(view.prospectName || 'Not specified.'));
+    if (view.business) prepared.appendChild(proposalLinesBlock(view.business));
+    var reach = [view.email, view.phone].filter(Boolean).join('  ·  ');
+    if (reach) prepared.appendChild(proposalLinesBlock(reach));
+    prepared.appendChild(proposalLinesBlock('Date: ' + (view.dateText || 'Not set')));
+    prepared.appendChild(proposalLinesBlock('Valid until: ' + (view.validText || 'Not set')));
+    sheet.appendChild(prepared);
+    [
+      ['OVERVIEW', view.overview],
+      ['SCOPE & DELIVERABLES', view.scope],
+      ['TIMELINE', view.timeline]
+    ].forEach(function (section) {
+      var block = el('section', { class: 'proposal-block' });
+      block.appendChild(el('h2', {}, [section[0]]));
+      block.appendChild(proposalLinesBlock(section[1] || 'Not specified.'));
+      sheet.appendChild(block);
+    });
+    var quote = el('section', { class: 'proposal-block' });
+    quote.appendChild(el('h2', {}, ['QUOTE']));
+    quote.appendChild(proposalQuoteTable(view.grid));
+    sheet.appendChild(quote);
+    var terms = el('section', { class: 'proposal-block' });
+    terms.appendChild(el('h2', {}, ['TERMS']));
+    terms.appendChild(proposalLinesBlock(view.terms || 'No additional terms were added to this proposal.'));
+    sheet.appendChild(terms);
+    var accept = el('section', { class: 'proposal-block' });
+    accept.appendChild(el('h2', {}, ['ACCEPTANCE']));
+    accept.appendChild(el('p', {}, [
+      'By signing below, ' + (view.prospectName || 'the client') + ' accepts this proposal and authorizes Legacy Computing Services LLC to begin the work described above.'
+    ]));
+    accept.appendChild(el('p', { class: 'proposal-sign' }, ['Client signature: ______________________________     Date: ______________']));
+    accept.appendChild(el('p', { class: 'proposal-sign' }, ['Printed name: _________________________________']));
+    accept.appendChild(el('p', { class: 'mt-6 font-bold' }, [Lib.PROPOSAL_BRAND.company]));
+    accept.appendChild(el('p', {}, ['Bel Air, MD']));
+    sheet.appendChild(accept);
+    page.appendChild(sheet);
+    return page;
+  }
+
   function renderPrint() {
+    if (state.printKind === 'proposal') return renderProposalPrint();
     var spec = Lib.DOC_SPEC[state.printKind];
     if (!spec) return missingRecord('home', 'Nothing to print.');
     var record = findRow(spec.sheet, state.printId);
@@ -1827,6 +2517,9 @@
     state.busy = '';
     state.sheetsError = '';
     state.calendarError = '';
+    state.proposalSheetReady = false;
+    state.proposalSheetWorking = false;
+    state.proposalSheetFailed = '';
     state.intakeDialog = null;
     if (location.hash && location.hash !== '#') location.hash = '';
     paint();
@@ -1881,7 +2574,7 @@
         });
       }
       state.profile = profile;
-      requestDataAccess();
+      requestDataAccess().catch(function () {});
     }).catch(function (err) {
       state.busy = '';
       state.banner = { tone: 'bad', text: 'Could not check the Google account domain. ' + (err.message || '') };
@@ -1895,42 +2588,65 @@
     return who + ' is not a ' + domain + ' Workspace account. The portal checks the hosted domain Google sends (hd) and does not accept other accounts. The token from this attempt was revoked.';
   }
 
-  function requestDataAccess() {
-    var client = google.accounts.oauth2.initTokenClient({
-      client_id: Lib.clean(cfg().clientId),
-      scope: DATA_SCOPES,
-      include_granted_scopes: true,
-      hd: Lib.allowedDomain(cfg()),
-      prompt: '',
-      callback: function (resp) {
-        if (!resp || resp.error) {
+  function requestDataAccess(options) {
+    options = options || {};
+    return new Promise(function (resolve, reject) {
+      var client = google.accounts.oauth2.initTokenClient({
+        client_id: Lib.clean(cfg().clientId),
+        scope: DATA_SCOPES,
+        include_granted_scopes: true,
+        hd: Lib.allowedDomain(cfg()),
+        prompt: options.prompt || '',
+        callback: function (resp) {
+          if (!resp || resp.error) {
+            var denied = new Error('Google did not grant access to Sheets. The portal cannot open company records without it.');
+            if (!options.quiet) {
+              state.busy = '';
+              state.banner = { tone: 'bad', text: denied.message };
+              paint();
+            }
+            reject(denied);
+            return;
+          }
+          var granted = resp.scope || '';
+          if (granted.indexOf('https://www.googleapis.com/auth/spreadsheets') === -1) {
+            var sheetsErr = new Error('Sheets access was not granted, so tickets, customers, quotes, and proposals cannot load.');
+            if (!options.quiet) {
+              state.busy = '';
+              state.banner = { tone: 'bad', text: sheetsErr.message };
+              paint();
+            }
+            reject(sheetsErr);
+            return;
+          }
+          state.token = resp.access_token;
+          state.grantedScope = granted;
+          state.expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+          state.expired = false;
+          armExpiry(resp.expires_in);
+          if (options.quiet) {
+            resolve(resp);
+            return;
+          }
+          state.mode = 'live';
           state.busy = '';
-          state.banner = { tone: 'bad', text: 'Google did not grant access to Sheets. The portal cannot open company records without it.' };
-          paint();
-          return;
+          loadAll().then(function () {
+            state.banner = null;
+            go('home');
+            resolve(resp);
+          });
+        },
+        error_callback: function (err) {
+          if (options.quiet) {
+            reject(new Error('The Google window did not finish. Allow pop-ups and try again.'));
+            return;
+          }
+          onGisError(err);
+          reject(err || new Error('Google sign-in did not finish.'));
         }
-        var granted = resp.scope || '';
-        if (granted.indexOf('https://www.googleapis.com/auth/spreadsheets') === -1) {
-          state.busy = '';
-          state.banner = { tone: 'bad', text: 'Sheets access was not granted, so tickets, customers, and quotes cannot load.' };
-          paint();
-          return;
-        }
-        state.token = resp.access_token;
-        state.grantedScope = granted;
-        state.expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
-        state.expired = false;
-        state.mode = 'live';
-        state.busy = '';
-        armExpiry(resp.expires_in);
-        loadAll().then(function () {
-          state.banner = null;
-          go('home');
-        });
-      },
-      error_callback: onGisError
+      });
+      client.requestAccessToken();
     });
-    client.requestAccessToken();
   }
 
   function armExpiry(seconds) {
@@ -2014,7 +2730,7 @@
   function friendly(err) {
     var msg = err && err.message ? err.message : 'Google returned an error.';
     if (/has not been used in project|it is disabled|accessNotConfigured|SERVICE_DISABLED/i.test(msg)) {
-      return 'A Google API this portal needs is turned off in the Cloud project. Enable Sheets, Drive, and Calendar. Google said: ' + msg;
+      return 'A Google API this portal needs is turned off in the Cloud project. Enable Sheets, Drive, Docs, and Calendar. Google said: ' + msg;
     }
     if (err && (err.status === 401)) {
       state.expired = true;
@@ -2028,6 +2744,10 @@
 
   function scopeHas(fragment) {
     return (state.grantedScope || '').indexOf(fragment) !== -1;
+  }
+
+  function hasScope(url) {
+    return (state.grantedScope || '').split(/\s+/).indexOf(url) !== -1;
   }
 
   function loadAll() {
@@ -2304,9 +3024,10 @@
     var lines = [
       'Legacy Computing Services — employee portal spreadsheet',
       'Share this file only with employees. Leave general access Restricted. Do not choose Anyone with the link.',
-      'Do not rename these tabs: Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems.',
+      'Do not rename these tabs: Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems, Proposals.',
       'Do not delete or rename the header row on those tabs. The portal reads the header names.',
       'The Tickets tab can gain an Intake Sent column at the end of the header row. Do not rename it. Other header cells stay as they are.',
+      'The Proposals tab stores Sections and Line items as JSON. Customer ID and Job ID are filled when a proposal is accepted. Adding that tab does not change the other tabs.',
       'Quote and invoice lines are stored on QuoteItems and InvoiceItems.',
       'The public website does not read this file. Inquiries show up after the Apps Script is connected, or when you type one in the portal.',
       'Paste the spreadsheet ID into portal/config.js. It is the long code between /d/ and /edit in the address bar.'
@@ -2342,6 +3063,7 @@
     if (title === 'Tickets') return Lib.CHOICES.ticketStatus;
     if (title === 'Inquiries') return Lib.CHOICES.inquiryStatus;
     if (title === 'Quotes') return Lib.CHOICES.quoteStatus;
+    if (title === 'Proposals') return Lib.CHOICES.proposalStatus;
     if (title === 'Invoices') return Lib.CHOICES.invoiceStatus;
     return null;
   }
@@ -2396,6 +3118,50 @@
     });
   }
 
+  function writeMissingHeaders(title) {
+    var parsed = state.parsed[title];
+    var header = (parsed && parsed.headerRow) || [];
+    var hasData = parsed && parsed.rows && parsed.rows.length;
+    var hasAnyHeader = header.some(function (cell) { return String(cell || '').trim(); });
+    var columns = Lib.columnsOf(title);
+    if (!hasAnyHeader) {
+      if (hasData) return Promise.resolve();
+      var range = title + '!A1:' + Lib.colLetter(columns.length) + '1';
+      return googleFetch(sheetValuesUrl(range), {
+        method: 'PUT',
+        body: { range: range, majorDimension: 'ROWS', values: [columns.map(function (col) { return col.header; })] }
+      });
+    }
+    var plan = Lib.headersToAppend(header, columns);
+    if (!plan.headers.length) return Promise.resolve();
+    var start = Lib.colLetter(plan.startColumn);
+    var end = Lib.colLetter(plan.startColumn + plan.headers.length - 1);
+    var appendRange = title + '!' + start + '1:' + end + '1';
+    return googleFetch(sheetValuesUrl(appendRange), {
+      method: 'PUT',
+      body: { range: appendRange, majorDimension: 'ROWS', values: [plan.headers] }
+    });
+  }
+
+  function ensureSheet(title) {
+    var id = spreadsheetId();
+    if (!id) return Promise.reject(new Error('No spreadsheet ID is set in portal/config.js.'));
+    var chain = Promise.resolve();
+    if (state.sheetIds[title] == null) {
+      chain = googleFetch('https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(id) + ':batchUpdate', {
+        method: 'POST',
+        body: {
+          requests: [{ addSheet: { properties: { title: title, gridProperties: { frozenRowCount: 1 } } } }]
+        }
+      }).then(function () { return loadSheets(); });
+    }
+    return chain.then(function () {
+      return writeMissingHeaders(title);
+    }).then(function () {
+      return loadSheets();
+    });
+  }
+
   function repairSheets() {
     if (state.mode !== 'live' || !spreadsheetId()) return;
     state.busy = 'Updating tabs…';
@@ -2415,34 +3181,13 @@
     chain.then(function () {
       var writes = Promise.resolve();
       Lib.SHEETS.forEach(function (spec) {
-        writes = writes.then(function () {
-          var parsed = state.parsed[spec.title];
-          var header = (parsed && parsed.headerRow) || [];
-          var hasData = parsed && parsed.rows && parsed.rows.length;
-          var hasAnyHeader = header.some(function (cell) { return String(cell || '').trim(); });
-          var columns = Lib.columnsOf(spec.title);
-          if (!hasAnyHeader) {
-            if (hasData) return null;
-            var range = spec.title + '!A1:' + Lib.colLetter(columns.length) + '1';
-            return googleFetch(sheetValuesUrl(range), {
-              method: 'PUT',
-              body: { range: range, majorDimension: 'ROWS', values: [columns.map(function (col) { return col.header; })] }
-            });
-          }
-          var plan = Lib.headersToAppend(header, columns);
-          if (!plan.headers.length) return null;
-          var start = Lib.colLetter(plan.startColumn);
-          var end = Lib.colLetter(plan.startColumn + plan.headers.length - 1);
-          var appendRange = spec.title + '!' + start + '1:' + end + '1';
-          return googleFetch(sheetValuesUrl(appendRange), {
-            method: 'PUT',
-            body: { range: appendRange, majorDimension: 'ROWS', values: [plan.headers] }
-          });
-        });
+        writes = writes.then(function () { return writeMissingHeaders(spec.title); });
       });
       return writes.then(loadSheets);
     }).then(function () {
       state.busy = '';
+      state.proposalSheetReady = true;
+      state.proposalSheetFailed = '';
       state.banner = { tone: 'ok', text: 'Missing tabs were added. Missing header names were added without changing existing header cells or data rows.' };
       paint(true);
     }).catch(function (err) {
@@ -2474,7 +3219,9 @@
         paint(true);
         return;
       }
-      if (state.section === 'print') go(state.printKind === 'invoice' ? 'invoices' : 'quotes');
+      if (state.section === 'print') {
+        go(state.printKind === 'invoice' ? 'invoices' : state.printKind === 'proposal' ? 'proposals' : 'quotes');
+      }
       else if (state.editorId) go(state.section);
     });
     var calendarQuery = window.matchMedia ? window.matchMedia('(max-width: 767px)') : null;

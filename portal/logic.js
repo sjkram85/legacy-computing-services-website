@@ -107,6 +107,28 @@
         ['qty', 'Qty'],
         ['unitPrice', 'Unit price']
       ]
+    },
+    {
+      title: 'Proposals',
+      columns: [
+        ['id', 'ID'],
+        ['prospectName', 'Prospect name'],
+        ['business', 'Business'],
+        ['email', 'Email'],
+        ['phone', 'Phone'],
+        ['title', 'Title'],
+        ['status', 'Status'],
+        ['created', 'Created'],
+        ['sent', 'Sent'],
+        ['expires', 'Expires'],
+        ['total', 'Total'],
+        ['docUrl', 'Doc URL'],
+        ['notes', 'Notes'],
+        ['sections', 'Sections'],
+        ['lineItems', 'Line items'],
+        ['customerId', 'Customer ID'],
+        ['jobId', 'Job ID']
+      ]
     }
   ];
 
@@ -115,7 +137,30 @@
     priority: ['Low', 'Normal', 'High', 'Urgent'],
     inquiryStatus: ['New', 'Reviewed', 'Replied', 'Closed'],
     quoteStatus: ['Draft', 'Sent', 'Accepted', 'Declined'],
+    proposalStatus: ['Draft', 'Sent', 'Accepted', 'Declined'],
     invoiceStatus: ['Draft', 'Sent', 'Paid', 'Void']
+  };
+
+  var PROPOSAL_BRAND = {
+    company: 'Legacy Computing Services LLC',
+    tagline: "Protecting what matters. Building what's next.",
+    contact: 'Bel Air, MD | scott@legacycomputingservices.com | legacycomputingservices.com',
+    logoUrl: 'https://legacycomputingservices.com/assets/legacy-computing-shield.png',
+    navy: { red: 11 / 255, green: 19 / 255, blue: 30 / 255 },
+    cyan: { red: 24 / 255, green: 162 / 255, blue: 214 / 255 },
+    slate: { red: 71 / 255, green: 85 / 255, blue: 105 / 255 },
+    white: { red: 1, green: 1, blue: 1 },
+    tint: { red: 231 / 255, green: 246 / 255, blue: 252 / 255 }
+  };
+
+  var PROPOSAL_HEADINGS = {
+    'Prepared for': 1,
+    OVERVIEW: 1,
+    'SCOPE & DELIVERABLES': 1,
+    TIMELINE: 1,
+    QUOTE: 1,
+    TERMS: 1,
+    ACCEPTANCE: 1
   };
 
   var DOC_SPEC = {
@@ -434,6 +479,733 @@
     return d.getFullYear() + '-' + month + '-' + day;
   }
 
+  function formatDay(value) {
+    var match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return value ? String(value).replace('T', ' ').slice(0, 16) : '';
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[Number(match[2]) - 1] + ' ' + Number(match[3]) + ', ' + match[1];
+  }
+
+  function asText(value) {
+    return value == null ? '' : String(value);
+  }
+
+  function parseJsonValue(raw) {
+    var text = asText(raw).trim();
+    if (!text) return { ok: true, value: null };
+    try {
+      return { ok: true, value: JSON.parse(text) };
+    } catch (err) {
+      return { ok: false, value: null, raw: asText(raw) };
+    }
+  }
+
+  function readProposal(row) {
+    row = row || {};
+    var sectionsParsed = parseJsonValue(row.sections);
+    var sectionsOk = sectionsParsed.ok && (sectionsParsed.value == null || (typeof sectionsParsed.value === 'object' && !Array.isArray(sectionsParsed.value)));
+    var sections = sectionsOk && sectionsParsed.value ? sectionsParsed.value : {};
+    var linesParsed = parseJsonValue(row.lineItems);
+    var linesOk = linesParsed.ok && (linesParsed.value == null || Array.isArray(linesParsed.value));
+    var lines = [];
+    if (linesOk && Array.isArray(linesParsed.value)) {
+      linesParsed.value.forEach(function (line) {
+        if (!line || typeof line !== 'object') return;
+        lines.push({
+          description: clean(asText(line.description)),
+          qty: clean(asText(line.qty)),
+          unitPrice: clean(asText(line.unitPrice))
+        });
+      });
+    }
+    var status = clean(row.status);
+    if (CHOICES.proposalStatus.indexOf(status) === -1) status = status || 'Draft';
+    return {
+      id: clean(row.id),
+      _row: row._row,
+      _cells: row._cells,
+      prospectName: clean(row.prospectName),
+      business: clean(row.business),
+      email: clean(row.email),
+      phone: clean(row.phone),
+      title: clean(row.title),
+      status: status || 'Draft',
+      created: row.created || '',
+      sent: row.sent || '',
+      expires: row.expires || '',
+      total: row.total || '',
+      docUrl: clean(row.docUrl),
+      notes: row.notes == null ? '' : String(row.notes),
+      overview: sectionsOk ? clean(asText(sections.overview)) : '',
+      scope: sectionsOk ? clean(asText(sections.scope)) : '',
+      timeline: sectionsOk ? clean(asText(sections.timeline)) : '',
+      terms: sectionsOk ? clean(asText(sections.terms)) : '',
+      lines: lines,
+      sectionsOk: sectionsOk,
+      linesOk: linesOk,
+      sectionsRaw: sectionsOk ? '' : asText(row.sections),
+      lineItemsRaw: linesOk ? '' : asText(row.lineItems),
+      customerId: clean(row.customerId),
+      jobId: clean(row.jobId),
+      sample: !!row.sample
+    };
+  }
+
+  function writeProposal(fields) {
+    fields = fields || {};
+    var lines = [];
+    (fields.lines || []).forEach(function (line) {
+      if (!line) return;
+      var item = {
+        description: clean(line.description),
+        qty: clean(line.qty),
+        unitPrice: clean(line.unitPrice)
+      };
+      if (!item.description && !item.unitPrice) return;
+      lines.push(item);
+    });
+    var totals = documentTotals(lines, '');
+    var keepSections = fields.sectionsOk === false && fields.keepBrokenSections;
+    var keepLines = fields.linesOk === false && fields.keepBrokenLines;
+    var status = clean(fields.status) || 'Draft';
+    return {
+      id: fields.id || '',
+      _row: fields._row,
+      _cells: fields._cells,
+      prospectName: clean(fields.prospectName),
+      business: clean(fields.business),
+      email: clean(fields.email),
+      phone: clean(fields.phone),
+      title: clean(fields.title),
+      status: status,
+      created: fields.created || '',
+      sent: fields.sent || '',
+      expires: fields.expires || '',
+      total: totals.complete ? String(totals.total) : '',
+      docUrl: clean(fields.docUrl),
+      notes: fields.notes == null ? '' : String(fields.notes),
+      sections: keepSections ? asText(fields.sectionsRaw) : JSON.stringify({
+        overview: fields.overview || '',
+        scope: fields.scope || '',
+        timeline: fields.timeline || '',
+        terms: fields.terms || ''
+      }),
+      lineItems: keepLines ? asText(fields.lineItemsRaw) : JSON.stringify(lines),
+      customerId: clean(fields.customerId),
+      jobId: clean(fields.jobId),
+      sample: fields.sample
+    };
+  }
+
+  function proposalQuoteGrid(lines) {
+    var totals = documentTotals(lines, '');
+    var rows = [['Description', 'Qty', 'Unit price', 'Amount']];
+    (lines || []).forEach(function (line) {
+      var math = lineMath(line.qty, line.unitPrice);
+      var unit = parseNumber(line.unitPrice);
+      rows.push([
+        line.description || '',
+        line.qty || '',
+        unit == null ? 'Price not entered' : formatUSD(unit),
+        math.ok ? formatUSD(math.amount) : 'Price not entered'
+      ]);
+    });
+    if (!lines || !lines.length) rows.push(['No line items yet.', '', '', '']);
+    rows.push(['Subtotal', '', '', totals.priced ? formatUSD(totals.subtotal) : '']);
+    rows.push(['Total', '', '', totals.complete ? formatUSD(totals.total) : 'Incomplete']);
+    return { rows: rows, totals: totals };
+  }
+
+  function proposalView(record) {
+    var view = readProposal(record);
+    var lines = view.linesOk ? view.lines : [];
+    return {
+      title: view.title || 'Proposal',
+      prospectName: view.prospectName,
+      business: view.business,
+      email: view.email,
+      phone: view.phone,
+      dateText: formatDay(view.created) || formatDay(isoDate(0)),
+      validText: view.expires ? formatDay(view.expires) : 'Not set',
+      overview: view.sectionsOk ? view.overview : '',
+      scope: view.sectionsOk ? view.scope : '',
+      timeline: view.sectionsOk ? view.timeline : '',
+      terms: view.sectionsOk ? view.terms : '',
+      notes: view.notes,
+      grid: proposalQuoteGrid(lines),
+      status: view.status,
+      docUrl: view.docUrl,
+      sample: view.sample
+    };
+  }
+
+  function proposalDocName(record) {
+    var view = readProposal(record);
+    var parts = ['Proposal'];
+    if (view.title) parts.push(view.title);
+    if (view.prospectName) parts.push(view.prospectName);
+    return parts.join(' — ').replace(/\s+/g, ' ').slice(0, 120);
+  }
+
+  function googleDocId(value) {
+    var match = clean(value).match(/\/document\/d\/([A-Za-z0-9_-]+)/i);
+    return match ? match[1] : '';
+  }
+
+  function proposalComposeUrl(record) {
+    var view = readProposal(record);
+    if (!looksLikeEmail(view.email)) return '';
+    var doc = clean(view.docUrl);
+    if (!/^https:\/\/docs\.google\.com\/document\/d\/[A-Za-z0-9_-]+/i.test(doc)) return '';
+    var subject = 'Proposal: ' + (view.title || 'Legacy Computing Services');
+    var first = view.prospectName ? view.prospectName.split(/\s+/)[0] : '';
+    var hello = first ? 'Hello ' + first + ',' : 'Hello,';
+    var valid = view.expires ? ' It is valid until ' + formatDay(view.expires) + '.' : '';
+    var about = view.title ? ' for ' + view.title : '';
+    var body = [
+      hello,
+      '',
+      'Please review the proposal' + about + '.' + valid,
+      '',
+      doc,
+      '',
+      'Thank you,',
+      'Legacy Computing Services',
+      'scott@legacycomputingservices.com'
+    ].join('\n');
+    return 'https://mail.google.com/mail/?view=cm&fs=1'
+      + '&to=' + encodeURIComponent(view.email)
+      + '&su=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(body);
+  }
+
+  function findById(rows, id) {
+    var wanted = clean(id);
+    if (!wanted) return null;
+    var found = null;
+    (rows || []).forEach(function (row) {
+      if (!found && row && clean(row.id) === wanted) found = row;
+    });
+    return found;
+  }
+
+  function planProposalAcceptance(proposal, customers, tickets) {
+    var view = readProposal(proposal);
+    if (!view.prospectName) {
+      return { error: 'Enter the prospect name before marking this accepted.' };
+    }
+    var customer = findById(customers, view.customerId);
+    if (!customer && looksLikeEmail(view.email)) {
+      var email = view.email.toLowerCase();
+      (customers || []).forEach(function (row) {
+        if (!customer && clean(row.email).toLowerCase() === email) customer = row;
+      });
+    }
+    if (!customer) {
+      var name = view.prospectName.toLowerCase();
+      (customers || []).forEach(function (row) {
+        if (!customer && clean(row.name).toLowerCase() === name) customer = row;
+      });
+    }
+    var creatingCustomer = !customer;
+    if (!customer) {
+      customer = {
+        name: view.prospectName,
+        email: view.email,
+        phone: view.phone,
+        company: view.business,
+        town: '',
+        notes: 'Added when a proposal was accepted.' + (view.title ? ' Proposal: ' + view.title + '.' : '')
+      };
+    }
+    var ticket = findById(tickets, view.jobId);
+    var marker = view.id ? 'Opened from an accepted proposal ' + view.id + '.' : '';
+    if (!ticket && marker) {
+      (tickets || []).forEach(function (row) {
+        if (ticket || !row) return;
+        if (asText(row.notes).indexOf(marker) !== -1) ticket = row;
+      });
+    }
+    var creatingTicket = !ticket;
+    if (!ticket) {
+      var note = marker || 'Opened from an accepted proposal.';
+      if (view.title) note += ' ' + view.title + '.';
+      if (view.overview) note += '\n' + view.overview;
+      ticket = {
+        customer: customer.name || view.prospectName,
+        issue: view.title || 'Accepted proposal',
+        status: 'Open',
+        priority: 'Normal',
+        assignedTo: '',
+        openedOn: isoDate(0),
+        dueOn: '',
+        notes: note,
+        intakeSent: ''
+      };
+    }
+    var next = writeProposal(Object.assign({}, view, {
+      status: 'Accepted',
+      customerId: customer.id || '',
+      jobId: ticket.id || '',
+      sectionsOk: view.sectionsOk,
+      linesOk: view.linesOk,
+      keepBrokenSections: view.sectionsOk === false,
+      keepBrokenLines: view.linesOk === false
+    }));
+    return {
+      error: '',
+      customer: customer,
+      ticket: ticket,
+      creatingCustomer: creatingCustomer,
+      creatingTicket: creatingTicket,
+      proposal: next
+    };
+  }
+
+  function rgbColor(rgb) {
+    return { color: { rgbColor: rgb } };
+  }
+
+  function textStyle(rgb, size, extra) {
+    var style = {
+      bold: false,
+      italic: false,
+      weightedFontFamily: { fontFamily: 'Arial', weight: 400 },
+      fontSize: { magnitude: size, unit: 'PT' },
+      foregroundColor: rgbColor(rgb)
+    };
+    if (extra) {
+      Object.keys(extra).forEach(function (key) { style[key] = extra[key]; });
+    }
+    if (style.bold) style.weightedFontFamily = { fontFamily: 'Arial', weight: 700 };
+    return style;
+  }
+
+  function paragraphBorder(rgb, width) {
+    return {
+      color: rgbColor(rgb),
+      width: { magnitude: width, unit: 'PT' },
+      padding: { magnitude: 3, unit: 'PT' },
+      dashStyle: 'SOLID'
+    };
+  }
+
+  function proposalOpeningRequests(view) {
+    var requests = [];
+    var cursor = 1;
+    view = view || {};
+    var grid = (view.grid && view.grid.rows) || proposalQuoteGrid([]).rows;
+
+    requests.push({
+      updateDocumentStyle: {
+        documentStyle: {
+          marginTop: { magnitude: 50, unit: 'PT' },
+          marginBottom: { magnitude: 50, unit: 'PT' },
+          marginLeft: { magnitude: 64, unit: 'PT' },
+          marginRight: { magnitude: 64, unit: 'PT' }
+        },
+        fields: 'marginTop,marginBottom,marginLeft,marginRight'
+      }
+    });
+
+    function insertText(text) {
+      requests.push({ insertText: { location: { index: cursor }, text: text } });
+      cursor += text.length;
+    }
+
+    function styleText(start, end, style, fields) {
+      if (end <= start) return;
+      requests.push({
+        updateTextStyle: {
+          range: { startIndex: start, endIndex: end },
+          textStyle: style,
+          fields: fields
+        }
+      });
+    }
+
+    function styleParagraph(start, end, style, fields) {
+      requests.push({
+        updateParagraphStyle: {
+          range: { startIndex: start, endIndex: end },
+          paragraphStyle: style,
+          fields: fields
+        }
+      });
+    }
+
+    requests.push({
+      insertInlineImage: {
+        location: { index: cursor },
+        uri: PROPOSAL_BRAND.logoUrl,
+        objectSize: {
+          height: { magnitude: 78, unit: 'PT' },
+          width: { magnitude: 70, unit: 'PT' }
+        }
+      }
+    });
+    var imageStart = cursor;
+    cursor += 1;
+    insertText('\n');
+    styleParagraph(imageStart, cursor, { alignment: 'CENTER' }, 'alignment');
+
+    function addParagraph(text, style, textFields, paragraphStyle, paragraphFields) {
+      var start = cursor;
+      insertText(text + '\n');
+      styleText(start, cursor - 1, style, textFields);
+      if (paragraphStyle) styleParagraph(start, cursor, paragraphStyle, paragraphFields);
+    }
+
+    var textFields = 'bold,italic,fontSize,weightedFontFamily,foregroundColor';
+    addParagraph(
+      PROPOSAL_BRAND.company,
+      textStyle(PROPOSAL_BRAND.navy, 20, { bold: true }),
+      textFields,
+      {
+        alignment: 'CENTER',
+        spaceAbove: { magnitude: 8, unit: 'PT' },
+        spaceBelow: { magnitude: 1, unit: 'PT' }
+      },
+      'alignment,spaceAbove,spaceBelow'
+    );
+    addParagraph(
+      PROPOSAL_BRAND.tagline,
+      textStyle(PROPOSAL_BRAND.cyan, 11, { italic: true }),
+      textFields,
+      {
+        alignment: 'CENTER',
+        spaceAbove: { magnitude: 0, unit: 'PT' },
+        spaceBelow: { magnitude: 1, unit: 'PT' }
+      },
+      'alignment,spaceAbove,spaceBelow'
+    );
+    addParagraph(
+      PROPOSAL_BRAND.contact,
+      textStyle(PROPOSAL_BRAND.slate, 9, { bold: false, italic: false }),
+      textFields,
+      {
+        alignment: 'CENTER',
+        spaceBelow: { magnitude: 8, unit: 'PT' },
+        borderBottom: paragraphBorder(PROPOSAL_BRAND.cyan, 1.5)
+      },
+      'alignment,spaceBelow,borderBottom'
+    );
+
+    addParagraph(
+      'PROPOSAL',
+      textStyle(PROPOSAL_BRAND.cyan, 10, { bold: true }),
+      textFields,
+      {
+        alignment: 'START',
+        spaceAbove: { magnitude: 16, unit: 'PT' },
+        spaceBelow: { magnitude: 2, unit: 'PT' }
+      },
+      'alignment,spaceAbove,spaceBelow'
+    );
+    addParagraph(
+      view.title || 'Proposal',
+      textStyle(PROPOSAL_BRAND.navy, 22, { bold: true }),
+      textFields,
+      {
+        namedStyleType: 'HEADING_1',
+        spaceAbove: { magnitude: 0, unit: 'PT' },
+        spaceBelow: { magnitude: 10, unit: 'PT' }
+      },
+      'namedStyleType,spaceAbove,spaceBelow'
+    );
+
+    function addHeading(label) {
+      addParagraph(
+        label,
+        textStyle(PROPOSAL_BRAND.navy, 12, { bold: true }),
+        textFields,
+        {
+          namedStyleType: 'HEADING_2',
+          spaceAbove: { magnitude: 14, unit: 'PT' },
+          spaceBelow: { magnitude: 3, unit: 'PT' },
+          borderBottom: paragraphBorder(PROPOSAL_BRAND.cyan, 1)
+        },
+        'namedStyleType,spaceAbove,spaceBelow,borderBottom'
+      );
+    }
+
+    function addBody(text) {
+      var value = clean(text) || 'Not specified.';
+      value.split('\n').forEach(function (line) {
+        addParagraph(
+          line,
+          textStyle(PROPOSAL_BRAND.navy, 11, { bold: false, italic: false }),
+          textFields,
+          {
+            namedStyleType: 'NORMAL_TEXT',
+            spaceAbove: { magnitude: 1, unit: 'PT' },
+            spaceBelow: { magnitude: 1, unit: 'PT' }
+          },
+          'namedStyleType,spaceAbove,spaceBelow'
+        );
+      });
+    }
+
+    addHeading('Prepared for');
+    addBody(view.prospectName || 'Not specified.');
+    if (clean(view.business)) addBody(view.business);
+    var reach = [clean(view.email), clean(view.phone)].filter(Boolean).join('  ·  ');
+    if (reach) addBody(reach);
+    addBody('Date: ' + (view.dateText || 'Not set'));
+    addBody('Valid until: ' + (view.validText || 'Not set'));
+    addHeading('OVERVIEW');
+    addBody(view.overview);
+    addHeading('SCOPE & DELIVERABLES');
+    addBody(view.scope);
+    addHeading('TIMELINE');
+    addBody(view.timeline);
+    addHeading('QUOTE');
+
+    var tableIndex = cursor;
+    requests.push({
+      insertTable: {
+        rows: grid.length,
+        columns: 4,
+        location: { index: tableIndex }
+      }
+    });
+    return { requests: requests, tableIndex: tableIndex };
+  }
+
+  function proposalClosingText(view) {
+    view = view || {};
+    var who = clean(view.prospectName) || 'the client';
+    var terms = clean(view.terms) || 'No additional terms were added to this proposal.';
+    return [
+      '',
+      'TERMS',
+      terms,
+      '',
+      'ACCEPTANCE',
+      'By signing below, ' + who + ' accepts this proposal and authorizes Legacy Computing Services LLC to begin the work described above.',
+      '',
+      'Client signature: ______________________________     Date: ______________',
+      '',
+      'Printed name: _________________________________',
+      '',
+      PROPOSAL_BRAND.company,
+      'Bel Air, MD'
+    ].join('\n');
+  }
+
+  function paragraphPlainText(paragraph) {
+    var text = '';
+    ((paragraph && paragraph.elements) || []).forEach(function (part) {
+      if (part.textRun && part.textRun.content) text += part.textRun.content;
+    });
+    return text.replace(/\n$/, '');
+  }
+
+  function findProposalTable(doc) {
+    var content = (doc && doc.body && doc.body.content) || [];
+    var tableEl = null;
+    var after = null;
+    for (var i = 0; i < content.length; i++) {
+      if (content[i].table) {
+        tableEl = content[i];
+        after = content[i + 1] || null;
+      }
+    }
+    if (!tableEl) return null;
+    var cells = (tableEl.table.tableRows || []).map(function (row) {
+      return (row.tableCells || []).map(function (cell) {
+        var start = cell.content && cell.content[0] && cell.content[0].startIndex != null
+          ? cell.content[0].startIndex
+          : cell.startIndex;
+        return { start: start };
+      });
+    });
+    var appendAt = after && after.startIndex != null ? after.startIndex : tableEl.endIndex;
+    return { tableStart: tableEl.startIndex, cells: cells, appendAt: appendAt, table: tableEl };
+  }
+
+  function proposalFillRequests(doc, grid, closingText) {
+    var found = findProposalTable(doc);
+    if (!found) return [];
+    var ops = [];
+    found.cells.forEach(function (row, r) {
+      row.forEach(function (cell, c) {
+        var value = grid && grid[r] ? grid[r][c] : '';
+        if (value == null || value === '') return;
+        ops.push({ index: cell.start, text: String(value) });
+      });
+    });
+    if (closingText) ops.push({ index: found.appendAt, text: closingText });
+    ops.sort(function (a, b) { return b.index - a.index; });
+    return ops.map(function (op) {
+      return { insertText: { location: { index: op.index }, text: op.text } };
+    });
+  }
+
+  function proposalPolishRequests(doc) {
+    var requests = [];
+    var content = (doc && doc.body && doc.body.content) || [];
+    var textFields = 'bold,italic,fontSize,weightedFontFamily,foregroundColor';
+
+    function paintParagraph(block, style, fields, paragraphStyle, paragraphFields) {
+      if (style) {
+        var end = block.endIndex;
+        if (end > block.startIndex + 1) end -= 1;
+        requests.push({
+          updateTextStyle: {
+            range: { startIndex: block.startIndex, endIndex: end },
+            textStyle: style,
+            fields: fields
+          }
+        });
+      }
+      if (paragraphStyle) {
+        requests.push({
+          updateParagraphStyle: {
+            range: { startIndex: block.startIndex, endIndex: block.endIndex },
+            paragraphStyle: paragraphStyle,
+            fields: paragraphFields
+          }
+        });
+      }
+    }
+
+    content.forEach(function (block) {
+      if (!block.paragraph) return;
+      var text = paragraphPlainText(block.paragraph);
+      if (!text) return;
+      if (text === PROPOSAL_BRAND.company) {
+        paintParagraph(block, textStyle(PROPOSAL_BRAND.navy, 20, { bold: true }), textFields, { alignment: 'CENTER' }, 'alignment');
+        return;
+      }
+      if (text === PROPOSAL_BRAND.tagline) {
+        paintParagraph(block, textStyle(PROPOSAL_BRAND.cyan, 11, { italic: true }), textFields, { alignment: 'CENTER' }, 'alignment');
+        return;
+      }
+      if (text === PROPOSAL_BRAND.contact) {
+        paintParagraph(
+          block,
+          textStyle(PROPOSAL_BRAND.slate, 9, { bold: false, italic: false }),
+          textFields,
+          { alignment: 'CENTER', borderBottom: paragraphBorder(PROPOSAL_BRAND.cyan, 1.5) },
+          'alignment,borderBottom'
+        );
+        return;
+      }
+      if (text === 'PROPOSAL') {
+        paintParagraph(block, textStyle(PROPOSAL_BRAND.cyan, 10, { bold: true }), textFields, { alignment: 'START' }, 'alignment');
+        return;
+      }
+      if (PROPOSAL_HEADINGS[text]) {
+        paintParagraph(
+          block,
+          textStyle(PROPOSAL_BRAND.navy, 12, { bold: true }),
+          textFields,
+          {
+            namedStyleType: 'HEADING_2',
+            borderBottom: paragraphBorder(PROPOSAL_BRAND.cyan, 1)
+          },
+          'namedStyleType,borderBottom'
+        );
+      }
+    });
+
+    content.forEach(function (block) {
+      if (!block.table || block.startIndex == null) return;
+      var rows = block.table.tableRows || [];
+      var columns = rows[0] && rows[0].tableCells ? rows[0].tableCells.length : 0;
+      if (!rows.length || !columns) return;
+      var border = {
+        color: rgbColor(PROPOSAL_BRAND.cyan),
+        width: { magnitude: 0.6, unit: 'PT' },
+        dashStyle: 'SOLID'
+      };
+      function cellRange(rowIndex, columnIndex, rowSpan, columnSpan) {
+        return {
+          tableCellLocation: {
+            tableStartLocation: { index: block.startIndex },
+            rowIndex: rowIndex,
+            columnIndex: columnIndex
+          },
+          rowSpan: rowSpan,
+          columnSpan: columnSpan
+        };
+      }
+      requests.push({
+        updateTableCellStyle: {
+          tableRange: cellRange(0, 0, rows.length, columns),
+          tableCellStyle: {
+            borderTop: border,
+            borderBottom: border,
+            borderLeft: border,
+            borderRight: border,
+            paddingTop: { magnitude: 5, unit: 'PT' },
+            paddingBottom: { magnitude: 5, unit: 'PT' },
+            paddingLeft: { magnitude: 6, unit: 'PT' },
+            paddingRight: { magnitude: 6, unit: 'PT' }
+          },
+          fields: 'borderTop,borderBottom,borderLeft,borderRight,paddingTop,paddingBottom,paddingLeft,paddingRight'
+        }
+      });
+      requests.push({
+        updateTableCellStyle: {
+          tableRange: cellRange(0, 0, 1, columns),
+          tableCellStyle: { backgroundColor: rgbColor(PROPOSAL_BRAND.navy) },
+          fields: 'backgroundColor'
+        }
+      });
+      if (rows.length >= 1) {
+        requests.push({
+          updateTableCellStyle: {
+            tableRange: cellRange(rows.length - 1, 0, 1, columns),
+            tableCellStyle: { backgroundColor: rgbColor(PROPOSAL_BRAND.tint) },
+            fields: 'backgroundColor'
+          }
+        });
+      }
+      var widths = [270, 54, 88, 88];
+      for (var c = 0; c < columns && c < widths.length; c++) {
+        requests.push({
+          updateTableColumnProperties: {
+            tableStartLocation: { index: block.startIndex },
+            columnIndices: [c],
+            tableColumnProperties: {
+              widthType: 'FIXED_WIDTH',
+              width: { magnitude: widths[c], unit: 'PT' }
+            },
+            fields: 'widthType,width'
+          }
+        });
+      }
+      rows.forEach(function (row, r) {
+        (row.tableCells || []).forEach(function (cell, c) {
+          var para = (cell.content || [])[0];
+          if (!para || para.startIndex == null) return;
+          var align = c === 0 ? 'START' : 'END';
+          var bold = r === 0 || r >= rows.length - 2;
+          var color = r === 0 ? PROPOSAL_BRAND.white : PROPOSAL_BRAND.navy;
+          var end = para.endIndex;
+          if (end > para.startIndex + 1) end -= 1;
+          requests.push({
+            updateTextStyle: {
+              range: { startIndex: para.startIndex, endIndex: end },
+              textStyle: textStyle(color, 9, { bold: bold, italic: false }),
+              fields: textFields
+            }
+          });
+          requests.push({
+            updateParagraphStyle: {
+              range: { startIndex: para.startIndex, endIndex: para.endIndex },
+              paragraphStyle: { alignment: align },
+              fields: 'alignment'
+            }
+          });
+        });
+      });
+    });
+    return requests;
+  }
+
   function sampleBundle(now) {
     var today = isoDate(0, now);
     var soon = isoDate(14, now);
@@ -582,6 +1354,63 @@
           sample: true
         }
       ],
+      Proposals: [
+        {
+          id: 'sample-proposal-1',
+          prospectName: 'Pat Preview',
+          business: 'Sample Bakery',
+          email: 'pat.preview@example.test',
+          phone: '(410) 555-0142',
+          title: 'SAMPLE: website refresh',
+          status: 'Draft',
+          created: today,
+          sent: '',
+          expires: soon,
+          total: '60',
+          docUrl: '',
+          notes: 'Sample proposal. The dollar amount is not a company price.',
+          sections: JSON.stringify({
+            overview: 'SAMPLE overview for a fake website refresh.',
+            scope: 'SAMPLE: one new page\nSAMPLE: a contact form',
+            timeline: 'SAMPLE: two weeks after approval.',
+            terms: 'SAMPLE terms. Not a real agreement.'
+          }),
+          lineItems: JSON.stringify([
+            { description: 'Sample page (not a real price)', qty: '2', unitPrice: '25' },
+            { description: 'Sample visit (not a real price)', qty: '1', unitPrice: '10' }
+          ]),
+          customerId: '',
+          jobId: '',
+          sample: true
+        },
+        {
+          id: 'sample-proposal-2',
+          prospectName: 'Ada Example',
+          business: 'Sample Bakery',
+          email: 'ada.example@example.test',
+          phone: '(410) 555-0101',
+          title: 'SAMPLE: backup plan',
+          status: 'Sent',
+          created: today,
+          sent: today,
+          expires: soon,
+          total: '10',
+          docUrl: 'https://docs.google.com/document/d/sample-proposal/edit',
+          notes: 'Sample sent proposal. The dollar amount is not a company price.',
+          sections: JSON.stringify({
+            overview: 'SAMPLE overview for a fake backup plan.',
+            scope: 'SAMPLE: one backup check',
+            timeline: 'SAMPLE: one visit.',
+            terms: 'SAMPLE terms. Not a real agreement.'
+          }),
+          lineItems: JSON.stringify([
+            { description: 'Sample backup check (not a real price)', qty: '1', unitPrice: '10' }
+          ]),
+          customerId: '',
+          jobId: '',
+          sample: true
+        }
+      ],
       events: [
         {
           id: 'sample-event-1',
@@ -684,6 +1513,21 @@
     nextDocumentNumber: nextDocumentNumber,
     colLetter: colLetter,
     isoDate: isoDate,
+    formatDay: formatDay,
+    readProposal: readProposal,
+    writeProposal: writeProposal,
+    proposalQuoteGrid: proposalQuoteGrid,
+    proposalView: proposalView,
+    proposalDocName: proposalDocName,
+    googleDocId: googleDocId,
+    proposalComposeUrl: proposalComposeUrl,
+    planProposalAcceptance: planProposalAcceptance,
+    proposalOpeningRequests: proposalOpeningRequests,
+    proposalClosingText: proposalClosingText,
+    findProposalTable: findProposalTable,
+    proposalFillRequests: proposalFillRequests,
+    proposalPolishRequests: proposalPolishRequests,
+    PROPOSAL_BRAND: PROPOSAL_BRAND,
     sampleBundle: sampleBundle,
     calendarEmbedUrl: calendarEmbedUrl,
     drivePreviewUrl: drivePreviewUrl,
