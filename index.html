@@ -281,7 +281,9 @@
       Hero shield only. The arrow was measured in the emblem viewBox (0 0 160 160):
       teal shaft M38 114 L123 39 (stroke 8.5, round cap) starts at about (34.8, 116.8),
       and the head tip is (139, 26). Travel percents are those points divided by 160.
-      Spin and surge use transform and opacity only.
+      The surge is 3.5s, half of the 7s spin, so it repeats twice per revolution.
+      A -2.66s delay (76% of 3.5s) puts the rim hold on the face-on frames.
+      Spin, travel, burst, and rim glow use transform and opacity only.
     */
     .hero-shield-perspective {
       perspective: 720px;
@@ -301,7 +303,39 @@
       inset: 0;
       z-index: 1;
       pointer-events: none;
-      --surge-duration: 2.4s;
+      --surge-duration: 3.5s;
+      --surge-delay: -2.66s;
+    }
+
+    /* Soft rim hue. Masked to the shield outline so the glow wraps the metal edge. */
+    .hero-shield-aura {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      -webkit-mask-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><path d='M80 14L30 35V75C30 109.5 51.2 138.5 80 147C108.8 138.5 130 109.5 130 75V35L80 14Z' fill='none' stroke='white' stroke-width='18' stroke-opacity='0.28' stroke-linejoin='round'/><path d='M80 14L30 35V75C30 109.5 51.2 138.5 80 147C108.8 138.5 130 109.5 130 75V35L80 14Z' fill='none' stroke='white' stroke-width='7' stroke-linejoin='round'/></svg>");
+      mask-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><path d='M80 14L30 35V75C30 109.5 51.2 138.5 80 147C108.8 138.5 130 109.5 130 75V35L80 14Z' fill='none' stroke='white' stroke-width='18' stroke-opacity='0.28' stroke-linejoin='round'/><path d='M80 14L30 35V75C30 109.5 51.2 138.5 80 147C108.8 138.5 130 109.5 130 75V35L80 14Z' fill='none' stroke='white' stroke-width='7' stroke-linejoin='round'/></svg>");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+
+    .hero-shield-aura-glow {
+      position: absolute;
+      left: 86.9%;
+      top: 16.25%;
+      width: 240%;
+      height: 240%;
+      border-radius: 50%;
+      transform-origin: center center;
+      background: radial-gradient(circle,
+        rgba(224, 251, 255, 0.42) 0%,
+        rgba(125, 211, 252, 0.4) 16%,
+        rgba(56, 189, 248, 0.32) 34%,
+        rgba(24, 162, 214, 0.18) 54%,
+        rgba(24, 162, 214, 0) 70%);
+      mix-blend-mode: screen;
+      animation: hero-aura-spread var(--surge-duration) linear var(--surge-delay) infinite;
     }
 
     .hero-shield-surge-clip {
@@ -323,7 +357,7 @@
       top: 0;
       width: 100%;
       height: 100%;
-      animation: hero-surge-travel var(--surge-duration) linear infinite;
+      animation: hero-surge-travel var(--surge-duration) linear var(--surge-delay) infinite;
       mix-blend-mode: screen;
     }
 
@@ -393,7 +427,7 @@
         rgba(14, 165, 233, 0) 78%);
       opacity: 0;
       mix-blend-mode: screen;
-      animation: hero-surge-flash var(--surge-duration) linear infinite;
+      animation: hero-surge-flash var(--surge-duration) linear var(--surge-delay) infinite;
     }
 
     .hero-shield-surge-bloom {
@@ -414,28 +448,39 @@
 
     @keyframes hero-surge-travel {
       0% { transform: translate(21.76%, 73.01%); opacity: 0; }
-      9% { transform: translate(25.8%, 69.5%); opacity: 1; }
-      24% { transform: translate(34.2%, 62.1%); opacity: 1; }
-      42% { transform: translate(46.5%, 51.4%); opacity: 1; }
-      60% { transform: translate(61.4%, 38.5%); opacity: 1; }
-      74% { transform: translate(76.8%, 25.1%); opacity: 1; }
-      82% { transform: translate(86.88%, 16.25%); opacity: 1; }
-      90% { transform: translate(86.88%, 16.25%); opacity: 0; }
-      100% { transform: translate(86.88%, 16.25%); opacity: 0; }
+      6% { transform: translate(25.8%, 69.5%); opacity: 1; }
+      16% { transform: translate(34.2%, 62.1%); opacity: 1; }
+      28% { transform: translate(46.5%, 51.4%); opacity: 1; }
+      38% { transform: translate(61.4%, 38.5%); opacity: 1; }
+      46% { transform: translate(76.8%, 25.1%); opacity: 1; }
+      52% { transform: translate(86.88%, 16.25%); opacity: 1; }
+      60% { transform: translate(86.88%, 16.25%); opacity: 0; }
+      100% { transform: translate(21.76%, 73.01%); opacity: 0; }
     }
 
     @keyframes hero-surge-flash {
-      0%, 72% { opacity: 0; transform: translate(-50%, -50%) scale(0.62); }
-      82% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      91% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.62); }
+      0%, 46% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      53% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.88); }
+      62% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    }
+
+    /* Spread from the arrow tip around the rim, hold, then pull back into the tip. */
+    @keyframes hero-aura-spread {
+      0%, 50% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+      58% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.38); }
+      70% { opacity: 0.72; transform: translate(-50%, -50%) scale(1); }
+      82% { opacity: 0.72; transform: translate(-50%, -50%) scale(1); }
+      94% { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .hero-shield-rotor,
       .hero-shield-surge-mover,
       .hero-shield-surge-flash,
-      .hero-shield-surge-bloom {
+      .hero-shield-surge-bloom,
+      .hero-shield-aura-glow {
         animation: none;
       }
 
@@ -782,6 +827,9 @@
                       <path d="M106 31L139 26L131 58L122 44L106 31Z" fill="url(#arrowTealGrad)" stroke="#7DD3FC" stroke-width="1.8" stroke-linejoin="round"/>
                     </svg>
                     <div class="hero-shield-surge" aria-hidden="true">
+                      <div class="hero-shield-aura">
+                        <div class="hero-shield-aura-glow"></div>
+                      </div>
                       <div class="hero-shield-surge-clip">
                         <div class="hero-shield-surge-mover">
                           <div class="hero-shield-surge-blob"></div>
@@ -898,13 +946,26 @@
             <span class="block font-mono text-[11px] uppercase text-cyan-400">04 // Care</span>
             <span class="block text-sm sm:text-base mt-0.5">Technical Support</span>
           </button>
+
+          <button
+            type="button"
+            role="tab"
+            id="tab-software"
+            aria-selected="false"
+            aria-controls="panel-service-detail"
+            onclick="selectServiceTab('software')"
+            data-tab-span="col-span-2 lg:col-span-2 lg:col-start-2"
+            class="svc-tab col-span-2 lg:col-span-2 lg:col-start-2 text-left p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-600 text-slate-200 font-bold transition-all cursor-pointer">
+            <span class="block font-mono text-[11px] uppercase text-cyan-400">05 // Software</span>
+            <span class="block text-sm sm:text-base mt-0.5">Custom Business Software</span>
+          </button>
         </div>
 
         <!-- Active Service Detail Panel -->
         <div id="panel-service-detail" role="tabpanel" class="mt-6 cyber-panel rounded-3xl p-6 sm:p-8 lg:p-10 border-slate-700/80 shadow-2xl">
           <!-- Top Row: Title, Overview & Realistic Metrics -->
           <div class="pb-8 border-b border-slate-800 grid lg:grid-cols-12 gap-7 items-start">
-            <div class="lg:col-span-7 space-y-3">
+            <div id="svcIntro" class="lg:col-span-7 space-y-3">
               <span id="svcTagline" class="inline-block font-mono text-xs uppercase tracking-wider text-cyan-400">
                 01 // Plain-English Web Engineering
               </span>
@@ -916,7 +977,7 @@
               </p>
             </div>
 
-            <div class="lg:col-span-5 grid sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
+            <div id="svcMetrics" class="lg:col-span-5 grid sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
               <div class="rounded-2xl bg-slate-950/85 border border-slate-800 p-4">
                 <span class="block font-mono text-[11px] uppercase tracking-wider text-slate-400">Realistic Timeline</span>
                 <span id="svcTimeline" class="block text-base sm:text-lg font-bold text-cyan-400 mt-1">2–4 Weeks</span>
@@ -931,9 +992,9 @@
           </div>
 
           <!-- Middle Row: Practical Guidance + "What We Need From You" -->
-          <div class="py-8 grid lg:grid-cols-12 gap-7 border-b border-slate-800">
+          <div id="svcMiddle" class="py-8 grid lg:grid-cols-12 gap-7 border-b border-slate-800">
             <!-- Practical Guidance Box -->
-            <div class="lg:col-span-7 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-950 border border-emerald-500/35 p-6">
+            <div id="svcGuidance" class="lg:col-span-7 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-950 border border-emerald-500/35 p-6">
               <div class="flex items-center gap-2.5 text-emerald-400 font-mono text-xs uppercase tracking-wider font-bold">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -946,7 +1007,7 @@
             </div>
 
             <!-- What We Need From You Checklist -->
-            <div class="lg:col-span-5 rounded-2xl bg-slate-950/75 border border-slate-800 p-6">
+            <div id="svcNeeds" class="lg:col-span-5 rounded-2xl bg-slate-950/75 border border-slate-800 p-6">
               <h4 class="font-mono text-xs uppercase tracking-wider text-cyan-400 font-bold mb-3.5">
                 What We Need From You
               </h4>
@@ -974,7 +1035,7 @@
               <button
                 type="button"
                 onclick="requestActiveService()"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-cyber-cyan transition-all cursor-pointer">
+                class="w-full sm:ml-auto sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-cyber-cyan transition-all cursor-pointer">
                 <span id="svcCtaLabel">Ask About Website Building</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -1146,7 +1207,7 @@
                 <figcaption class="px-4 pt-4 font-mono text-[11px] uppercase tracking-wider text-slate-400">Before</figcaption>
                 <img
                   src="assets/portfolio/chusbc-before.jpg"
-                  alt="CHUSBC website before the redesign"
+                  alt="Cecil Harford United States Bowling Congress website before the redesign"
                   width="1280"
                   height="860"
                   class="mt-3 aspect-[16/10] w-full object-cover object-top" />
@@ -1155,18 +1216,84 @@
                 <figcaption class="px-4 pt-4 font-mono text-[11px] uppercase tracking-wider text-cyan-400">After</figcaption>
                 <img
                   src="assets/portfolio/chusbc-after.jpg"
-                  alt="CHUSBC website after the redesign"
+                  alt="Cecil Harford United States Bowling Congress website after the redesign"
                   width="1280"
                   height="860"
                   class="mt-3 aspect-[16/10] w-full object-cover object-top" />
               </figure>
             </div>
-            <div class="border-t border-slate-800 px-6 py-6 sm:px-7">
+            <div class="border-t border-slate-800 px-5 py-6 sm:px-7 sm:py-8">
               <span class="font-mono text-[11px] uppercase tracking-wider text-cyan-400">Website</span>
-              <h3 class="mt-2 font-display text-xl sm:text-2xl font-bold text-white">CHUSBC</h3>
-              <p class="mt-2 max-w-2xl text-sm sm:text-base text-slate-300 leading-relaxed">
-                Website redesign for a local bowling association.
+              <div class="mt-3 flex items-start gap-3 sm:gap-4">
+                <img
+                  src="assets/portfolio/usbc-pin-logo.jpg"
+                  alt="United States Bowling Congress logo"
+                  width="805"
+                  height="805"
+                  class="mt-0.5 h-11 w-11 shrink-0 rounded-lg bg-white object-contain p-1 ring-1 ring-white/80 sm:h-12 sm:w-12" />
+                <div class="min-w-0">
+                  <h3 class="font-display text-xl font-bold leading-tight text-white sm:text-2xl lg:text-3xl">Cecil Harford United States Bowling Congress</h3>
+                  <span class="mt-2 inline-flex items-center rounded-full border border-slate-600/80 bg-slate-950/70 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-slate-400">CHUSBC</span>
+                </div>
+              </div>
+              <p class="mt-4 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
+                We rebuilt the association’s outdated website into a modern, mobile-first site for bowlers across Cecil &amp; Harford Counties.
               </p>
+
+              <h4 class="mt-7 font-mono text-xs font-bold uppercase tracking-wider text-cyan-400">What we did</h4>
+              <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+                <li class="flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                  <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/15 text-cyan-400" aria-hidden="true">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-semibold text-white">Modernized the code</span>
+                    <span class="mt-1 block text-sm leading-relaxed text-slate-300">Replaced an outdated site with a fast, modern build.</span>
+                  </span>
+                </li>
+                <li class="flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                  <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/15 text-cyan-400" aria-hidden="true">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-semibold text-white">Mobile-first design</span>
+                    <span class="mt-1 block text-sm leading-relaxed text-slate-300">Plus an installable app for phones.</span>
+                  </span>
+                </li>
+                <li class="flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                  <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/15 text-cyan-400" aria-hidden="true">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-semibold text-white">Added an AI assistant</span>
+                    <span class="mt-1 block text-sm leading-relaxed text-slate-300">It answers bowlers’ questions.</span>
+                  </span>
+                </li>
+                <li class="flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                  <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/15 text-cyan-400" aria-hidden="true">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-semibold text-white">Live streaming on the site</span>
+                    <span class="mt-1 block text-sm leading-relaxed text-slate-300">Streams from Facebook play directly on the site.</span>
+                  </span>
+                </li>
+              </ul>
+
+              <ul class="mt-6 flex flex-wrap gap-2" aria-label="Project tags">
+                <li class="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan-300">Web Design</li>
+                <li class="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan-300">Mobile App</li>
+                <li class="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan-300">AI</li>
+                <li class="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan-300">Live Streaming</li>
+              </ul>
             </div>
           </article>
 
@@ -1562,6 +1689,7 @@
                       id="serviceSelect"
                       class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-400 focus:outline-none text-white text-sm">
                       <option value="Website Building & Modernization">Website Building & Modernization</option>
+                      <option value="Custom business software">Custom business software</option>
                       <option value="Custom PC Build">Custom PC Build</option>
                       <option value="Workstation & PC Upgrades">Workstation & PC Upgrades</option>
                       <option value="Technical Support & Diagnostics">Technical Support & Diagnostics</option>
@@ -1607,6 +1735,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </button>
+                <p class="text-xs leading-relaxed text-slate-400">
+                  A copy of this inquiry goes to our Google Workspace so we can reply.
+                  <a href="privacy.html" class="text-cyan-400 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-300">Privacy policy</a>
+                </p>
               </form>
 
               <!-- Confirmation Screen -->
@@ -1681,6 +1813,7 @@
             <li><a href="#upgrade-check" class="hover:text-cyan-400 transition-colors">Upgrade vs. Replace Check</a></li>
             <li><a href="#faq" class="hover:text-cyan-400 transition-colors">FAQ</a></li>
             <li><a href="#contact" class="hover:text-cyan-400 transition-colors">Contact</a></li>
+            <li><a href="privacy.html" class="hover:text-cyan-400 transition-colors">Privacy Policy</a></li>
           </ul>
         </div>
 
@@ -1697,6 +1830,7 @@
       <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <p>© <span id="yearSpan">2026</span> Legacy Computing Services LLC. All rights reserved.</p>
         <p class="font-mono flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <a href="privacy.html" class="text-slate-400 hover:text-cyan-400">Privacy Policy</a>
           <a href="portal/" class="text-slate-600 hover:text-slate-400">Employee Login</a>
         </p>
       </div>
@@ -1865,6 +1999,13 @@
         ],
         ctaLabel: 'Ask About Technical Support',
         selectOption: 'Technical Support & Diagnostics'
+      },
+      'software': {
+        tagline: '05 // Custom Business Software',
+        title: 'Custom Business Software',
+        overview: 'We build custom web-based software tailored to a business’s workflow, so tasks like scheduling, tracking, customer records, or reporting get done faster than with off-the-shelf tools.',
+        ctaLabel: 'Ask About Custom Business Software',
+        selectOption: 'Custom business software'
       }
     };
 
@@ -1892,10 +2033,16 @@
       const data = serviceData[key];
       if (!data) return;
 
+      const applyTabSpan = (btn) => {
+        const span = btn.getAttribute('data-tab-span');
+        if (span) btn.classList.add(...span.split(/\s+/));
+      };
+
       // Update tab button styles & ARIA states
       document.querySelectorAll('.svc-tab').forEach(btn => {
         btn.setAttribute('aria-selected', 'false');
         btn.className = 'svc-tab text-left p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-600 text-slate-200 font-bold transition-all cursor-pointer';
+        applyTabSpan(btn);
         const sub = btn.querySelector('span:first-child');
         if (sub) sub.className = 'block font-mono text-[11px] uppercase text-cyan-400';
       });
@@ -1904,6 +2051,7 @@
       if (activeBtn) {
         activeBtn.setAttribute('aria-selected', 'true');
         activeBtn.className = 'svc-tab text-left p-4 rounded-2xl bg-cyan-500 text-slate-950 font-bold shadow-cyber-cyan transition-all cursor-pointer';
+        applyTabSpan(activeBtn);
         const activeSub = activeBtn.querySelector('span:first-child');
         if (activeSub) activeSub.className = 'block font-mono text-[11px] uppercase opacity-80';
       }
@@ -1917,16 +2065,50 @@
       setText('svcTagline', data.tagline);
       setText('svcTitle', data.title);
       setText('svcOverview', data.overview);
-      setText('svcTimeline', data.timeline);
-      setText('svcTimelineNote', data.timelineNote);
-      setText('svcPricing', data.pricing);
-      setText('svcPricingNote', data.pricingNote);
-      setText('svcHonestTruth', data.honestTruth);
       setText('svcCtaLabel', data.ctaLabel);
+
+      const hasMetrics = Boolean(data.timeline || data.pricing);
+      const metricsEl = document.getElementById('svcMetrics');
+      const introEl = document.getElementById('svcIntro');
+      if (metricsEl) metricsEl.classList.toggle('hidden', !hasMetrics);
+      if (introEl) {
+        introEl.classList.toggle('lg:col-span-7', hasMetrics);
+        introEl.classList.toggle('lg:col-span-12', !hasMetrics);
+      }
+      if (hasMetrics) {
+        setText('svcTimeline', data.timeline || '');
+        setText('svcTimelineNote', data.timelineNote || '');
+        setText('svcPricing', data.pricing || '');
+        setText('svcPricingNote', data.pricingNote || '');
+      }
+
+      const hasGuidance = Boolean(data.honestTruth);
+      const hasChecklist = Array.isArray(data.checklist) && data.checklist.length > 0;
+      const guidanceEl = document.getElementById('svcGuidance');
+      const needsEl = document.getElementById('svcNeeds');
+      const middleEl = document.getElementById('svcMiddle');
+      if (guidanceEl) guidanceEl.classList.toggle('hidden', !hasGuidance);
+      if (needsEl) needsEl.classList.toggle('hidden', !hasChecklist);
+      if (middleEl) middleEl.classList.toggle('hidden', !(hasGuidance || hasChecklist));
+      if (hasGuidance) setText('svcHonestTruth', data.honestTruth);
+
+      const hasSpecs = Array.isArray(data.techSpecs) && data.techSpecs.length > 0;
+      const specsBtn = document.getElementById('techSpecsToggleBtn');
+      const specsBox = document.getElementById('enthusiastSpecsBox');
+      if (specsBtn) specsBtn.classList.toggle('hidden', !hasSpecs);
+      if (!hasSpecs) {
+        showTechSpecs = false;
+        if (specsBox) specsBox.classList.add('hidden');
+        if (specsBtn) specsBtn.setAttribute('aria-expanded', 'false');
+        const chevron = document.getElementById('techSpecsChevron');
+        const specsLabel = document.getElementById('techSpecsToggleLabel');
+        if (chevron) chevron.classList.remove('rotate-180');
+        if (specsLabel) specsLabel.textContent = 'Show Technical Specs (Optional — For Enthusiasts & IT Contacts)';
+      }
 
       const checklistEl = document.getElementById('svcChecklist');
       if (checklistEl) {
-        checklistEl.innerHTML = data.checklist.map(item => `
+        checklistEl.innerHTML = (data.checklist || []).map(item => `
           <li class="flex items-start gap-2.5">
             <svg class="w-4 h-4 text-cyan-400 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -1938,7 +2120,7 @@
 
       const techSpecsEl = document.getElementById('svcTechSpecsList');
       if (techSpecsEl) {
-        techSpecsEl.innerHTML = data.techSpecs.map(spec => `
+        techSpecsEl.innerHTML = (data.techSpecs || []).map(spec => `
           <li class="flex items-start gap-2">
             <span class="text-cyan-400">›</span>
             <span>${spec}</span>
@@ -2230,6 +2412,10 @@
         <div class="min-w-0 flex-1">
           <h2 id="lcs-chat-title" class="font-display text-sm font-bold text-white">Legacy Computing Assistant</h2>
           <p class="mt-0.5 text-[11px] leading-snug text-slate-400">AI assistant, answers may be imperfect</p>
+          <p class="mt-1 text-[11px] leading-snug text-slate-400">
+            Don’t type sensitive personal info.
+            <a href="privacy.html" class="text-cyan-400 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-300">Privacy policy</a>
+          </p>
         </div>
         <button
           type="button"
