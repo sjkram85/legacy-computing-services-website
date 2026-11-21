@@ -265,8 +265,36 @@ test('proposals sheet is appended and existing tabs stay put', function () {
   assert.deepStrictEqual(headers, [
     'ID', 'Prospect name', 'Business', 'Email', 'Phone', 'Title', 'Status',
     'Created', 'Sent', 'Expires', 'Total', 'Doc URL', 'Notes',
-    'Sections', 'Line items', 'Customer ID', 'Job ID'
+    'Sections', 'Line items', 'Customer ID', 'Job ID', 'Attachments'
   ]);
+  const oldHeader = headers.filter(function (name) { return name !== 'Attachments'; });
+  const oldRow = oldHeader.map(function () { return ''; });
+  oldRow[0] = 'p1';
+  oldRow[1] = 'Pat Preview';
+  const parsedOld = lib.rowsFromValues([oldHeader, oldRow], lib.columnsOf('Proposals'));
+  assert.deepStrictEqual(parsedOld.missingHeaders, ['Attachments']);
+  assert.strictEqual(parsedOld.rows[0].prospectName, 'Pat Preview');
+  assert.deepStrictEqual(lib.readProposal(parsedOld.rows[0]).attachments, []);
+  const plan = lib.headersToAppend(parsedOld.headerRow, lib.columnsOf('Proposals'));
+  assert.deepStrictEqual(plan.headers, ['Attachments']);
+  assert.strictEqual(plan.startColumn, oldHeader.length + 1);
+  const withFile = lib.writeProposal(Object.assign({}, lib.readProposal(parsedOld.rows[0]), {
+    attachments: [{
+      id: 'fileAbcdef123456',
+      name: 'Quote PDF',
+      mimeType: 'application/pdf',
+      url: 'https://drive.google.com/file/d/fileAbcdef123456/view'
+    }]
+  }));
+  const newHeader = oldHeader.concat(['Attachments']);
+  const cells = lib.recordToCells(withFile, newHeader, lib.columnsOf('Proposals'));
+  assert.strictEqual(cells.length, newHeader.length);
+  assert.strictEqual(cells[1], 'Pat Preview');
+  assert.strictEqual(JSON.parse(cells[cells.length - 1])[0].name, 'Quote PDF');
+  const unchanged = lib.recordToCells(withFile, oldHeader, lib.columnsOf('Proposals'));
+  assert.strictEqual(unchanged.length, oldHeader.length);
+  assert.strictEqual(unchanged[1], 'Pat Preview');
+  assert.strictEqual(unchanged.indexOf(withFile.attachments), -1);
   assert.deepStrictEqual(lib.CHOICES.proposalStatus, ['Draft', 'Sent', 'Accepted', 'Declined']);
   const tickets = lib.columnsOf('Tickets').map(function (col) { return col.header; });
   assert.strictEqual(tickets[tickets.length - 1], 'Intake Sent');
@@ -526,7 +554,7 @@ test('proposal send opens a gmail draft and sample rows stay fake', function () 
   assert.strictEqual(lib.googleDocId('https://example.com/not-a-doc'), '');
 
   const sample = lib.sampleBundle(new Date('2026-11-14T12:00:00'));
-  assert.strictEqual(sample.Proposals.length, 2);
+  assert.strictEqual(sample.Proposals.length, 3);
   assert.ok(sample.Proposals.every(function (row) { return /example\.test$/.test(row.email); }));
   assert.ok(sample.Proposals.every(function (row) { return row.sample && /sample/i.test(row.notes); }));
   const blobs = JSON.stringify(sample);
@@ -536,6 +564,97 @@ test('proposal send opens a gmail draft and sample rows stay fake', function () 
   assert.strictEqual(parsedSample.status, 'Draft');
   assert.strictEqual(sample.Proposals[1].status, 'Sent');
   assert.ok(sample.Proposals[1].docUrl.indexOf('docs.google.com/document') !== -1);
+  const linked = lib.readProposal(sample.Proposals[2]);
+  assert.strictEqual(linked.status, 'Sent');
+  assert.strictEqual(linked.lines.length, 0);
+  assert.strictEqual(linked.docUrl, '');
+  assert.strictEqual(linked.attachments.length, 2);
+  assert.strictEqual(linked.attachments[0].mimeType, 'application/pdf');
+  assert.strictEqual(lib.attachmentKind(linked.attachments[0].mimeType), 'PDF');
+  assert.strictEqual(lib.attachmentKind(linked.attachments[1].mimeType), 'Google Doc');
+});
+
+test('drive attachments round trip and the send draft includes their links', function () {
+  assert.strictEqual(lib.driveFileId('https://drive.google.com/file/d/abcDEF_123-xyz/view?usp=sharing'), 'abcDEF_123-xyz');
+  assert.strictEqual(lib.driveFileId('https://docs.google.com/document/d/docId1234567890/edit'), 'docId1234567890');
+  assert.strictEqual(lib.driveFileId('https://docs.google.com/spreadsheets/d/sheetId123456789/edit#gid=0'), 'sheetId123456789');
+  assert.strictEqual(lib.driveFileId('https://drive.google.com/drive/folders/folderId12345678'), 'folderId12345678');
+  assert.strictEqual(lib.driveFileId('https://drive.google.com/open?id=openId1234567890'), 'openId1234567890');
+  assert.strictEqual(lib.driveFileId('bareId1234567890'), 'bareId1234567890');
+  assert.strictEqual(lib.driveFileId('https://example.com/not-a-file'), '');
+  assert.strictEqual(lib.driveFileId('short'), '');
+  assert.strictEqual(lib.driveFileId('YOUR_FILE_ID'), '');
+  assert.strictEqual(lib.mimeHintFromDriveUrl('https://docs.google.com/document/d/docId1234567890/edit'), 'application/vnd.google-apps.document');
+  assert.strictEqual(lib.pickerApiKey({}), '');
+  assert.strictEqual(lib.pickerApiKey({ pickerApiKey: '  ' }), '');
+  assert.strictEqual(lib.pickerApiKey({ pickerApiKey: 'YOUR_PICKER_API_KEY' }), '');
+  assert.strictEqual(lib.pickerApiKey({ pickerApiKey: 'AIzaExampleKey' }), 'AIzaExampleKey');
+  assert.strictEqual(lib.pickerAppId('530425506690-abc.apps.googleusercontent.com'), '530425506690');
+  assert.strictEqual(lib.pickerAppId('not-a-client'), '');
+  assert.strictEqual(lib.proposalSentDate('Sent', '', '2026-11-01'), '2026-11-01');
+  assert.strictEqual(lib.proposalSentDate('Sent', '2026-10-02', '2026-11-01'), '2026-10-02');
+  assert.strictEqual(lib.proposalSentDate('Draft', '', '2026-11-01'), '');
+
+  const pdf = lib.normalizeAttachment({
+    url: 'https://drive.google.com/file/d/fileOne12345678/view'
+  });
+  assert.strictEqual(pdf.id, 'fileOne12345678');
+  assert.strictEqual(pdf.name, 'Drive file');
+  assert.strictEqual(pdf.url, 'https://drive.google.com/file/d/fileOne12345678/view');
+  const doc = lib.normalizeAttachment({
+    id: 'fileTwo12345678',
+    name: 'Scope notes',
+    mimeType: 'application/vnd.google-apps.document'
+  });
+  assert.strictEqual(doc.url, 'https://docs.google.com/document/d/fileTwo12345678/edit');
+  const merged = lib.mergeAttachments([pdf], [pdf, doc]);
+  assert.strictEqual(merged.length, 2);
+  assert.strictEqual(merged[0].name, 'Drive file');
+  assert.strictEqual(lib.removeAttachment(merged, 'https://drive.google.com/file/d/fileOne12345678/view').length, 1);
+  assert.strictEqual(lib.removeAttachment(merged, 'fileOne12345678')[0].id, 'fileTwo12345678');
+
+  const written = lib.writeProposal({
+    prospectName: 'Riley Sample',
+    business: 'Sample Hardware',
+    email: 'riley.sample@example.test',
+    status: 'Sent',
+    sent: '2026-11-01',
+    attachments: [pdf, doc],
+    lines: []
+  });
+  assert.strictEqual(written.title, '');
+  assert.strictEqual(written.total, '');
+  assert.strictEqual(written.lineItems, '[]');
+  assert.strictEqual(written.docUrl, '');
+  assert.strictEqual(written.status, 'Sent');
+  assert.strictEqual(written.sent, '2026-11-01');
+  const again = lib.readProposal(written);
+  assert.strictEqual(again.attachmentsOk, true);
+  assert.strictEqual(again.attachments.length, 2);
+  assert.strictEqual(again.attachments[1].name, 'Scope notes');
+  const url = lib.proposalComposeUrl(again);
+  const body = new URL(url).searchParams.get('body');
+  assert.ok(body.indexOf('https://drive.google.com/file/d/fileOne12345678/view') !== -1);
+  assert.ok(body.indexOf('Scope notes: https://docs.google.com/document/d/fileTwo12345678/edit') !== -1);
+  assert.ok(body.indexOf('Hello Riley,') !== -1);
+  assert.strictEqual(body.indexOf('docs.google.com/document/d/sample-proposal'), -1);
+
+  const withDoc = lib.proposalComposeUrl(lib.writeProposal({
+    email: 'riley.sample@example.test',
+    title: 'SAMPLE: already sent',
+    docUrl: 'https://docs.google.com/document/d/sample-proposal/edit',
+    attachments: [pdf]
+  }));
+  const both = new URL(withDoc).searchParams.get('body');
+  assert.ok(both.indexOf('https://docs.google.com/document/d/sample-proposal/edit') !== -1);
+  assert.ok(both.indexOf('https://drive.google.com/file/d/fileOne12345678/view') !== -1);
+
+  const broken = lib.readProposal({ attachments: '{', prospectName: 'Riley Sample', email: 'riley.sample@example.test' });
+  assert.strictEqual(broken.attachmentsOk, false);
+  assert.deepStrictEqual(broken.attachments, []);
+  const kept = lib.writeProposal(Object.assign({}, broken, { keepBrokenAttachments: true }));
+  assert.strictEqual(kept.attachments, '{');
+  assert.strictEqual(lib.proposalComposeUrl(kept), '');
 });
 
 console.log('all logic tests passed');
