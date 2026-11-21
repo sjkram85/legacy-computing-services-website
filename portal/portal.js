@@ -62,8 +62,11 @@
     requestFilter: 'New',
     invoiceDraft: null,
     sessionDraft: null,
-    studentDraft: null
+    studentDraft: null,
+    driveAttach: null
   };
+
+  var proposalSheetPromise = null;
 
   var expiryTimer = 0;
   var shieldSerial = 0;
@@ -171,6 +174,7 @@
   function applyHash() {
     state.viewer = null;
     state.intakeDialog = null;
+    state.driveAttach = null;
     var parts = hashParts();
     if (parts[0] === 'print' && (parts[1] === 'quote' || parts[1] === 'invoice' || parts[1] === 'proposal')) {
       state.section = 'print';
@@ -301,13 +305,7 @@
   }
 
   function fileKind(mime) {
-    if (mime === 'application/vnd.google-apps.folder') return 'Folder';
-    if (mime === 'application/vnd.google-apps.document') return 'Google Doc';
-    if (mime === 'application/vnd.google-apps.spreadsheet') return 'Google Sheet';
-    if (mime === 'application/vnd.google-apps.presentation') return 'Slides';
-    if (mime === 'application/pdf') return 'PDF';
-    if (mime && mime.indexOf('image/') === 0) return 'Image';
-    return 'File';
+    return Lib.attachmentKind(mime);
   }
 
   function bannerEl() {
@@ -494,6 +492,8 @@
     page.appendChild(main);
     var dialog = renderIntakeDialog();
     if (dialog) page.appendChild(dialog);
+    var driveDialog = renderDriveAttachDialog();
+    if (driveDialog) page.appendChild(driveDialog);
     return page;
   }
 
@@ -1808,6 +1808,430 @@
     return page;
   }
 
+  function fileTypeIcon(mime) {
+    var kind = Lib.attachmentKind(mime);
+    var color = {
+      PDF: '#F87171',
+      'Google Doc': '#38BDF8',
+      'Google Sheet': '#34D399',
+      Slides: '#FBBF24',
+      Image: '#C4B5FD',
+      Folder: '#38BDF8',
+      Word: '#60A5FA',
+      Excel: '#34D399',
+      File: '#CBD5E1'
+    }[kind] || '#CBD5E1';
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('class', 'w-5 h-5 shrink-0');
+    svg.setAttribute('aria-hidden', 'true');
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    if (kind === 'Folder') {
+      path.setAttribute('fill', color);
+      path.setAttribute('d', 'M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2h7.5A2.5 2.5 0 0 1 21 9.5v8A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5v-10Z');
+      svg.appendChild(path);
+      return svg;
+    }
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '1.6');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('d', 'M7 3.5h6.2L19 9.2V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5A1.5 1.5 0 0 1 7 3.5Z');
+    svg.appendChild(path);
+    var fold = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    fold.setAttribute('fill', 'none');
+    fold.setAttribute('stroke', color);
+    fold.setAttribute('stroke-width', '1.6');
+    fold.setAttribute('stroke-linejoin', 'round');
+    fold.setAttribute('d', 'M13.2 3.8V9h5.2');
+    svg.appendChild(fold);
+    var mark = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    mark.setAttribute('fill', 'none');
+    mark.setAttribute('stroke', color);
+    mark.setAttribute('stroke-width', '1.4');
+    mark.setAttribute('stroke-linecap', 'round');
+    mark.setAttribute('stroke-linejoin', 'round');
+    if (kind === 'Google Sheet' || kind === 'Excel') mark.setAttribute('d', 'M9 13h6M9 16h6M12 11.5v6');
+    else if (kind === 'Slides') mark.setAttribute('d', 'M9 13.5h6v4H9z');
+    else if (kind === 'Image') mark.setAttribute('d', 'M9 17l2.2-2.4 1.5 1.5L16 13');
+    else if (kind === 'PDF') mark.setAttribute('d', 'M9.5 15h5');
+    else mark.setAttribute('d', 'M9 13h6M9 16h4');
+    svg.appendChild(mark);
+    return svg;
+  }
+
+  function attachmentRow(file, onRemove) {
+    var row = el('div', { class: 'flex items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-950/50 px-3 py-2' });
+    var href = safeHttp(file.url);
+    var link = href
+      ? el('a', {
+        href: href,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: 'flex items-center gap-2 min-w-0 text-sm font-semibold text-sky-300 hover:text-white'
+      })
+      : el('span', { class: 'flex items-center gap-2 min-w-0 text-sm font-semibold text-slate-300' });
+    link.appendChild(fileTypeIcon(file.mimeType));
+    var text = el('span', { class: 'min-w-0' });
+    text.appendChild(el('span', { class: 'block truncate' }, [file.name || 'Drive file']));
+    text.appendChild(el('span', { class: 'block text-[10px] font-mono uppercase tracking-wider text-slate-400' }, [Lib.attachmentKind(file.mimeType)]));
+    link.appendChild(text);
+    row.appendChild(link);
+    if (onRemove) {
+      var remove = button('Remove', 'shrink-0 text-xs font-semibold text-slate-400 hover:text-white px-2 py-1', onRemove);
+      remove.title = 'Remove this link. The Drive file is not deleted.';
+      remove.setAttribute('aria-label', 'Remove the link to ' + (file.name || 'this file') + '. The Drive file is not deleted.');
+      row.appendChild(remove);
+    }
+    return row;
+  }
+
+  function fillAttachmentList(host, files, onRemove) {
+    while (host.firstChild) host.removeChild(host.firstChild);
+    if (!files || !files.length) {
+      host.appendChild(el('p', { class: 'text-sm text-slate-400' }, ['No Drive files linked yet.']));
+      return;
+    }
+    files.forEach(function (file) {
+      host.appendChild(attachmentRow(file, onRemove ? function () { onRemove(file); } : null));
+    });
+  }
+
+  function pickerReady() {
+    return state.mode === 'live' && !!state.token && !!Lib.pickerApiKey(cfg());
+  }
+
+  function loadPickerApi() {
+    if (window.google && window.google.picker && window.google.picker.PickerBuilder) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var fail = function () {
+        reject(new Error('Google Picker did not load. Check the connection, or paste a Drive link instead.'));
+      };
+      var ready = function () {
+        if (!window.gapi || !window.gapi.load) {
+          fail();
+          return;
+        }
+        window.gapi.load('picker', {
+          callback: function () {
+            if (window.google && window.google.picker && window.google.picker.PickerBuilder) resolve();
+            else fail();
+          },
+          onerror: fail,
+          timeout: 8000,
+          ontimeout: fail
+        });
+      };
+      var script = document.querySelector('script[data-gapi-picker]');
+      if (script) {
+        if (window.gapi) ready();
+        else {
+          script.addEventListener('load', ready);
+          script.addEventListener('error', fail);
+        }
+        return;
+      }
+      script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/api.js';
+      script.async = true;
+      script.dataset.gapiPicker = '1';
+      script.onload = ready;
+      script.onerror = fail;
+      document.head.appendChild(script);
+    });
+  }
+
+  function openDrivePicker() {
+    var key = Lib.pickerApiKey(cfg());
+    if (!key) return Promise.reject(new Error('No Picker API key is set.'));
+    if (!state.token) return Promise.reject(new Error('Sign in before attaching a Drive file.'));
+    return loadPickerApi().then(function () {
+      return new Promise(function (resolve, reject) {
+        try {
+          var view = new google.picker.DocsView(google.picker.ViewId.DOCS);
+          view.setIncludeFolders(true);
+          if (typeof view.setSelectFolderEnabled === 'function') view.setSelectFolderEnabled(true);
+          if (typeof view.setEnableDrives === 'function') view.setEnableDrives(true);
+          var builder = new google.picker.PickerBuilder();
+          builder.enableFeature(google.picker.Feature.MULTISELECT_ENABLED);
+          if (google.picker.Feature.SUPPORT_DRIVES) builder.enableFeature(google.picker.Feature.SUPPORT_DRIVES);
+          builder.setOAuthToken(state.token);
+          builder.setDeveloperKey(key);
+          var appId = Lib.pickerAppId(cfg().clientId);
+          if (appId && typeof builder.setAppId === 'function') builder.setAppId(appId);
+          if (typeof builder.setOrigin === 'function') builder.setOrigin(window.location.protocol + '//' + window.location.host);
+          if (typeof builder.setTitle === 'function') builder.setTitle('Attach files from Drive');
+          builder.addView(view);
+          builder.setCallback(function (data) {
+            if (!data || !google.picker.Response) return;
+            var action = data[google.picker.Response.ACTION];
+            if (action === google.picker.Action.PICKED) {
+              var docs = data[google.picker.Response.DOCUMENTS] || [];
+              resolve(docs.map(function (doc) {
+                return {
+                  id: doc[google.picker.Document.ID],
+                  name: doc[google.picker.Document.NAME],
+                  mimeType: doc[google.picker.Document.MIME_TYPE],
+                  url: doc[google.picker.Document.URL]
+                };
+              }));
+            } else if (action === google.picker.Action.CANCEL) {
+              resolve([]);
+            }
+          });
+          builder.build().setVisible(true);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+  }
+
+  function ensureDriveScope() {
+    if (state.mode === 'demo') return Promise.resolve();
+    var drive = 'https://www.googleapis.com/auth/drive';
+    if (hasScope(drive)) return Promise.resolve();
+    return requestDataAccess({ prompt: 'consent', quiet: true }).then(function () {
+      if (!hasScope(drive)) throw new Error('Drive access is needed to look up that file. Sign in again and accept Drive.');
+    });
+  }
+
+  function lookupDriveFile(raw) {
+    var id = Lib.driveFileId(raw);
+    if (!id) return Promise.reject(new Error('Paste a Google Drive file link or the file ID.'));
+    if (state.mode === 'demo') {
+      var mime = Lib.mimeHintFromDriveUrl(raw);
+      var file = Lib.normalizeAttachment({
+        id: id,
+        name: 'SAMPLE — ' + (mime ? Lib.attachmentKind(mime) : 'Drive file'),
+        mimeType: mime,
+        url: /^https:\/\/(drive|docs)\.google\.com\//i.test(String(raw || '').trim()) ? String(raw).trim() : ''
+      });
+      if (!file) return Promise.reject(new Error('Paste a Google Drive file link or the file ID.'));
+      return Promise.resolve(file);
+    }
+    return ensureDriveScope().then(function () {
+      return googleFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '?supportsAllDrives=true&fields=' + encodeURIComponent('id,name,mimeType,webViewLink'));
+    }).then(function (file) {
+      var normalized = Lib.normalizeAttachment({
+        id: file && file.id,
+        name: file && file.name,
+        mimeType: file && file.mimeType,
+        url: (file && file.webViewLink) || raw
+      });
+      if (!normalized) throw new Error('Drive did not return a file id.');
+      return normalized;
+    });
+  }
+
+  function proposalKeepingJson(record, patch) {
+    var read = Lib.readProposal(record);
+    var replacingAttachments = patch && Object.prototype.hasOwnProperty.call(patch, 'attachments');
+    return Lib.writeProposal(Object.assign({}, read, patch || {}, {
+      keepBrokenSections: read.sectionsOk === false,
+      keepBrokenLines: read.linesOk === false,
+      keepBrokenAttachments: replacingAttachments ? false : read.attachmentsOk === false
+    }));
+  }
+
+  function saveCardAttachments(row, files) {
+    var current = findRow('Proposals', row.id) || row;
+    var read = Lib.readProposal(current);
+    var next = Lib.writeProposal(Object.assign({}, read, {
+      attachments: Lib.mergeAttachments(read.attachments, files),
+      keepBrokenSections: read.sectionsOk === false,
+      keepBrokenLines: read.linesOk === false
+    }));
+    var names = Lib.mergeAttachments([], files).map(function (file) { return file.name || 'Drive file'; });
+    return persistRecord('Proposals', next, current).then(function () {
+      state.driveAttach = null;
+      state.busy = '';
+      state.banner = {
+        tone: 'ok',
+        text: 'Linked ' + (names.join(', ') || 'the file') + ' on this proposal. The file stays in Drive. Remove only deletes the link.'
+      };
+      paint(true);
+    }).catch(function (err) {
+      state.busy = '';
+      state.driveAttach = state.driveAttach ? { proposalId: row.id, error: friendly(err) } : null;
+      state.banner = { tone: 'bad', text: friendly(err) };
+      paint(true);
+    });
+  }
+
+  function removeProposalAttachment(row, file) {
+    var current = findRow('Proposals', row.id) || row;
+    var read = Lib.readProposal(current);
+    var next = Lib.writeProposal(Object.assign({}, read, {
+      attachments: Lib.removeAttachment(read.attachments, file.id),
+      keepBrokenSections: read.sectionsOk === false,
+      keepBrokenLines: read.linesOk === false
+    }));
+    return persistRecord('Proposals', next, current).then(function () {
+      state.banner = {
+        tone: 'ok',
+        text: 'Removed the link to ' + (file.name || 'that file') + '. The file is still in Drive.'
+      };
+      paint(true);
+    }).catch(function (err) {
+      state.banner = { tone: 'bad', text: friendly(err) };
+      paint(true);
+    });
+  }
+
+  function setAttachStatus(form, text) {
+    var node = form && form.querySelector('[data-attach-status]');
+    if (!node) return;
+    node.textContent = text || '';
+    node.classList.toggle('hidden', !text);
+  }
+
+  function revealPaste(form) {
+    var row = form && form.querySelector('[data-drive-paste-row]');
+    if (row) row.classList.remove('hidden');
+  }
+
+  function paintEditorAttachments(form) {
+    var host = form.querySelector('[data-attachment-list]');
+    if (!host) return;
+    fillAttachmentList(host, form._attachments || [], function (file) {
+      form._attachments = Lib.removeAttachment(form._attachments || [], file.id);
+      paintEditorAttachments(form);
+      setAttachStatus(form, 'Removed the link to ' + (file.name || 'that file') + '. Save the proposal to keep this change. The Drive file is not deleted.');
+    });
+  }
+
+  function addEditorAttachments(form, files) {
+    form._attachments = Lib.mergeAttachments(form._attachments || [], files);
+    paintEditorAttachments(form);
+    var names = Lib.mergeAttachments([], files).map(function (file) { return file.name || 'Drive file'; });
+    setAttachStatus(form, 'Linked ' + (names.join(', ') || 'the file') + '. Save the proposal to keep it. The Drive file is not copied or deleted.');
+  }
+
+  function lookupEditorAttachment(form) {
+    var input = form.querySelector('[data-drive-paste]');
+    var raw = input ? input.value.trim() : '';
+    if (!raw) {
+      if (input) input.focus();
+      setAttachStatus(form, 'Paste a Drive file link or a file ID, then choose Attach from Drive.');
+      return;
+    }
+    setAttachStatus(form, state.mode === 'demo' ? 'Adding the sample link…' : 'Looking up that file in Drive…');
+    lookupDriveFile(raw).then(function (file) {
+      addEditorAttachments(form, [file]);
+      if (input) input.value = '';
+    }).catch(function (err) {
+      setAttachStatus(form, friendly(err));
+    });
+  }
+
+  function startProposalAttach(context) {
+    context = context || {};
+    if (context.form && pickerReady()) {
+      setAttachStatus(context.form, 'Opening Google Drive…');
+      openDrivePicker().then(function (files) {
+        if (!files || !files.length) {
+          setAttachStatus(context.form, '');
+          return;
+        }
+        addEditorAttachments(context.form, files);
+      }).catch(function (err) {
+        revealPaste(context.form);
+        setAttachStatus(context.form, friendly(err) + ' You can paste a Drive link instead.');
+      });
+      return;
+    }
+    if (context.form) {
+      revealPaste(context.form);
+      lookupEditorAttachment(context.form);
+      return;
+    }
+    if (!context.row) return;
+    if (pickerReady()) {
+      state.banner = { tone: 'ok', text: 'Opening Google Drive…' };
+      paint(true);
+      openDrivePicker().then(function (files) {
+        if (!files || !files.length) {
+          state.banner = null;
+          paint(true);
+          return;
+        }
+        return saveCardAttachments(context.row, files);
+      }).catch(function (err) {
+        state.banner = null;
+        state.driveAttach = { proposalId: context.row.id, error: friendly(err) };
+        paint(true);
+      });
+      return;
+    }
+    state.driveAttach = { proposalId: context.row.id, error: '' };
+    paint(true);
+  }
+
+  function renderDriveAttachDialog() {
+    if (!state.driveAttach) return null;
+    var row = findRow('Proposals', state.driveAttach.proposalId);
+    if (!row) return null;
+    var overlay = el('div', {
+      class: 'fixed inset-0 z-50 bg-slate-950/75 flex items-end sm:items-center justify-center p-4',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'drive-attach-title'
+    });
+    var panel = el('form', { class: 'cyber-panel rounded-3xl p-6 w-full max-w-lg space-y-4' });
+    panel.appendChild(el('h2', { id: 'drive-attach-title', class: 'font-display text-xl font-bold text-white' }, ['Attach from Drive']));
+    panel.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
+      state.mode === 'demo'
+        ? 'Sample data. Paste a Drive link or a file ID. Nothing is looked up in Google, and the file is not copied here. Removing the link later does not delete a Drive file.'
+        : 'The Google Picker key is blank, so this pastes a Drive link instead. Drive looks up the file name with your sign-in. The file stays in Drive, and removing the link does not delete it.'
+    ]));
+    var input = textInput('drive-file-link', '', { placeholder: 'https://drive.google.com/file/d/…/view or a file ID' });
+    input.setAttribute('autocomplete', 'off');
+    panel.appendChild(field('Drive link or file ID', input));
+    var error = formError();
+    if (state.driveAttach.error) {
+      error.textContent = state.driveAttach.error;
+      error.classList.remove('hidden');
+    }
+    panel.appendChild(error);
+    var actions = el('div', { class: 'flex flex-col sm:flex-row gap-3' });
+    actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Attach']));
+    actions.appendChild(button('Cancel', SECONDARY, function () {
+      state.driveAttach = null;
+      paint(true);
+    }));
+    panel.appendChild(actions);
+    panel.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var submit = panel.querySelector('[type="submit"]');
+      if (submit) submit.disabled = true;
+      lookupDriveFile(input.value.trim()).then(function (file) {
+        return saveCardAttachments(row, [file]);
+      }).catch(function (err) {
+        if (submit) submit.disabled = false;
+        showFormError(panel, friendly(err));
+      });
+    });
+    overlay.addEventListener('click', function (event) {
+      if (event.target !== overlay) return;
+      state.driveAttach = null;
+      paint(true);
+    });
+    overlay.appendChild(panel);
+    return overlay;
+  }
+
+  function proposalSendSummary(read) {
+    var parts = [];
+    if (Lib.proposalDocLink(read.docUrl)) parts.push('the Doc link');
+    var files = read.attachmentsOk ? read.attachments : [];
+    if (files.length) {
+      var names = files.map(function (file) { return file.name || 'Drive file'; });
+      parts.push((files.length === 1 ? 'the Drive file ' : 'the Drive files ') + names.join(', '));
+    }
+    return parts.join(' and ') || 'the proposal';
+  }
+
   function proposalTotalLabel(row) {
     var read = Lib.readProposal(row);
     var totals = Lib.documentTotals(read.linesOk ? read.lines : [], '');
@@ -1826,6 +2250,24 @@
     return Lib.headersToAppend(header, Lib.columnsOf('Proposals')).headers.length > 0;
   }
 
+  function ensureProposalSheet() {
+    if (state.mode !== 'live' || !spreadsheetId()) return Promise.resolve();
+    if (!proposalsNeedSheet()) {
+      state.proposalSheetReady = true;
+      return Promise.resolve();
+    }
+    if (proposalSheetPromise) return proposalSheetPromise;
+    proposalSheetPromise = ensureSheet('Proposals').then(function () {
+      proposalSheetPromise = null;
+      state.proposalSheetReady = true;
+      state.proposalSheetFailed = '';
+    }, function (err) {
+      proposalSheetPromise = null;
+      throw err;
+    });
+    return proposalSheetPromise;
+  }
+
   function scheduleProposalSheet() {
     if (state.proposalSheetWorking || state.proposalSheetReady || state.proposalSheetFailed) return;
     if (!proposalsNeedSheet()) {
@@ -1836,13 +2278,12 @@
     state.proposalSheetWorking = true;
     state.busy = 'Adding the Proposals tab…';
     paint(true);
-    ensureSheet('Proposals').then(function () {
+    ensureProposalSheet().then(function () {
       state.proposalSheetWorking = false;
-      state.proposalSheetReady = true;
       state.busy = '';
       state.banner = {
         tone: 'ok',
-        text: 'The Proposals tab is ready. Missing header names were added at the end of that row. Other tabs were left as they were.'
+        text: 'The Proposals tab is ready. Missing header names, including Attachments, were added at the end of that row. Other tabs and existing cells were left as they were.'
       };
       paint(true);
     }).catch(function (err) {
@@ -1855,7 +2296,7 @@
 
   function renderProposals() {
     var page = el('div', { class: 'space-y-5' });
-    var head = sectionHead('Prospects', 'Proposals', 'Client, scope, timeline, and price lines are stored on the Proposals tab. Sections and line items are JSON in that row. Create Google Doc writes a Doc in Drive. Send opens a Gmail draft. This page does not send email.');
+    var head = sectionHead('Prospects', 'Proposals', 'Store a prospect here, including a proposal that already lives in Drive. Attach from Drive links that file. It does not copy or delete it. Send opens a Gmail draft with the links. This page does not send email.');
     head.appendChild(button('New proposal', PRIMARY, function () { go('proposals', 'new'); }));
     page.appendChild(head);
     if (state.mode === 'live' && spreadsheetId() && state.proposalSheetFailed) {
@@ -1908,10 +2349,12 @@
     var card = el('article', { class: 'cyber-panel rounded-2xl p-5' });
     var top = el('div', { class: 'flex flex-wrap items-start justify-between gap-3' });
     var copy = el('div', { class: 'min-w-0' });
-    copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [row.title || 'Untitled proposal']));
-    copy.appendChild(el('p', { class: 'text-sm text-slate-300 mt-1' }, [
-      [row.prospectName || 'No prospect', row.business].filter(Boolean).join(' · ')
-    ]));
+    var readCard = Lib.readProposal(row);
+    copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [row.title || row.prospectName || 'Untitled proposal']));
+    var who = row.title
+      ? [row.prospectName || 'No prospect', row.business].filter(Boolean).join(' · ')
+      : (row.business || '');
+    if (who) copy.appendChild(el('p', { class: 'text-sm text-slate-300 mt-1' }, [who]));
     var meta = [row.email, row.expires ? 'Expires ' + formatDay(row.expires) : '', row.sent ? 'Sent ' + formatDay(row.sent) : ''].filter(Boolean).join(' · ');
     if (meta) copy.appendChild(el('p', { class: 'text-xs text-slate-400 mt-1' }, [meta]));
     top.appendChild(copy);
@@ -1921,8 +2364,16 @@
     side.appendChild(el('p', { class: 'font-display font-bold text-white' }, [proposalTotalLabel(row)]));
     top.appendChild(side);
     card.appendChild(top);
+    if (readCard.attachments && readCard.attachments.length) {
+      var files = el('div', { class: 'mt-4 space-y-2' });
+      readCard.attachments.forEach(function (file) {
+        files.appendChild(attachmentRow(file, function () { removeProposalAttachment(row, file); }));
+      });
+      card.appendChild(files);
+    }
     var actions = el('div', { class: 'mt-4 flex flex-wrap gap-2' });
     actions.appendChild(button('Edit', SECONDARY, function () { go('proposals', row.id); }));
+    actions.appendChild(button('Attach from Drive', SECONDARY, function () { startProposalAttach({ row: row }); }));
     actions.appendChild(button('Preview', SECONDARY, function () { go('print', 'proposal', row.id); }));
     actions.appendChild(button('Send', SECONDARY, function () { sendProposal(row); }));
     if (Lib.googleDocId(row.docUrl)) {
@@ -1967,10 +2418,10 @@
       linesOk: true
     };
     var page = el('div', { class: 'space-y-5' });
-    page.appendChild(sectionHead('Prospects', existing ? 'Edit proposal' : 'New proposal', 'Type the prices you mean to offer. A blank price stays blank, and the total stays incomplete until every line has a quantity and a price.'));
-    if (existing && (!read.sectionsOk || !read.linesOk)) {
+    page.appendChild(sectionHead('Prospects', existing ? 'Edit proposal' : 'New proposal', 'A prospect, a Drive file, and a status are enough when the proposal was already written outside the portal. Line items and a Google Doc are optional. A blank price stays blank.'));
+    if (existing && (!read.sectionsOk || !read.linesOk || !read.attachmentsOk)) {
       page.appendChild(el('p', { class: 'rounded-2xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100' }, [
-        'Sections or line items on this row are not valid JSON. Saving replaces those cells with the fields below.'
+        'Sections, line items, or attachments on this row are not valid JSON. Saving replaces those cells with the fields below.'
       ]));
     }
     var form = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-5', autocomplete: 'off', id: 'proposal-form' });
@@ -1983,16 +2434,18 @@
     form.appendChild(client);
     form.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Proposal']));
     var meta = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
-    meta.appendChild(field('Title', textInput('title', read.title, { required: true, placeholder: 'Website refresh' })));
+    meta.appendChild(field('Title', textInput('title', read.title, { placeholder: 'Website refresh' }), 'Optional when the proposal is already a file in Drive.'));
     var statuses = Lib.CHOICES.proposalStatus.slice();
     if (read.status && statuses.indexOf(read.status) === -1) statuses.unshift(read.status);
     meta.appendChild(field('Status', selectInput('status', read.status || 'Draft', statuses)));
+    meta.appendChild(field('Sent date', textInput('sent', read.sent, { type: 'date' }), 'For a proposal already sent outside the portal, set Sent and the date you sent it. A blank date uses today when the status is Sent.'));
     meta.appendChild(field('Expiration date', textInput('expires', read.expires, { type: 'date' }), 'Shown on the Doc as valid until. Clear it if the offer has no end date.'));
     form.appendChild(meta);
     form.appendChild(field('Project overview', areaInput('overview', read.overview, 'What the project is and why it matters')));
     form.appendChild(field('Scope and deliverables', areaInput('scope', read.scope, 'One deliverable per line')));
     form.appendChild(field('Timeline', areaInput('timeline', read.timeline, 'Milestones and dates')));
     form.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Pricing']));
+    form.appendChild(el('p', { class: 'text-sm text-slate-400' }, ['Optional. Leave the lines blank when you are only linking a file that was already sent.']));
     var host = el('div', { 'data-lines': '1', class: 'space-y-3' });
     (read.lines.length ? read.lines : [{ qty: '1', description: '', unitPrice: '' }]).forEach(function (line) {
       host.appendChild(lineRow(line));
@@ -2005,7 +2458,31 @@
     var total = el('div', { 'data-doc-total': '1' });
     form.appendChild(total);
     form.appendChild(field('Terms', areaInput('terms', read.terms, 'Payment, revisions, and what is included')));
-    form.appendChild(field('Internal notes', areaInput('notes', read.notes, 'Staff notes stay on this row'), 'The Google Doc includes the overview, scope, timeline, quote, and terms.'));
+    form.appendChild(field('Internal notes', areaInput('notes', read.notes, 'Staff notes stay on this row'), 'The Google Doc includes the overview, scope, timeline, quote, and terms. Drive links are separate.'));
+    form._attachments = (read.attachments || []).slice();
+    form.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Drive files']));
+    form.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
+      'Link a Doc, PDF, or other file that already exists in Drive. Save the proposal to keep new links. Removing a link does not delete the Drive file.'
+    ]));
+    form.appendChild(el('div', { class: 'space-y-2', 'data-attachment-list': '1' }));
+    form.appendChild(el('p', { 'data-attach-status': '1', class: 'hidden text-sm text-sky-200' }));
+    var pasteInput = textInput('drivePaste', '', { placeholder: 'https://drive.google.com/file/d/…/view or a file ID' });
+    pasteInput.setAttribute('data-drive-paste', '1');
+    pasteInput.setAttribute('autocomplete', 'off');
+    pasteInput.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      lookupEditorAttachment(form);
+    });
+    var pasteRow = el('div', {
+      class: pickerReady() ? 'hidden' : '',
+      'data-drive-paste-row': '1'
+    });
+    pasteRow.appendChild(field('Drive link or file ID', pasteInput, state.mode === 'demo'
+      ? 'Sample data does not call Google. The name is a preview label. A signed-in portal looks the name up with Drive.'
+      : 'Shown when the Google Picker key is blank. Drive looks up the file name. The file stays in Drive.'));
+    form.appendChild(pasteRow);
+    form.appendChild(button('Attach from Drive', SECONDARY, function () { startProposalAttach({ form: form }); }));
     if (read.docUrl) {
       form.appendChild(el('p', { class: 'text-sm text-slate-300' }, ['Saved Doc: ' + read.docUrl]));
     }
@@ -2052,7 +2529,13 @@
         go('proposals');
       });
     });
+    form.elements.status.addEventListener('change', function () {
+      if (form.elements.status.value === 'Sent' && form.elements.sent && !form.elements.sent.value) {
+        form.elements.sent.value = Lib.isoDate(0);
+      }
+    });
     page.appendChild(form);
+    paintEditorAttachments(form);
     updateDocPreview(form);
     return page;
   }
@@ -2070,7 +2553,7 @@
       title: form.elements.title.value.trim(),
       status: form.elements.status.value,
       created: read.created,
-      sent: read.sent,
+      sent: Lib.proposalSentDate(form.elements.status.value, form.elements.sent.value, Lib.isoDate(0)),
       expires: form.elements.expires.value,
       docUrl: read.docUrl,
       notes: form.elements.notes.value,
@@ -2079,6 +2562,7 @@
       timeline: form.elements.timeline.value,
       terms: form.elements.terms.value,
       lines: readLines(form),
+      attachments: form._attachments || [],
       customerId: read.customerId,
       jobId: read.jobId,
       sample: read.sample
@@ -2087,8 +2571,8 @@
 
   function afterProposalCommit(form, existing, next) {
     var record = proposalFromForm(form, existing);
-    if (!record.prospectName || !record.title) {
-      showFormError(form, 'Enter the prospect name and a proposal title.');
+    if (!record.prospectName) {
+      showFormError(form, 'Enter the prospect name. A title, line items, and a Google Doc are optional.');
       return;
     }
     var nameless = readLines(form).filter(function (line) { return line.unitPrice && !line.description; });
@@ -2119,23 +2603,25 @@
     }
     var url = Lib.proposalComposeUrl(read);
     if (!url) {
-      state.banner = { tone: 'bad', text: 'Create the Google Doc first so the Gmail draft can include the link. This page does not send email.' };
+      state.banner = { tone: 'bad', text: 'Attach a Drive file or create the Google Doc first so the Gmail draft has a link. This page does not send email.' };
       paint(true);
       return Promise.resolve();
     }
     openTab(url);
     var keepStatus = read.status === 'Accepted' || read.status === 'Declined';
-    var next = Lib.writeProposal(Object.assign({}, read, {
+    var next = proposalKeepingJson(read, {
       status: keepStatus ? read.status : 'Sent',
-      sent: keepStatus ? read.sent : Lib.isoDate(0)
-    }));
+      sent: keepStatus ? read.sent : (read.sent || Lib.isoDate(0))
+    });
     var when = formatDay(next.sent) || next.sent || 'today';
+    var included = proposalSendSummary(read);
+    var docNote = Lib.proposalDocLink(read.docUrl) ? ' If the prospect cannot open the Doc, choose Anyone with the link can view.' : '';
     return persistRecord('Proposals', next, record).then(function () {
       state.banner = {
         tone: 'ok',
         text: keepStatus
-          ? 'Gmail opened a draft with the Doc link. This page did not send it. Status stayed ' + read.status + '. If the prospect cannot open the Doc, choose Anyone with the link can view.'
-          : 'Gmail opened a draft with the Doc link. This page did not send it. You press Send in Gmail. Status is Sent as of ' + when + '. If the prospect cannot open the Doc, choose Anyone with the link can view.',
+          ? 'Gmail opened a draft with ' + included + '. This page did not send it. Status stayed ' + read.status + '.' + docNote
+          : 'Gmail opened a draft with ' + included + '. This page did not send it. You press Send in Gmail. Status is Sent as of ' + when + '.' + docNote,
         href: url,
         hrefLabel: 'Open the Gmail draft again'
       };
@@ -2214,11 +2700,11 @@
     var proposalId = Lib.readProposal(record).id;
     return chain.then(function () {
       var current = findRow('Proposals', proposalId) || record;
-      var next = Lib.writeProposal(Object.assign({}, Lib.readProposal(current), {
+      var next = proposalKeepingJson(current, {
         status: 'Accepted',
         customerId: plan.customer.id,
         jobId: plan.ticket.id
-      }));
+      });
       return persistRecord('Proposals', next, current);
     }).then(function () {
       state.busy = '';
@@ -2246,7 +2732,7 @@
 
   function declineProposal(record) {
     var read = Lib.readProposal(record);
-    var next = Lib.writeProposal(Object.assign({}, read, { status: 'Declined' }));
+    var next = proposalKeepingJson(read, { status: 'Declined' });
     var extra = (read.customerId || read.jobId) ? ' The customer and ticket already created stay on those tabs.' : '';
     return persistRecord('Proposals', next, record).then(function () {
       state.banner = { tone: 'ok', text: 'Proposal marked Declined.' + extra };
@@ -2298,7 +2784,7 @@
     var view = Lib.proposalView(record);
     if (state.mode === 'demo') {
       var demoUrl = read.docUrl || 'https://docs.google.com/document/d/sample-proposal/edit';
-      var demoRecord = Lib.writeProposal(Object.assign({}, read, { docUrl: demoUrl }));
+      var demoRecord = proposalKeepingJson(read, { docUrl: demoUrl });
       return persistRecord('Proposals', demoRecord, record).then(function () {
         state.banner = {
           tone: 'warn',
@@ -2351,7 +2837,7 @@
     }).then(function () {
       var url = 'https://docs.google.com/document/d/' + fileId + '/edit';
       var current = findRow('Proposals', read.id) || record;
-      var next = Lib.writeProposal(Object.assign({}, Lib.readProposal(current), { docUrl: url }));
+      var next = proposalKeepingJson(current, { docUrl: url });
       return persistRecord('Proposals', next, current).then(function () { return url; });
     }).then(function (url) {
       state.busy = '';
@@ -2625,6 +3111,7 @@
     state.invoiceDraft = null;
     state.sessionDraft = null;
     state.studentDraft = null;
+    state.driveAttach = null;
     state.intakeDialog = null;
     if (location.hash && location.hash !== '#') location.hash = '';
     paint();
@@ -3013,7 +3500,10 @@
 
   function persistRecord(title, record, existing) {
     stampUpdate(record, existing);
-    return upsert(title, record).then(function () {
+    var ready = title === 'Proposals' ? ensureProposalSheet() : Promise.resolve();
+    return ready.then(function () {
+      return upsert(title, record);
+    }).then(function () {
       if (state.mode === 'live') return loadSheets();
       return null;
     });
@@ -3133,7 +3623,7 @@
       'Do not delete or rename the header row on those tabs. The portal reads the header names.',
       'The Tickets tab can gain an Intake Sent column at the end of the header row. Do not rename it. Other header cells stay as they are.',
       'The Invoices tab can gain Business, Payment link, Session ID, and Package at the end of the header row. Blank Business still means Legacy Computing Services. Do not rename those headers.',
-      'The Proposals tab stores Sections and Line items as JSON. Customer ID and Job ID are filled when a proposal is accepted. Adding that tab does not change the other tabs.',
+      'The Proposals tab stores Sections, Line items, and Attachments as JSON. Attachments are links to files already in Drive. Customer ID and Job ID are filled when a proposal is accepted. Adding that tab, or the Attachments header, does not change the other tabs or the header cells that are already there.',
       'Academy Requests is filled by the bowling academy intake script. Academy Students and Academy Sessions are edited in the portal. Adding those tabs does not change the other tabs.',
       'Quote and invoice lines are stored on QuoteItems and InvoiceItems.',
       'The public website does not read this file. Inquiries show up after the Apps Script is connected, or when you type one in the portal.',
@@ -4115,6 +4605,11 @@
       if (event.key !== 'Escape' || state.mode === 'gate') return;
       if (state.intakeDialog) {
         state.intakeDialog = null;
+        paint(true);
+        return;
+      }
+      if (state.driveAttach) {
+        state.driveAttach = null;
         paint(true);
         return;
       }

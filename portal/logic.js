@@ -131,7 +131,8 @@
         ['sections', 'Sections'],
         ['lineItems', 'Line items'],
         ['customerId', 'Customer ID'],
-        ['jobId', 'Job ID']
+        ['jobId', 'Job ID'],
+        ['attachments', 'Attachments']
       ]
     },
     {
@@ -602,6 +603,139 @@
     }
   }
 
+  function driveFileId(value) {
+    var v = clean(value);
+    if (!v || isPlaceholder(v)) return '';
+    var patterns = [
+      /\/file\/d\/([A-Za-z0-9_-]{8,})/i,
+      /\/document\/d\/([A-Za-z0-9_-]{8,})/i,
+      /\/spreadsheets\/d\/([A-Za-z0-9_-]{8,})/i,
+      /\/presentation\/d\/([A-Za-z0-9_-]{8,})/i,
+      /\/folders\/([A-Za-z0-9_-]{8,})/i,
+      /[?&]id=([A-Za-z0-9_-]{8,})/i,
+      /\/d\/([A-Za-z0-9_-]{8,})/i
+    ];
+    var i;
+    for (i = 0; i < patterns.length; i++) {
+      var match = v.match(patterns[i]);
+      if (match) return match[1];
+    }
+    if (/^[A-Za-z0-9_-]{8,}$/.test(v)) return v;
+    return '';
+  }
+
+  function mimeHintFromDriveUrl(value) {
+    var v = clean(value).toLowerCase();
+    if (v.indexOf('/document/') !== -1) return 'application/vnd.google-apps.document';
+    if (v.indexOf('/spreadsheets/') !== -1) return 'application/vnd.google-apps.spreadsheet';
+    if (v.indexOf('/presentation/') !== -1) return 'application/vnd.google-apps.presentation';
+    if (v.indexOf('/folders/') !== -1) return 'application/vnd.google-apps.folder';
+    return '';
+  }
+
+  function attachmentKind(mime) {
+    if (mime === 'application/vnd.google-apps.folder') return 'Folder';
+    if (mime === 'application/vnd.google-apps.document') return 'Google Doc';
+    if (mime === 'application/vnd.google-apps.spreadsheet') return 'Google Sheet';
+    if (mime === 'application/vnd.google-apps.presentation') return 'Slides';
+    if (mime === 'application/pdf') return 'PDF';
+    if (mime && String(mime).indexOf('image/') === 0) return 'Image';
+    if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'Word';
+    if (mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') return 'Excel';
+    return 'File';
+  }
+
+  function driveFileUrl(id, mimeType) {
+    var fileId = driveFileId(id);
+    if (!fileId) return '';
+    var mime = clean(mimeType);
+    if (mime === 'application/vnd.google-apps.document') return 'https://docs.google.com/document/d/' + fileId + '/edit';
+    if (mime === 'application/vnd.google-apps.spreadsheet') return 'https://docs.google.com/spreadsheets/d/' + fileId + '/edit';
+    if (mime === 'application/vnd.google-apps.presentation') return 'https://docs.google.com/presentation/d/' + fileId + '/edit';
+    if (mime === 'application/vnd.google-apps.folder') return 'https://drive.google.com/drive/folders/' + fileId;
+    return 'https://drive.google.com/file/d/' + fileId + '/view';
+  }
+
+  function normalizeAttachment(item) {
+    if (!item || typeof item !== 'object') return null;
+    var id = driveFileId(item.id || item.url || '');
+    if (!id) return null;
+    var mimeType = clean(item.mimeType) || mimeHintFromDriveUrl(item.url || '');
+    var name = clean(item.name) || 'Drive file';
+    var given = clean(item.url);
+    var url = '';
+    if (/^https:\/\/(drive|docs)\.google\.com\//i.test(given) && driveFileId(given) === id) url = given;
+    if (!url) url = driveFileUrl(id, mimeType);
+    return { id: id, name: name, mimeType: mimeType, url: url };
+  }
+
+  function readAttachments(raw) {
+    if (Array.isArray(raw)) {
+      var direct = [];
+      var seenDirect = {};
+      raw.forEach(function (item) {
+        var next = normalizeAttachment(item);
+        if (!next || seenDirect[next.id]) return;
+        seenDirect[next.id] = true;
+        direct.push(next);
+      });
+      return { ok: true, items: direct, raw: '' };
+    }
+    var parsed = parseJsonValue(raw);
+    if (!parsed.ok) return { ok: false, items: [], raw: asText(raw) };
+    if (parsed.value == null) return { ok: true, items: [], raw: '' };
+    if (!Array.isArray(parsed.value)) return { ok: false, items: [], raw: asText(raw) };
+    var items = [];
+    var seen = {};
+    parsed.value.forEach(function (item) {
+      var next = normalizeAttachment(item);
+      if (!next || seen[next.id]) return;
+      seen[next.id] = true;
+      items.push(next);
+    });
+    return { ok: true, items: items, raw: '' };
+  }
+
+  function mergeAttachments(current, incoming) {
+    var items = [];
+    var seen = {};
+    function add(item) {
+      var next = normalizeAttachment(item);
+      if (!next || seen[next.id]) return;
+      seen[next.id] = true;
+      items.push(next);
+    }
+    (current || []).forEach(add);
+    (incoming || []).forEach(add);
+    return items;
+  }
+
+  function removeAttachment(current, id) {
+    var wanted = driveFileId(id);
+    if (!wanted) return mergeAttachments(current, []);
+    return mergeAttachments(current, []).filter(function (item) {
+      return item.id !== wanted;
+    });
+  }
+
+  function pickerApiKey(config) {
+    var key = clean(config && config.pickerApiKey);
+    if (!key || isPlaceholder(key) || /\s/.test(key)) return '';
+    return key;
+  }
+
+  function pickerAppId(clientId) {
+    var id = clean(clientId);
+    var match = id.match(/^(\d+)-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/i);
+    return match ? match[1] : '';
+  }
+
+  function proposalSentDate(status, sent, today) {
+    var date = clean(sent);
+    if (clean(status) === 'Sent' && !date) return clean(today);
+    return date;
+  }
+
   function readProposal(row) {
     row = row || {};
     var sectionsParsed = parseJsonValue(row.sections);
@@ -620,6 +754,7 @@
         });
       });
     }
+    var attachmentsParsed = readAttachments(row.attachments);
     var status = clean(row.status);
     if (CHOICES.proposalStatus.indexOf(status) === -1) status = status || 'Draft';
     return {
@@ -649,6 +784,9 @@
       lineItemsRaw: linesOk ? '' : asText(row.lineItems),
       customerId: clean(row.customerId),
       jobId: clean(row.jobId),
+      attachments: attachmentsParsed.items,
+      attachmentsOk: attachmentsParsed.ok,
+      attachmentsRaw: attachmentsParsed.ok ? '' : attachmentsParsed.raw,
       sample: !!row.sample
     };
   }
@@ -669,6 +807,7 @@
     var totals = documentTotals(lines, '');
     var keepSections = fields.sectionsOk === false && fields.keepBrokenSections;
     var keepLines = fields.linesOk === false && fields.keepBrokenLines;
+    var keepAttachments = fields.attachmentsOk === false && fields.keepBrokenAttachments;
     var status = clean(fields.status) || 'Draft';
     return {
       id: fields.id || '',
@@ -695,6 +834,7 @@
       lineItems: keepLines ? asText(fields.lineItemsRaw) : JSON.stringify(lines),
       customerId: clean(fields.customerId),
       jobId: clean(fields.jobId),
+      attachments: keepAttachments ? asText(fields.attachmentsRaw) : JSON.stringify(mergeAttachments([], fields.attachments || [])),
       sample: fields.sample
     };
   }
@@ -754,31 +894,49 @@
     return match ? match[1] : '';
   }
 
+  function proposalDocLink(value) {
+    var doc = clean(value);
+    if (!/^https:\/\/docs\.google\.com\/document\/d\/[A-Za-z0-9_-]+/i.test(doc)) return '';
+    return doc;
+  }
+
   function proposalComposeUrl(record) {
     var view = readProposal(record);
     if (!looksLikeEmail(view.email)) return '';
-    var doc = clean(view.docUrl);
-    if (!/^https:\/\/docs\.google\.com\/document\/d\/[A-Za-z0-9_-]+/i.test(doc)) return '';
+    var doc = proposalDocLink(view.docUrl);
+    var files = view.attachmentsOk ? view.attachments : [];
+    if (!doc && !files.length) return '';
     var subject = 'Proposal: ' + (view.title || 'Legacy Computing Services');
     var first = view.prospectName ? view.prospectName.split(/\s+/)[0] : '';
     var hello = first ? 'Hello ' + first + ',' : 'Hello,';
     var valid = view.expires ? ' It is valid until ' + formatDay(view.expires) + '.' : '';
     var about = view.title ? ' for ' + view.title : '';
-    var body = [
+    var lines = [
       hello,
       '',
       'Please review the proposal' + about + '.' + valid,
-      '',
-      doc,
-      '',
+      ''
+    ];
+    if (doc) {
+      lines.push(doc);
+      lines.push('');
+    }
+    if (files.length) {
+      lines.push(files.length === 1 ? 'File:' : 'Files:');
+      files.forEach(function (file) {
+        lines.push((file.name || 'Drive file') + ': ' + file.url);
+      });
+      lines.push('');
+    }
+    lines.push(
       'Thank you,',
       'Legacy Computing Services',
       'scott@legacycomputingservices.com'
-    ].join('\n');
+    );
     return 'https://mail.google.com/mail/?view=cm&fs=1'
       + '&to=' + encodeURIComponent(view.email)
       + '&su=' + encodeURIComponent(subject)
-      + '&body=' + encodeURIComponent(body);
+      + '&body=' + encodeURIComponent(lines.join('\n'));
   }
 
   function findById(rows, id) {
@@ -851,8 +1009,10 @@
       jobId: ticket.id || '',
       sectionsOk: view.sectionsOk,
       linesOk: view.linesOk,
+      attachmentsOk: view.attachmentsOk,
       keepBrokenSections: view.sectionsOk === false,
-      keepBrokenLines: view.linesOk === false
+      keepBrokenLines: view.linesOk === false,
+      keepBrokenAttachments: view.attachmentsOk === false
     }));
     return {
       error: '',
@@ -1847,6 +2007,40 @@
           customerId: '',
           jobId: '',
           sample: true
+        },
+        {
+          id: 'sample-proposal-3',
+          prospectName: 'Riley Sample',
+          business: 'Sample Hardware',
+          email: 'riley.sample@example.test',
+          phone: '(410) 555-0177',
+          title: '',
+          status: 'Sent',
+          created: today,
+          sent: today,
+          expires: '',
+          total: '',
+          docUrl: '',
+          notes: 'Sample proposal that was already a file in Drive. Not a company record.',
+          sections: JSON.stringify({ overview: '', scope: '', timeline: '', terms: '' }),
+          lineItems: '[]',
+          customerId: '',
+          jobId: '',
+          attachments: JSON.stringify([
+            {
+              id: 'sampleDriveFile12345',
+              name: 'SAMPLE — existing proposal PDF',
+              mimeType: 'application/pdf',
+              url: 'https://drive.google.com/file/d/sampleDriveFile12345/view'
+            },
+            {
+              id: 'sampleDriveDoc123456',
+              name: 'SAMPLE — scope notes',
+              mimeType: 'application/vnd.google-apps.document',
+              url: 'https://docs.google.com/document/d/sampleDriveDoc123456/edit'
+            }
+          ]),
+          sample: true
         }
       ],
       'Academy Students': [
@@ -2046,6 +2240,17 @@
     colLetter: colLetter,
     isoDate: isoDate,
     formatDay: formatDay,
+    driveFileId: driveFileId,
+    mimeHintFromDriveUrl: mimeHintFromDriveUrl,
+    attachmentKind: attachmentKind,
+    driveFileUrl: driveFileUrl,
+    normalizeAttachment: normalizeAttachment,
+    mergeAttachments: mergeAttachments,
+    removeAttachment: removeAttachment,
+    pickerApiKey: pickerApiKey,
+    pickerAppId: pickerAppId,
+    proposalSentDate: proposalSentDate,
+    proposalDocLink: proposalDocLink,
     readProposal: readProposal,
     writeProposal: writeProposal,
     proposalQuoteGrid: proposalQuoteGrid,

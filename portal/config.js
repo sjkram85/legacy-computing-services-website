@@ -1,10 +1,16 @@
 /* Legacy Computing Services — employee portal settings.
-   This file is public. Do not put passwords, API keys, customer names,
-   prices, or file contents here.
+   This file is public. Do not put a client secret, a password, customer
+   names, prices, or file contents here. Do not put an API key that is
+   not restricted to this website.
 
    A Google OAuth Client ID is not a secret. Spreadsheet and Drive folder
    IDs are not secrets either, but the files themselves must be shared only
    with employees. Google, not this page, decides who can read them.
+
+   pickerApiKey is optional. It is a browser key for the Google file picker
+   only after you restrict it to this site's HTTP referrers and to the
+   Picker API. Leave it blank to paste a Drive link instead.
+   See docs/portal-setup.md.
 
    Leave a value blank, or leave the YOUR_... placeholder, until it is real.
    The portal then shows a setup message instead of an error.
@@ -48,5 +54,12 @@ window.LCS_PORTAL = {
      Academy invoices use this same address. There is no separate bowling
      bank account or merchant account. Leave blank until a provider is chosen.
      An https address only. Not a password. */
-  paymentUrl: ""
+  paymentUrl: "",
+
+  /* Optional browser key for Attach from Drive (Google Picker).
+     Not a client secret. Leave blank until the key is restricted to this
+     site's HTTP referrers and to the Google Picker API. An unrestricted
+     key must not be saved here. Blank uses a pasted Drive link instead.
+     See docs/portal-setup.md. */
+  pickerApiKey: ""
 };
