@@ -52,7 +52,17 @@
     proposalSheetReady: false,
     proposalSheetWorking: false,
     proposalSheetFailed: '',
-    intakeDialog: null
+    intakeDialog: null,
+    academyView: 'home',
+    academySheetReady: false,
+    academySheetWorking: false,
+    academySheetFailed: '',
+    studentQuery: '',
+    sessionFilter: 'Upcoming',
+    requestFilter: 'New',
+    invoiceDraft: null,
+    sessionDraft: null,
+    studentDraft: null
   };
 
   var expiryTimer = 0;
@@ -135,6 +145,7 @@
     var intakeEmail = document.getElementById('intake-dialog-email');
     if (intakeEmail) intakeEmail.focus();
     if (state.mode === 'live' && state.section === 'proposals') scheduleProposalSheet();
+    if (state.mode === 'live' && state.section === 'academy') scheduleAcademySheets();
   }
 
   function go() {
@@ -168,9 +179,16 @@
       state.editorId = '';
       return;
     }
-    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1, invoices: 1, docs: 1, sheet: 1 };
+    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1, invoices: 1, academy: 1, docs: 1, sheet: 1 };
     state.section = known[parts[0]] ? parts[0] : 'home';
-    state.editorId = parts[1] || '';
+    if (state.section === 'academy') {
+      var academyViews = { home: 1, students: 1, sessions: 1, requests: 1, billing: 1 };
+      state.academyView = academyViews[parts[1]] ? parts[1] : 'home';
+      state.editorId = academyViews[parts[1]] ? (parts[2] || '') : '';
+    } else {
+      state.academyView = 'home';
+      state.editorId = parts[1] || '';
+    }
     state.printKind = '';
     state.printId = '';
   }
@@ -229,13 +247,13 @@
 
   function badgeClass(value) {
     var v = String(value || '').toLowerCase();
-    if (v === 'done' || v === 'paid' || v === 'accepted' || v === 'replied' || v === 'closed') {
+    if (v === 'done' || v === 'paid' || v === 'accepted' || v === 'replied' || v === 'closed' || v === 'completed' || v === 'active' || v === 'confirmed') {
       return 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40';
     }
-    if (v === 'urgent' || v === 'high' || v === 'void' || v === 'declined') {
+    if (v === 'urgent' || v === 'high' || v === 'void' || v === 'declined' || v === 'cancelled' || v === 'canceled') {
       return 'bg-rose-500/15 text-rose-200 border-rose-400/40';
     }
-    if (v === 'in progress' || v === 'sent' || v === 'waiting on customer' || v === 'reviewed') {
+    if (v === 'in progress' || v === 'sent' || v === 'waiting on customer' || v === 'reviewed' || v === 'requested' || v === 'scheduled' || v === 'waitlist') {
       return 'bg-amber-500/15 text-amber-100 border-amber-400/40';
     }
     return 'bg-sky-500/15 text-sky-200 border-sky-400/40';
@@ -318,7 +336,7 @@
 
   function demoBanner() {
     return el('div', { class: 'rounded-2xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 leading-relaxed' }, [
-      'Sample data. Not connected to Google. Every name, ticket, proposal, and dollar amount on this screen is fake and is not a company record.'
+      'Sample data. Not connected to Google. Every name, ticket, proposal, academy record, and dollar amount on this screen is fake and is not a company record.'
     ]);
   }
 
@@ -364,6 +382,9 @@
   function customerList(id) {
     var list = el('datalist', { id: id });
     (state.data.Customers || []).forEach(function (row) {
+      if (row.name) list.appendChild(el('option', { value: row.name }));
+    });
+    (state.data['Academy Students'] || []).forEach(function (row) {
       if (row.name) list.appendChild(el('option', { value: row.name }));
     });
     return list;
@@ -507,6 +528,7 @@
       ['proposals', 'Proposals'],
       ['quotes', 'Quotes'],
       ['invoices', 'Invoices'],
+      ['academy', 'Academy'],
       ['docs', 'Docs'],
       ['sheet', 'Spreadsheet']
     ].forEach(function (item) {
@@ -531,6 +553,7 @@
     if (state.section === 'proposals') return state.editorId ? renderProposalEditor() : renderProposals();
     if (state.section === 'quotes') return state.editorId ? renderDocEditor('quote') : renderDocList('quote');
     if (state.section === 'invoices') return state.editorId ? renderDocEditor('invoice') : renderDocList('invoice');
+    if (state.section === 'academy') return renderAcademy();
     if (state.section === 'docs') return renderDocs();
     if (state.section === 'sheet') return renderSheet();
     if (state.section === 'print') return renderPrint();
@@ -569,7 +592,7 @@
     var card = el('button', { type: 'button', class: 'cyber-panel cyber-panel-hover rounded-2xl p-4 text-left w-full' });
     card.appendChild(el('span', { class: 'block font-mono text-[11px] uppercase tracking-wider text-slate-400' }, [label]));
     card.appendChild(el('span', { class: 'block font-display text-3xl font-bold text-white mt-2' }, [String(value)]));
-    card.addEventListener('click', function () { go(hash); });
+    card.addEventListener('click', function () { go.apply(null, String(hash || 'home').split('/')); });
     return card;
   }
 
@@ -579,7 +602,7 @@
     if (!spreadsheetId()) {
       box.appendChild(el('h2', { class: 'font-display text-2xl font-bold text-white' }, ['Create the portal spreadsheet']));
       box.appendChild(el('p', { class: 'text-sm text-slate-300 leading-relaxed' }, [
-        'No spreadsheet ID is in portal/config.js. This button creates a Google Sheet in your Drive with the Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems, and Proposals tabs and their header rows. It does not add sample customers or prices.'
+        'No spreadsheet ID is in portal/config.js. This button creates a Google Sheet in your Drive with the Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems, Proposals, Academy Students, Academy Requests, and Academy Sessions tabs and their header rows. It does not add sample customers or prices.'
       ]));
       var create = button(state.busy ? 'Working…' : 'Create the portal spreadsheet', PRIMARY, createSpreadsheet);
       create.disabled = Boolean(state.busy);
@@ -648,13 +671,17 @@
     var openProposals = (state.data.Proposals || []).filter(function (row) {
       return !row.status || row.status === 'Draft' || row.status === 'Sent';
     }).length;
-    var stats = el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3' });
+    var academyNew = (state.data['Academy Requests'] || []).filter(function (row) {
+      return !row.status || row.status === 'New';
+    }).length;
+    var stats = el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3' });
     stats.appendChild(statCard('Open tickets', openTickets, 'tickets'));
     stats.appendChild(statCard('Customers', (state.data.Customers || []).length, 'customers'));
     stats.appendChild(statCard('New inquiries', fresh, 'inquiries'));
     stats.appendChild(statCard('Open proposals', openProposals, 'proposals'));
     stats.appendChild(statCard('Open quotes', openQuotes, 'quotes'));
     stats.appendChild(statCard('Unpaid invoices', unpaid, 'invoices'));
+    stats.appendChild(statCard('Academy requests', academyNew, 'academy/requests'));
     page.appendChild(stats);
     page.appendChild(recentTickets());
     return page;
@@ -1143,7 +1170,7 @@
         state.banner.href = options.composeUrl;
         state.banner.hrefLabel = 'Open the Gmail draft again';
       }
-      go(section);
+      go.apply(null, String(section || 'home').split('/'));
     }).catch(function (err) {
       submit.disabled = false;
       var prefix = options.composeUrl ? 'Gmail opened, but the ticket was not saved. ' : '';
@@ -1348,7 +1375,9 @@
   function renderDocList(kind) {
     var spec = Lib.DOC_SPEC[kind];
     var page = el('div', { class: 'space-y-5' });
-    var head = sectionHead(spec.title + 's', spec.title + 's', 'Numbers, customers, line items, and totals come from what you type. Blank prices stay blank.');
+    var head = sectionHead(spec.title + 's', spec.title + 's', kind === 'invoice'
+      ? 'Numbers, customers, line items, and totals come from what you type. Blank prices stay blank. Academy invoices use these same numbers. Business only changes the DBA line. Payments go to Legacy Computing Services, LLC.'
+      : 'Numbers, customers, line items, and totals come from what you type. Blank prices stay blank.');
     head.appendChild(button('New ' + spec.title.toLowerCase(), PRIMARY, function () { go(spec.sheet === 'Quotes' ? 'quotes' : 'invoices', 'new'); }));
     page.appendChild(head);
     var blocked = sheetBlocked(spec.sheet);
@@ -1368,10 +1397,11 @@
       var copy = el('div');
       copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [(row.number || 'No number') + ' · ' + (row.customer || 'No customer')]));
       copy.appendChild(el('p', { class: 'text-xs text-slate-400 mt-1' }, [
-        [row.issuedOn ? 'Issued ' + formatDay(row.issuedOn) : '', row.status].filter(Boolean).join(' · ')
+        [row.issuedOn ? 'Issued ' + formatDay(row.issuedOn) : '', row.status, row.packageName ? 'Package: ' + row.packageName : ''].filter(Boolean).join(' · ')
       ]));
       top.appendChild(copy);
       var side = el('div', { class: 'flex flex-col items-end gap-2' });
+      if (kind === 'invoice' && Lib.invoiceBrand(row.brand).academy) side.appendChild(badge('Academy'));
       side.appendChild(badge(row.status));
       side.appendChild(moneyLabel(row, totalsFor(kind, row)));
       top.appendChild(side);
@@ -1393,6 +1423,12 @@
     if (state.editorId !== 'new' && !existing) return missingRecord(section, 'That ' + spec.title.toLowerCase() + ' is not in the current list.');
     var record = existing || { status: spec.statuses[0], issuedOn: todayInput() };
     var lines = existing ? itemsFor(kind, existing.id) : [];
+    if (kind === 'invoice' && !existing && state.invoiceDraft) {
+      var draft = state.invoiceDraft;
+      state.invoiceDraft = null;
+      record = Object.assign({}, record, draft);
+      if (draft.lines && draft.lines.length) lines = draft.lines;
+    }
     var page = el('div', { class: 'space-y-5' });
     page.appendChild(sectionHead(spec.title, existing ? 'Edit ' + spec.title.toLowerCase() : 'New ' + spec.title, 'Type the prices you agreed. Leave a price blank and the total stays incomplete.'));
     var form = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-5', autocomplete: 'off', id: 'doc-form' });
@@ -1422,6 +1458,24 @@
     (spec.extra || []).forEach(function (extra) {
       grid.appendChild(field(extra[1], textInput(extra[0], record[extra[0]], { placeholder: extra[2] || '' })));
     });
+    if (kind === 'invoice') {
+      grid.appendChild(field(
+        'Business',
+        selectInput('brand', Lib.invoiceBrand(record.brand).id, Lib.CHOICES.invoiceBrand),
+        'Legacy Bowling Academy prints as Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC. Payments on that invoice still go to Legacy Computing Services, LLC. The number stays in this same invoice list.'
+      ));
+      grid.appendChild(field(
+        'Payment link',
+        textInput('paymentLink', record.paymentLink, { placeholder: 'Legacy Computing Services link, or leave blank' }),
+        'This pays Legacy Computing Services, LLC. Academy invoices use the same link. There is no separate bowling bank or merchant account. If paymentUrl is set in portal/config.js, that address prints on every invoice. Leave this blank until that one link exists. This page does not charge a card.'
+      ));
+      grid.appendChild(field('Package', textInput('packageName', record.packageName, { placeholder: 'Only for an academy package' })));
+      grid.appendChild(field(
+        'Session ID',
+        textInput('sessionId', record.sessionId, { placeholder: 'Filled from a completed lesson' }),
+        'Links this invoice to an academy session. Leave blank for a Legacy Computing Services invoice.'
+      ));
+    }
     grid.appendChild(field('Tax amount', textInput('tax', record.tax, { placeholder: 'Leave blank if there is no tax', inputmode: 'decimal' }), 'Only a tax amount you type is added. There is no default rate.'));
     form.appendChild(grid);
     form.appendChild(field('Notes', areaInput('notes', record.notes)));
@@ -1437,6 +1491,9 @@
     }));
     var total = el('div', { 'data-doc-total': '1' });
     form.appendChild(total);
+    if (kind === 'invoice') {
+      form.appendChild(el('p', { 'data-academy-price-hint': '1', class: 'text-xs text-amber-100 leading-relaxed' }, ['']));
+    }
     form.appendChild(formError());
     var actions = el('div', { class: 'flex flex-col sm:flex-row gap-3' });
     actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Save ' + spec.title.toLowerCase()]));
@@ -1444,6 +1501,7 @@
     if (existing) actions.appendChild(button('Print view', SECONDARY, function () { go('print', kind, existing.id); }));
     form.appendChild(actions);
     form.addEventListener('input', function () { updateDocPreview(form); });
+    form.addEventListener('change', function () { updateDocPreview(form); });
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       saveDocument(kind, form, existing);
@@ -1523,7 +1581,12 @@
     });
     var box = form.querySelector('[data-doc-total]');
     var tax = form.elements.tax ? form.elements.tax.value : '';
-    box.replaceChildren(totalsNode(Lib.documentTotals(readLines(form), tax)));
+    if (box) box.replaceChildren(totalsNode(Lib.documentTotals(readLines(form), tax)));
+    var hint = form.querySelector('[data-academy-price-hint]');
+    if (hint) {
+      var brand = form.elements.brand ? form.elements.brand.value : '';
+      hint.textContent = Lib.invoiceBrand(brand).academy ? Lib.ACADEMY.referenceNote : '';
+    }
   }
 
   function saveDocument(kind, form, existing) {
@@ -1544,6 +1607,17 @@
     (spec.extra || []).forEach(function (extra) {
       header[extra[0]] = form.elements[extra[0]].value.trim();
     });
+    if (kind === 'invoice') {
+      header.brand = form.elements.brand.value;
+      header.paymentLink = form.elements.paymentLink.value.trim();
+      header.sessionId = form.elements.sessionId.value.trim();
+      header.packageName = form.elements.packageName.value.trim();
+      var payProblem = Lib.paymentLinkProblem(header.paymentLink);
+      if (payProblem) {
+        showFormError(form, payProblem);
+        return;
+      }
+    }
     if (!header.number || !header.customer) {
       showFormError(form, 'Enter a number and a customer. Prices can stay blank.');
       return;
@@ -1556,7 +1630,13 @@
     }
     var submit = form.querySelector('[type="submit"]');
     submit.disabled = true;
-    persistDocument(kind, header, lines, existing).then(function () {
+    var ready = (kind === 'invoice' && state.mode === 'live') ? ensureInvoiceColumns() : Promise.resolve();
+    ready.then(function () {
+      return persistDocument(kind, header, lines, existing);
+    }).then(function () {
+      if (kind === 'invoice' && header.sessionId) return linkSessionInvoice(header);
+      return null;
+    }).then(function () {
       state.banner = {
         tone: 'ok',
         text: state.mode === 'demo'
@@ -2422,11 +2502,19 @@
         'Sample document. Not a real ' + spec.title.toLowerCase() + '. Dollar amounts are fake.'
       ]));
     }
+    var letter = state.printKind === 'invoice' ? Lib.invoiceBrand(record.brand) : null;
     var top = el('div', { class: 'flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-200 pb-5' });
     var brand = el('div');
-    brand.appendChild(el('p', { class: 'font-display text-xl font-extrabold' }, ['Legacy Computing Services LLC']));
-    brand.appendChild(el('p', { class: 'text-sm mt-1' }, ['Bel Air, Maryland']));
-    brand.appendChild(el('p', { class: 'text-sm' }, ['scott@legacycomputingservices.com']));
+    if (letter && letter.academy) {
+      brand.appendChild(el('p', { class: 'font-display text-xl font-extrabold leading-tight' }, [letter.title]));
+      letter.lines.forEach(function (line) {
+        brand.appendChild(el('p', { class: 'text-sm mt-1' }, [line]));
+      });
+    } else {
+      brand.appendChild(el('p', { class: 'font-display text-xl font-extrabold' }, ['Legacy Computing Services LLC']));
+      brand.appendChild(el('p', { class: 'text-sm mt-1' }, ['Bel Air, Maryland']));
+      brand.appendChild(el('p', { class: 'text-sm' }, ['scott@legacycomputingservices.com']));
+    }
     top.appendChild(brand);
     var title = el('div', { class: 'sm:text-right' });
     title.appendChild(el('p', { class: 'font-display text-3xl font-extrabold' }, [spec.title]));
@@ -2440,6 +2528,7 @@
       if (record[dateField[0]]) meta.appendChild(el('p', {}, [dateField[1] + ': ' + formatDay(record[dateField[0]])]));
     });
     if (record.quoteNumber) meta.appendChild(el('p', {}, ['Quote number: ' + record.quoteNumber]));
+    if (state.printKind === 'invoice' && record.packageName) meta.appendChild(el('p', {}, ['Package: ' + record.packageName]));
     sheet.appendChild(meta);
     var table = el('table');
     table.appendChild(el('thead', {}, [el('tr', {}, [
@@ -2468,6 +2557,16 @@
     else if (!totals.empty) sum.appendChild(el('p', {}, ['Total incomplete. A line is missing a quantity or a price.']));
     sheet.appendChild(sum);
     if (record.notes) sheet.appendChild(el('p', { class: 'mt-6 text-sm whitespace-pre-wrap' }, [record.notes]));
+    if (state.printKind === 'invoice') {
+      var pay = Lib.invoicePaymentUrl(record, cfg());
+      if (pay) {
+        sheet.appendChild(el('p', { class: 'mt-6 text-sm break-all' }, ['Pay Legacy Computing Services, LLC online: ' + pay]));
+      } else if (letter && letter.academy) {
+        sheet.appendChild(el('p', { class: 'mt-6 text-sm' }, [
+          'Online payment is not connected yet. When it is, that link pays Legacy Computing Services, LLC.'
+        ]));
+      }
+    }
     sheet.appendChild(el('p', { class: 'mt-8 text-xs text-slate-500' }, [
       'Printed from the employee portal. Figures are whatever was typed into the sheet. This is not a filed tax document.'
     ]));
@@ -2520,6 +2619,12 @@
     state.proposalSheetReady = false;
     state.proposalSheetWorking = false;
     state.proposalSheetFailed = '';
+    state.academySheetReady = false;
+    state.academySheetWorking = false;
+    state.academySheetFailed = '';
+    state.invoiceDraft = null;
+    state.sessionDraft = null;
+    state.studentDraft = null;
     state.intakeDialog = null;
     if (location.hash && location.hash !== '#') location.hash = '';
     paint();
@@ -3024,10 +3129,12 @@
     var lines = [
       'Legacy Computing Services — employee portal spreadsheet',
       'Share this file only with employees. Leave general access Restricted. Do not choose Anyone with the link.',
-      'Do not rename these tabs: Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems, Proposals.',
+      'Do not rename these tabs: Tickets, Customers, Inquiries, Quotes, QuoteItems, Invoices, InvoiceItems, Proposals, Academy Students, Academy Requests, Academy Sessions.',
       'Do not delete or rename the header row on those tabs. The portal reads the header names.',
       'The Tickets tab can gain an Intake Sent column at the end of the header row. Do not rename it. Other header cells stay as they are.',
+      'The Invoices tab can gain Business, Payment link, Session ID, and Package at the end of the header row. Blank Business still means Legacy Computing Services. Do not rename those headers.',
       'The Proposals tab stores Sections and Line items as JSON. Customer ID and Job ID are filled when a proposal is accepted. Adding that tab does not change the other tabs.',
+      'Academy Requests is filled by the bowling academy intake script. Academy Students and Academy Sessions are edited in the portal. Adding those tabs does not change the other tabs.',
       'Quote and invoice lines are stored on QuoteItems and InvoiceItems.',
       'The public website does not read this file. Inquiries show up after the Apps Script is connected, or when you type one in the portal.',
       'Paste the spreadsheet ID into portal/config.js. It is the long code between /d/ and /edit in the address bar.'
@@ -3065,6 +3172,9 @@
     if (title === 'Quotes') return Lib.CHOICES.quoteStatus;
     if (title === 'Proposals') return Lib.CHOICES.proposalStatus;
     if (title === 'Invoices') return Lib.CHOICES.invoiceStatus;
+    if (title === 'Academy Students') return Lib.CHOICES.studentStatus;
+    if (title === 'Academy Requests') return Lib.CHOICES.requestStatus;
+    if (title === 'Academy Sessions') return Lib.CHOICES.sessionStatus;
     return null;
   }
 
@@ -3091,6 +3201,13 @@
       });
       var lists = { Status: statusChoices(spec.title) };
       if (spec.title === 'Tickets') lists.Priority = Lib.CHOICES.priority;
+      if (spec.title === 'Academy Students') lists['Age group'] = Lib.CHOICES.ageGroup;
+      if (spec.title === 'Academy Requests') {
+        lists.Form = Lib.CHOICES.requestForm;
+        lists['Age group'] = Lib.CHOICES.ageGroup;
+      }
+      if (spec.title === 'Academy Sessions') lists.Type = Lib.CHOICES.sessionKind;
+      if (spec.title === 'Invoices') lists.Business = Lib.CHOICES.invoiceBrand;
       Object.keys(lists).forEach(function (header) {
         if (!lists[header]) return;
         var index = -1;
@@ -3188,6 +3305,8 @@
       state.busy = '';
       state.proposalSheetReady = true;
       state.proposalSheetFailed = '';
+      state.academySheetReady = true;
+      state.academySheetFailed = '';
       state.banner = { tone: 'ok', text: 'Missing tabs were added. Missing header names were added without changing existing header cells or data rows.' };
       paint(true);
     }).catch(function (err) {
@@ -3195,6 +3314,791 @@
       state.banner = { tone: 'bad', text: friendly(err) };
       paint(true);
     });
+  }
+
+  function ensureInvoiceColumns() {
+    if (state.mode === 'demo') return Promise.resolve();
+    return ensureSheet('Invoices');
+  }
+
+  function linkSessionInvoice(header) {
+    var session = findRow('Academy Sessions', header.sessionId);
+    if (!session || session.invoiceId === header.id) return Promise.resolve();
+    var next = Object.assign({}, session, { invoiceId: header.id });
+    return persistRecord('Academy Sessions', next, session);
+  }
+
+  function sheetHeadersPending(title) {
+    if (state.sheetIds[title] == null) return true;
+    var parsed = state.parsed[title];
+    var header = parsed && parsed.headerRow;
+    if (!header || !header.some(function (cell) { return String(cell || '').trim(); })) {
+      if (parsed && parsed.rows && parsed.rows.length) return false;
+      return true;
+    }
+    return Lib.headersToAppend(header, Lib.columnsOf(title)).headers.length > 0;
+  }
+
+  function academySheetsPending() {
+    if (state.mode !== 'live' || !spreadsheetId() || state.sheetsError) return false;
+    var titles = ['Academy Students', 'Academy Requests', 'Academy Sessions', 'Invoices'];
+    for (var i = 0; i < titles.length; i++) {
+      if (sheetHeadersPending(titles[i])) return true;
+    }
+    return false;
+  }
+
+  function scheduleAcademySheets() {
+    if (state.academySheetWorking || state.academySheetReady || state.academySheetFailed) return;
+    if (!academySheetsPending()) {
+      state.academySheetReady = true;
+      return;
+    }
+    if (state.busy) return;
+    state.academySheetWorking = true;
+    state.busy = 'Adding the Academy tabs…';
+    paint(true);
+    var titles = ['Academy Students', 'Academy Requests', 'Academy Sessions', 'Invoices'];
+    var chain = Promise.resolve();
+    titles.forEach(function (title) {
+      chain = chain.then(function () { return ensureSheet(title); });
+    });
+    chain.then(function () {
+      state.academySheetWorking = false;
+      state.academySheetReady = true;
+      state.busy = '';
+      state.banner = {
+        tone: 'ok',
+        text: 'The Academy tabs are ready. Missing header names were added at the end of those rows, including Business and Payment link on Invoices. Other tabs were left as they were.'
+      };
+      paint(true);
+    }).catch(function (err) {
+      state.academySheetWorking = false;
+      state.academySheetFailed = friendly(err);
+      state.busy = '';
+      paint(true);
+    });
+  }
+
+  function academySubnav() {
+    var bar = el('div', { class: 'flex gap-2 overflow-x-auto' });
+    [
+      ['home', 'Overview'],
+      ['students', 'Students'],
+      ['sessions', 'Lessons'],
+      ['requests', 'Requests'],
+      ['billing', 'Billing']
+    ].forEach(function (item) {
+      var on = (state.academyView || 'home') === item[0];
+      bar.appendChild(button(item[1], 'shrink-0 px-3 py-2 rounded-xl text-sm font-semibold border ' + (on ? 'bg-[#18A2D6] text-slate-950 border-transparent' : 'bg-slate-900 border-slate-700 text-slate-300'), function () {
+        go('academy', item[0] === 'home' ? '' : item[0]);
+      }));
+    });
+    return bar;
+  }
+
+  function renderAcademy() {
+    if (state.mode === 'live' && spreadsheetId() && state.academySheetFailed) {
+      var failed = el('div', { class: 'space-y-4' });
+      failed.appendChild(emptyNote(state.academySheetFailed));
+      failed.appendChild(button('Try adding the Academy tabs again', SECONDARY, function () {
+        state.academySheetFailed = '';
+        state.academySheetReady = false;
+        scheduleAcademySheets();
+      }));
+      return failed;
+    }
+    if (state.mode === 'live' && academySheetsPending()) {
+      return emptyNote('Preparing the Academy tabs. Existing tabs stay as they are. Missing invoice header names, including Business and Payment link, are added at the end of the Invoices row.');
+    }
+    var page = el('div', { class: 'space-y-5' });
+    page.appendChild(academySubnav());
+    var view = state.academyView || 'home';
+    if (view === 'students') page.appendChild(state.editorId ? renderAcademyStudentEditor() : renderAcademyStudents());
+    else if (view === 'sessions') page.appendChild(state.editorId ? renderAcademySessionEditor() : renderAcademySessions());
+    else if (view === 'requests') page.appendChild(state.editorId ? renderAcademyRequestEditor() : renderAcademyRequests());
+    else if (view === 'billing') page.appendChild(renderAcademyBilling());
+    else page.appendChild(renderAcademyHome());
+    return page;
+  }
+
+  function renderAcademyHome() {
+    var page = el('div', { class: 'space-y-5' });
+    page.appendChild(sectionHead(
+      'Legacy Bowling Academy',
+      'Academy',
+      'Students, lesson requests, and sessions for Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC. Billing uses the same Invoices tab as the computing company. Lessons are at Forest Hill Lanes.'
+    ));
+    var fresh = (state.data['Academy Requests'] || []).filter(function (row) {
+      return !row.status || row.status === 'New';
+    }).length;
+    var upcoming = (state.data['Academy Sessions'] || []).filter(function (row) {
+      return row.status === 'Requested' || row.status === 'Confirmed';
+    }).length;
+    var stats = el('div', { class: 'grid grid-cols-2 lg:grid-cols-4 gap-3' });
+    stats.appendChild(statCard('Students', (state.data['Academy Students'] || []).length, 'academy/students'));
+    stats.appendChild(statCard('New requests', fresh, 'academy/requests'));
+    stats.appendChild(statCard('Open sessions', upcoming, 'academy/sessions'));
+    stats.appendChild(statCard('Academy invoices', academyInvoices().length, 'academy/billing'));
+    page.appendChild(stats);
+    var jumps = el('div', { class: 'flex flex-wrap gap-2' });
+    jumps.appendChild(button('Students', SECONDARY, function () { go('academy', 'students'); }));
+    jumps.appendChild(button('Lessons', SECONDARY, function () { go('academy', 'sessions'); }));
+    jumps.appendChild(button('Requests', SECONDARY, function () { go('academy', 'requests'); }));
+    jumps.appendChild(button('Billing', PRIMARY, function () { go('academy', 'billing'); }));
+    page.appendChild(jumps);
+    page.appendChild(el('p', { class: 'text-sm text-slate-400 leading-relaxed' }, [
+      'The public academy site posts booking and inquiry forms onto the Academy Requests tab. Prices are typed here. The $60 private-session figure on the academy site is a reference only and is not filled in for you.'
+    ]));
+    return page;
+  }
+
+  function academyInvoices() {
+    return (state.data.Invoices || []).filter(function (row) {
+      return Lib.invoiceBrand(row.brand).academy;
+    });
+  }
+
+  function studentNameList(id) {
+    var list = el('datalist', { id: id });
+    (state.data['Academy Students'] || []).forEach(function (row) {
+      if (row.name) list.appendChild(el('option', { value: row.name }));
+    });
+    return list;
+  }
+
+  function matchStudentId(name) {
+    var wanted = Lib.clean(name).toLowerCase();
+    if (!wanted) return '';
+    var found = '';
+    (state.data['Academy Students'] || []).forEach(function (row) {
+      if (found) return;
+      if (Lib.clean(row.name).toLowerCase() === wanted) found = row.id || '';
+    });
+    return found;
+  }
+
+  function renderAcademyStudents() {
+    var page = el('div', { class: 'space-y-5' });
+    var head = sectionHead('People', 'Students', 'Name, contact, age group, parent or guardian for youth, program, coach, notes, and status. Stored on the Academy Students tab.');
+    head.appendChild(button('Add student', PRIMARY, function () { go('academy', 'students', 'new'); }));
+    page.appendChild(head);
+    var blocked = sheetBlocked('Academy Students');
+    if (blocked) {
+      page.appendChild(blocked);
+      return page;
+    }
+    var search = textInput('student-search', state.studentQuery, { placeholder: 'Search name, email, phone, program, or coach' });
+    search.addEventListener('input', function () {
+      state.studentQuery = search.value;
+      var list = document.getElementById('student-list');
+      if (list) fillStudents(list);
+    });
+    page.appendChild(search);
+    var list = el('div', { id: 'student-list', class: 'space-y-3' });
+    fillStudents(list);
+    page.appendChild(list);
+    return page;
+  }
+
+  function fillStudents(list) {
+    var q = state.studentQuery.trim().toLowerCase();
+    var rows = (state.data['Academy Students'] || []).filter(function (row) {
+      if (!q) return true;
+      return [row.name, row.email, row.phone, row.program, row.coach, row.guardian, row.notes].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+    list.replaceChildren();
+    if (!rows.length) {
+      list.appendChild(emptyNote(q ? 'No students match that search.' : 'No academy students yet.'));
+      return;
+    }
+    rows.forEach(function (row) {
+      var card = el('article', { class: 'cyber-panel rounded-2xl p-5' });
+      var top = el('div', { class: 'flex flex-wrap items-start justify-between gap-3' });
+      var copy = el('div');
+      copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [row.name || 'Unnamed']));
+      copy.appendChild(el('p', { class: 'text-sm text-slate-300 mt-1' }, [
+        [row.ageGroup, row.program, row.coach ? 'Coach ' + row.coach : ''].filter(Boolean).join(' · ') || 'No program yet'
+      ]));
+      top.appendChild(copy);
+      var tags = el('div', { class: 'flex flex-wrap gap-2' });
+      tags.appendChild(badge(row.status || 'Active'));
+      if (row.sample) tags.appendChild(sampleChip());
+      top.appendChild(tags);
+      card.appendChild(top);
+      card.appendChild(el('p', { class: 'mt-3 text-sm text-slate-300' }, [[row.email, row.phone].filter(Boolean).join(' · ') || 'No email or phone']));
+      if (row.ageGroup === 'Youth') {
+        card.appendChild(el('p', { class: 'mt-2 text-sm text-slate-400' }, ['Parent/guardian: ' + (row.guardian || 'Missing')]));
+      }
+      if (row.notes) card.appendChild(el('p', { class: 'mt-2 text-sm text-slate-400 whitespace-pre-wrap' }, [row.notes]));
+      card.appendChild(el('div', { class: 'mt-4' }, [button('Edit', SECONDARY, function () { go('academy', 'students', row.id); })]));
+      list.appendChild(card);
+    });
+  }
+
+  function renderAcademyStudentEditor() {
+    var existing = state.editorId === 'new' ? null : findRow('Academy Students', state.editorId);
+    if (state.editorId !== 'new' && !existing) return missingRecord('academy', 'That student is not in the current list.');
+    var draft = null;
+    if (!existing && state.studentDraft) {
+      draft = state.studentDraft;
+      state.studentDraft = null;
+    }
+    var record = existing || draft || { ageGroup: 'Adult', status: 'Active' };
+    var page = el('div', { class: 'space-y-5 max-w-3xl' });
+    page.appendChild(sectionHead('People', existing ? 'Edit student' : 'New student', 'A youth student needs a parent or guardian. The other fields can wait.'));
+    var form = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-5', autocomplete: 'off' });
+    var grid = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
+    grid.appendChild(field('Name', textInput('name', record.name, { required: true })));
+    grid.appendChild(field('Status', selectInput('status', record.status || 'Active', Lib.CHOICES.studentStatus)));
+    grid.appendChild(field('Email', textInput('email', record.email, { type: 'email' })));
+    grid.appendChild(field('Phone', textInput('phone', record.phone, { type: 'tel' })));
+    grid.appendChild(field('Age group', selectInput('ageGroup', record.ageGroup || 'Adult', Lib.CHOICES.ageGroup)));
+    grid.appendChild(field('Parent/guardian', textInput('guardian', record.guardian, { placeholder: 'Required for youth' }), 'Required when the age group is Youth.'));
+    grid.appendChild(field('Program', textInput('program', record.program, { placeholder: 'Youth program, league, private lessons' })));
+    grid.appendChild(field('Coach', textInput('coach', record.coach)));
+    form.appendChild(grid);
+    form.appendChild(field('Notes', areaInput('notes', record.notes)));
+    form.appendChild(formError());
+    var actions = el('div', { class: 'flex flex-col sm:flex-row gap-3' });
+    actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Save student']));
+    actions.appendChild(button('Cancel', SECONDARY, function () { go('academy', 'students'); }));
+    form.appendChild(actions);
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var recordToSave = {
+        id: existing && existing.id,
+        _row: existing && existing._row,
+        created: existing && existing.created,
+        name: form.elements.name.value.trim(),
+        email: form.elements.email.value.trim(),
+        phone: form.elements.phone.value.trim(),
+        ageGroup: form.elements.ageGroup.value,
+        guardian: form.elements.guardian.value.trim(),
+        program: form.elements.program.value.trim(),
+        coach: form.elements.coach.value.trim(),
+        notes: form.elements.notes.value.trim(),
+        status: form.elements.status.value
+      };
+      var problem = Lib.academyStudentError(recordToSave);
+      if (problem) {
+        showFormError(form, problem);
+        return;
+      }
+      saveAndReturn('Academy Students', recordToSave, existing, 'academy/students', form, 'Student saved.');
+    });
+    page.appendChild(form);
+    return page;
+  }
+
+  function renderAcademySessions() {
+    var page = el('div', { class: 'space-y-5' });
+    var head = sectionHead('Schedule', 'Lessons and bookings', 'Private lessons, group clinics, camps, and youth programs. Lane location defaults to Forest Hill Lanes. Requests from the academy site are on the Requests tab until you schedule them.');
+    head.appendChild(button('Add session', PRIMARY, function () { go('academy', 'sessions', 'new'); }));
+    page.appendChild(head);
+    var blocked = sheetBlocked('Academy Sessions');
+    if (blocked) {
+      page.appendChild(blocked);
+      return page;
+    }
+    var filters = [
+      ['Upcoming', function (row) { return row.status === 'Requested' || row.status === 'Confirmed' || !row.status; }],
+      ['Requested', function (row) { return !row.status || row.status === 'Requested'; }],
+      ['Confirmed', function (row) { return row.status === 'Confirmed'; }],
+      ['Completed', function (row) { return row.status === 'Completed'; }],
+      ['Cancelled', function (row) { return row.status === 'Cancelled'; }],
+      ['All', function () { return true; }]
+    ];
+    page.appendChild(filterBar(filters, state.sessionFilter, function (label) {
+      state.sessionFilter = label;
+      paint(true);
+    }));
+    var chosen = filters.filter(function (item) { return item[0] === state.sessionFilter; })[0] || filters[0];
+    var rows = (state.data['Academy Sessions'] || []).filter(chosen[1]).slice().sort(function (a, b) {
+      return String(a.date || '9999').localeCompare(String(b.date || '9999')) || String(a.start || '').localeCompare(String(b.start || ''));
+    });
+    if (!rows.length) {
+      page.appendChild(emptyNote('No sessions in this view.'));
+      return page;
+    }
+    var list = el('div', { class: 'space-y-3' });
+    rows.forEach(function (row) { list.appendChild(sessionCard(row)); });
+    page.appendChild(list);
+    return page;
+  }
+
+  function sessionWhen(row) {
+    return [row.date ? formatDay(row.date) : 'Date not set', row.start || '', row.end ? '– ' + row.end : ''].filter(Boolean).join(' ');
+  }
+
+  function sessionCard(row) {
+    var card = el('article', { class: 'cyber-panel rounded-2xl p-5 space-y-3' });
+    var top = el('div', { class: 'flex flex-wrap items-start justify-between gap-3' });
+    var copy = el('div');
+    copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [row.kind || 'Session']));
+    copy.appendChild(el('p', { class: 'text-sm text-slate-300 mt-1' }, [
+      [row.student || row.program || 'No student yet', sessionWhen(row)].filter(Boolean).join(' · ')
+    ]));
+    copy.appendChild(el('p', { class: 'text-xs text-slate-400 mt-1' }, [
+      [row.coach ? 'Coach ' + row.coach : '', row.location || Lib.ACADEMY.location].filter(Boolean).join(' · ')
+    ]));
+    top.appendChild(copy);
+    var tags = el('div', { class: 'flex flex-wrap gap-2' });
+    tags.appendChild(badge(row.status || 'Requested'));
+    if (row.sample) tags.appendChild(sampleChip());
+    top.appendChild(tags);
+    card.appendChild(top);
+    if (row.notes) card.appendChild(el('p', { class: 'text-sm text-slate-300 whitespace-pre-wrap' }, [row.notes]));
+    var actions = el('div', { class: 'flex flex-wrap gap-2' });
+    actions.appendChild(button('Edit', SECONDARY, function () { go('academy', 'sessions', row.id); }));
+    if (row.status === 'Completed' && row.invoiceId) {
+      actions.appendChild(button('Open invoice', SECONDARY, function () { go('invoices', row.invoiceId); }));
+    } else if (row.status === 'Completed') {
+      actions.appendChild(button('Create invoice', PRIMARY, function () {
+        openAcademyInvoiceDraft(Lib.academySessionInvoice(row));
+      }));
+    }
+    if (row.calendarEventId) {
+      actions.appendChild(el('span', { class: 'inline-flex items-center text-xs text-emerald-200' }, ['On the company calendar']));
+    } else {
+      var draft = Lib.academyCalendarDraft(row);
+      if (draft) {
+        actions.appendChild(el('a', {
+          href: draft.templateUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          class: SECONDARY
+        }, ['Add to Google Calendar']));
+      }
+    }
+    card.appendChild(actions);
+    return card;
+  }
+
+  function renderAcademySessionEditor() {
+    var existing = state.editorId === 'new' ? null : findRow('Academy Sessions', state.editorId);
+    if (state.editorId !== 'new' && !existing) return missingRecord('academy', 'That session is not in the current list.');
+    var draft = null;
+    if (!existing && state.sessionDraft) {
+      draft = state.sessionDraft;
+      state.sessionDraft = null;
+    }
+    var record = existing || draft || {
+      kind: 'Private lesson',
+      status: 'Requested',
+      location: Lib.ACADEMY.location
+    };
+    var page = el('div', { class: 'space-y-5 max-w-3xl' });
+    page.appendChild(sectionHead('Schedule', existing ? 'Edit session' : 'New session', 'Confirmed sessions are added to calendarId when that setting is filled in. A blank calendarId leaves an Add to Google Calendar link instead. This page does not invent a price.'));
+    var form = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-5', autocomplete: 'off' });
+    form.appendChild(studentNameList('academy-students'));
+    var grid = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
+    grid.appendChild(field('Type', selectInput('kind', record.kind || 'Private lesson', Lib.CHOICES.sessionKind)));
+    grid.appendChild(field('Status', selectInput('status', record.status || 'Requested', Lib.CHOICES.sessionStatus)));
+    grid.appendChild(field('Student', textInput('student', record.student, { list: 'academy-students', placeholder: 'Required for a private lesson' })));
+    grid.appendChild(field('Program', textInput('program', record.program)));
+    grid.appendChild(field('Date', textInput('date', record.date, { type: 'date' })));
+    grid.appendChild(field('Start', textInput('start', record.start, { type: 'time' })));
+    grid.appendChild(field('End', textInput('end', record.end, { type: 'time' }), 'Leave blank if you have not set an end time.'));
+    grid.appendChild(field('Coach', textInput('coach', record.coach)));
+    grid.appendChild(field('Lane location', textInput('location', record.location || Lib.ACADEMY.location)));
+    form.appendChild(grid);
+    form.appendChild(field('Notes', areaInput('notes', record.notes)));
+    if (record.requestId) form.appendChild(el('p', { class: 'text-xs text-slate-400' }, ['From request ' + record.requestId]));
+    if (record.invoiceId) {
+      form.appendChild(button('Open invoice', GHOST, function () { go('invoices', record.invoiceId); }));
+    }
+    form.appendChild(formError());
+    var actions = el('div', { class: 'flex flex-col sm:flex-row gap-3' });
+    actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Save session']));
+    actions.appendChild(button('Cancel', SECONDARY, function () { go('academy', 'sessions'); }));
+    form.appendChild(actions);
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      saveAcademySession(form, existing, record);
+    });
+    page.appendChild(form);
+    return page;
+  }
+
+  function saveAcademySession(form, existing, source) {
+    var recordToSave = {
+      id: existing && existing.id,
+      _row: existing && existing._row,
+      created: existing && existing.created,
+      student: form.elements.student.value.trim(),
+      studentId: (existing && existing.studentId) || '',
+      kind: form.elements.kind.value,
+      status: form.elements.status.value,
+      date: form.elements.date.value,
+      start: form.elements.start.value,
+      end: form.elements.end.value,
+      coach: form.elements.coach.value.trim(),
+      location: form.elements.location.value.trim() || Lib.ACADEMY.location,
+      program: form.elements.program.value.trim(),
+      notes: form.elements.notes.value.trim(),
+      requestId: (source && source.requestId) || (existing && existing.requestId) || '',
+      invoiceId: (existing && existing.invoiceId) || '',
+      calendarEventId: (existing && existing.calendarEventId) || ''
+    };
+      var matchedStudent = matchStudentId(recordToSave.student);
+      if (matchedStudent) recordToSave.studentId = matchedStudent;
+      else if (!existing || Lib.clean(existing.student).toLowerCase() !== Lib.clean(recordToSave.student).toLowerCase()) {
+        recordToSave.studentId = '';
+      }
+    var problem = Lib.academySessionError(recordToSave);
+    if (problem) {
+      showFormError(form, problem);
+      return;
+    }
+    var submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    maybeAddSessionToCalendar(recordToSave).then(function () {
+      return persistRecord('Academy Sessions', recordToSave, existing);
+    }).then(function () {
+      return linkRequestToSession(recordToSave);
+    }).then(function () {
+      var text = 'Session saved.';
+      if (state.mode === 'demo') text += ' Sample only — nothing was sent to Google.';
+      else if (recordToSave._calendarNote === 'added') text += ' It was added to the calendar named in portal/config.js.';
+      else if (recordToSave._calendarNote === 'failed') text += ' Google Calendar did not add it. Use Add to Google Calendar on the session, and check that this account can edit that calendar.';
+      else if (recordToSave._calendarNote === 'calendar-link' && recordToSave.status === 'Confirmed') text += ' No shared calendar is set in portal/config.js, so use Add to Google Calendar if you want it on a calendar.';
+      state.banner = { tone: recordToSave._calendarNote === 'failed' ? 'warn' : 'ok', text: text };
+      go('academy', 'sessions');
+    }).catch(function (err) {
+      submit.disabled = false;
+      showFormError(form, friendly(err));
+    });
+  }
+
+  function linkRequestToSession(session) {
+    if (!session.requestId) return Promise.resolve();
+    var request = findRow('Academy Requests', session.requestId);
+    if (!request) return Promise.resolve();
+    var next = Object.assign({}, request, {
+      sessionId: session.id,
+      status: request.status === 'Closed' ? 'Closed' : 'Scheduled'
+    });
+    return persistRecord('Academy Requests', next, request);
+  }
+
+  function configuredCalendarId() {
+    var id = Lib.clean(cfg().calendarId);
+    if (Lib.isPlaceholder(id)) return '';
+    return id;
+  }
+
+  function ensureCalendarWrite() {
+    var scope = 'https://www.googleapis.com/auth/calendar.events';
+    if (hasScope(scope) || hasScope('https://www.googleapis.com/auth/calendar')) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var client = google.accounts.oauth2.initTokenClient({
+        client_id: Lib.clean(cfg().clientId),
+        scope: scope,
+        include_granted_scopes: true,
+        hd: Lib.allowedDomain(cfg()),
+        prompt: 'consent',
+        callback: function (resp) {
+          if (!resp || resp.error || !resp.access_token) {
+            reject(new Error('Calendar permission was not granted.'));
+            return;
+          }
+          state.token = resp.access_token;
+          state.grantedScope = resp.scope || state.grantedScope;
+          state.expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+          armExpiry(resp.expires_in);
+          if (hasScope(scope) || hasScope('https://www.googleapis.com/auth/calendar')) resolve();
+          else reject(new Error('Calendar permission was not granted.'));
+        },
+        error_callback: function () {
+          reject(new Error('The Google window did not finish.'));
+        }
+      });
+      client.requestAccessToken();
+    });
+  }
+
+  function maybeAddSessionToCalendar(record) {
+    record._calendarNote = '';
+    if (record.status !== 'Confirmed') return Promise.resolve(record);
+    if (!Lib.academyCalendarDraft(record)) return Promise.resolve(record);
+    var calendarId = configuredCalendarId();
+    if (!calendarId) {
+      record._calendarNote = 'calendar-link';
+      return Promise.resolve(record);
+    }
+    if (state.mode === 'demo') {
+      record._calendarNote = 'sample';
+      return Promise.resolve(record);
+    }
+    var draft = Lib.academyCalendarDraft(record);
+    return ensureCalendarWrite().then(function () {
+      var base = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(calendarId) + '/events';
+      var existingId = Lib.clean(record.calendarEventId);
+      if (existingId) {
+        return googleFetch(base + '/' + encodeURIComponent(existingId), { method: 'PUT', body: draft.event });
+      }
+      return googleFetch(base, { method: 'POST', body: draft.event });
+    }).then(function (event) {
+      if (event && event.id) record.calendarEventId = event.id;
+      record._calendarNote = 'added';
+      return record;
+    }).catch(function () {
+      record._calendarNote = 'failed';
+      return record;
+    });
+  }
+
+  function renderAcademyRequests() {
+    var page = el('div', { class: 'space-y-5' });
+    var head = sectionHead('Inbox', 'Academy requests', 'Rows arrive from the academy website after the Apps Script in apps-script/academy.gs is deployed. Booking and inquiry both land here. This page does not email the person back.');
+    head.appendChild(button('Add a request', PRIMARY, function () { go('academy', 'requests', 'new'); }));
+    page.appendChild(head);
+    var blocked = sheetBlocked('Academy Requests');
+    if (blocked) {
+      page.appendChild(blocked);
+      return page;
+    }
+    var filters = ['New', 'Reviewed', 'Scheduled', 'Closed', 'All'].map(function (label) {
+      return [label, function (row) {
+        if (label === 'All') return true;
+        if (label === 'New') return !row.status || row.status === 'New';
+        return row.status === label;
+      }];
+    });
+    page.appendChild(filterBar(filters, state.requestFilter, function (label) {
+      state.requestFilter = label;
+      paint(true);
+    }));
+    var chosen = filters.filter(function (item) { return item[0] === state.requestFilter; })[0];
+    var rows = (state.data['Academy Requests'] || []).filter(chosen[1]);
+    if (!rows.length) {
+      page.appendChild(emptyNote('No requests in this view. The academy site writes a row after you deploy apps-script/academy.gs. You can also add a phone request here.'));
+      return page;
+    }
+    var list = el('div', { class: 'space-y-3' });
+    rows.forEach(function (row) { list.appendChild(requestCard(row)); });
+    page.appendChild(list);
+    return page;
+  }
+
+  function requestCard(row) {
+    var card = el('article', { class: 'cyber-panel rounded-2xl p-5 space-y-3' });
+    var top = el('div', { class: 'flex flex-wrap items-start justify-between gap-3' });
+    var copy = el('div');
+    copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [row.name || 'Unnamed']));
+    copy.appendChild(el('p', { class: 'text-sm text-slate-300 mt-1' }, [
+      [(row.form || 'request'), row.ageGroup, row.program].filter(Boolean).join(' · ')
+    ]));
+    top.appendChild(copy);
+    var tags = el('div', { class: 'flex flex-wrap gap-2' });
+    tags.appendChild(badge(row.status || 'New'));
+    if (row.sample) tags.appendChild(sampleChip());
+    top.appendChild(tags);
+    card.appendChild(top);
+    card.appendChild(el('p', { class: 'text-xs text-slate-400' }, [
+      [row.email, row.phone, row.received ? 'Received ' + formatWhen(row.received) : '', row.source].filter(Boolean).join(' · ')
+    ]));
+    if (row.preferredTimes) card.appendChild(el('p', { class: 'text-sm text-slate-300' }, ['Preferred times: ' + row.preferredTimes]));
+    if (row.goals) card.appendChild(el('p', { class: 'text-sm text-slate-300 whitespace-pre-wrap' }, ['Goals: ' + row.goals]));
+    if (row.message) card.appendChild(el('p', { class: 'text-sm text-slate-300 whitespace-pre-wrap' }, [row.message]));
+    if (row.notes) card.appendChild(el('p', { class: 'text-sm text-slate-400 whitespace-pre-wrap' }, ['Notes: ' + row.notes]));
+    var actions = el('div', { class: 'flex flex-wrap gap-2' });
+    actions.appendChild(button('Update', SECONDARY, function () { go('academy', 'requests', row.id); }));
+    actions.appendChild(button('Schedule session', PRIMARY, function () { scheduleFromRequest(row); }));
+    actions.appendChild(button('Add as student', SECONDARY, function () { studentFromRequest(row); }));
+    card.appendChild(actions);
+    return card;
+  }
+
+  function scheduleFromRequest(row) {
+    state.sessionDraft = {
+      student: row.name || '',
+      program: row.program || '',
+      kind: 'Private lesson',
+      status: 'Requested',
+      location: Lib.ACADEMY.location,
+      coach: '',
+      requestId: row.id,
+      notes: [
+        row.preferredTimes ? 'Preferred times: ' + row.preferredTimes : '',
+        row.goals ? 'Goals: ' + row.goals : '',
+        row.message || ''
+      ].filter(Boolean).join('\n')
+    };
+    go('academy', 'sessions', 'new');
+  }
+
+  function studentFromRequest(row) {
+    var age = Lib.CHOICES.ageGroup.indexOf(row.ageGroup) === -1 ? 'Adult' : row.ageGroup;
+    state.studentDraft = {
+      name: row.name || '',
+      email: row.email || '',
+      phone: row.phone || '',
+      ageGroup: age,
+      program: row.program || '',
+      notes: row.message || '',
+      status: 'Active',
+      guardian: ''
+    };
+    go('academy', 'students', 'new');
+  }
+
+  function renderAcademyRequestEditor() {
+    var existing = state.editorId === 'new' ? null : findRow('Academy Requests', state.editorId);
+    if (state.editorId !== 'new' && !existing) return missingRecord('academy', 'That request is not in the current list.');
+    var record = existing || { status: 'New', form: 'inquiry', source: 'Entered in the portal' };
+    var page = el('div', { class: 'space-y-5 max-w-3xl' });
+    page.appendChild(sectionHead('Inbox', existing ? 'Update request' : 'New request', 'Use this for a call. The public academy form does not need it.'));
+    var form = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-5', autocomplete: 'off' });
+    var grid = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
+    grid.appendChild(field('Name', textInput('name', record.name, { required: true })));
+    grid.appendChild(field('Email', textInput('email', record.email, { type: 'email' })));
+    grid.appendChild(field('Phone', textInput('phone', record.phone, { type: 'tel' })));
+    grid.appendChild(field('Form', selectInput('requestForm', record.form || 'inquiry', Lib.CHOICES.requestForm)));
+    grid.appendChild(field('Age group', selectInput('ageGroup', Lib.CHOICES.ageGroup.indexOf(record.ageGroup) === -1 ? 'Adult' : record.ageGroup, Lib.CHOICES.ageGroup)));
+    grid.appendChild(field('Status', selectInput('status', record.status || 'New', Lib.CHOICES.requestStatus)));
+    form.appendChild(grid);
+    form.appendChild(field('Program', textInput('program', record.program)));
+    form.appendChild(field('Preferred times', textInput('preferredTimes', record.preferredTimes)));
+    form.appendChild(field('Goals', areaInput('goals', record.goals)));
+    form.appendChild(field('Message', areaInput('message', record.message)));
+    form.appendChild(field('Notes', areaInput('notes', record.notes, 'Staff notes. Not sent back from this page.')));
+    form.appendChild(formError());
+    var actions = el('div', { class: 'flex flex-col sm:flex-row flex-wrap gap-3' });
+    actions.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Save request']));
+    actions.appendChild(button('Cancel', SECONDARY, function () { go('academy', 'requests'); }));
+    if (existing) {
+      actions.appendChild(button('Schedule session', SECONDARY, function () {
+        scheduleFromRequest({
+          id: existing.id,
+          name: form.elements.name.value.trim(),
+          program: form.elements.program.value.trim(),
+          preferredTimes: form.elements.preferredTimes.value.trim(),
+          goals: form.elements.goals.value.trim(),
+          message: form.elements.message.value.trim()
+        });
+      }));
+    }
+    form.appendChild(actions);
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var recordToSave = {
+        id: existing && existing.id,
+        _row: existing && existing._row,
+        received: (existing && existing.received) || stamp(),
+        source: (existing && existing.source) || 'Entered in the portal',
+        sessionId: (existing && existing.sessionId) || '',
+        name: form.elements.name.value.trim(),
+        email: form.elements.email.value.trim(),
+        phone: form.elements.phone.value.trim(),
+        form: form.elements.requestForm.value,
+        ageGroup: form.elements.ageGroup.value,
+        status: form.elements.status.value,
+        program: form.elements.program.value.trim(),
+        preferredTimes: form.elements.preferredTimes.value.trim(),
+        goals: form.elements.goals.value.trim(),
+        message: form.elements.message.value.trim(),
+        notes: form.elements.notes.value.trim()
+      };
+      if (!recordToSave.name) {
+        showFormError(form, 'Enter a name.');
+        return;
+      }
+      saveAndReturn('Academy Requests', recordToSave, existing, 'academy/requests', form, 'Request saved.');
+    });
+    page.appendChild(form);
+    return page;
+  }
+
+  function renderAcademyBilling() {
+    var page = el('div', { class: 'space-y-5' });
+    page.appendChild(sectionHead(
+      'Billing',
+      'Academy invoices',
+      'These invoices are on the Invoices tab and use the same invoice numbers, so the money stays with Legacy Computing Services, LLC. The printed name is Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC. Make payments to Legacy Computing Services, LLC. Type the price. Nothing is priced for you.'
+    ));
+    page.appendChild(el('p', { class: 'text-sm text-amber-100 leading-relaxed' }, [Lib.ACADEMY.referenceNote]));
+    var actions = el('div', { class: 'flex flex-wrap gap-2' });
+    actions.appendChild(button('New academy invoice', PRIMARY, function () {
+      openAcademyInvoiceDraft({
+        brand: Lib.ACADEMY.brandId,
+        customer: '',
+        status: 'Draft',
+        sessionId: '',
+        packageName: '',
+        paymentLink: '',
+        quoteNumber: '',
+        tax: '',
+        notes: '',
+        lines: [{ description: '', qty: '1', unitPrice: '' }]
+      });
+    }));
+    page.appendChild(actions);
+    var pack = el('form', { class: 'cyber-panel rounded-3xl p-6 space-y-4', autocomplete: 'off' });
+    pack.appendChild(el('h2', { class: 'font-display font-bold text-white' }, ['Invoice a package']));
+    pack.appendChild(el('p', { class: 'text-sm text-slate-300' }, [
+      'Name the package and who to bill. The invoice opens with a blank price and the academy DBA selected. It uses the shared invoice numbers. Payments go to Legacy Computing Services, LLC.'
+    ]));
+    pack.appendChild(studentNameList('package-students'));
+    var grid = el('div', { class: 'grid sm:grid-cols-2 gap-5' });
+    grid.appendChild(field('Who to bill', textInput('customer', '', { required: true, list: 'package-students' })));
+    grid.appendChild(field('Package name', textInput('packageName', '', { required: true, placeholder: 'Four private lessons' })));
+    pack.appendChild(grid);
+    pack.appendChild(formError());
+    pack.appendChild(el('button', { type: 'submit', class: PRIMARY }, ['Create package invoice']));
+    pack.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var draft = Lib.academyPackageInvoice({
+        customer: pack.elements.customer.value,
+        packageName: pack.elements.packageName.value
+      });
+      if (draft.error) {
+        showFormError(pack, draft.error);
+        return;
+      }
+      openAcademyInvoiceDraft(draft);
+    });
+    page.appendChild(pack);
+    var rows = academyInvoices();
+    if (!rows.length) {
+      page.appendChild(emptyNote('No academy invoices yet. A completed session can also start one from Lessons. Legacy Computing Services invoices stay on the Invoices tab and keep their own letterhead.'));
+      return page;
+    }
+    var list = el('div', { class: 'space-y-3' });
+    rows.forEach(function (row) {
+      var card = el('article', { class: 'cyber-panel rounded-2xl p-5' });
+      var top = el('div', { class: 'flex flex-wrap items-start justify-between gap-3' });
+      var copy = el('div');
+      copy.appendChild(el('h2', { class: 'font-display font-bold text-white text-lg' }, [(row.number || 'No number') + ' · ' + (row.customer || 'No customer')]));
+      copy.appendChild(el('p', { class: 'text-xs text-slate-400 mt-1' }, [
+        [row.packageName ? 'Package: ' + row.packageName : '', row.status].filter(Boolean).join(' · ')
+      ]));
+      top.appendChild(copy);
+      var side = el('div', { class: 'flex flex-col items-end gap-2' });
+      side.appendChild(badge('Academy'));
+      side.appendChild(moneyLabel(row, totalsFor('invoice', row)));
+      top.appendChild(side);
+      card.appendChild(top);
+      var rowActions = el('div', { class: 'mt-4 flex flex-wrap gap-2' });
+      rowActions.appendChild(button('Edit', SECONDARY, function () { go('invoices', row.id); }));
+      rowActions.appendChild(button('Print view', SECONDARY, function () { go('print', 'invoice', row.id); }));
+      card.appendChild(rowActions);
+      list.appendChild(card);
+    });
+    page.appendChild(list);
+    return page;
+  }
+
+  function openAcademyInvoiceDraft(draft) {
+    if (!draft || draft.error) {
+      state.banner = { tone: 'bad', text: (draft && draft.error) || 'That invoice could not be started.' };
+      paint(true);
+      return;
+    }
+    draft.issuedOn = draft.issuedOn || todayInput();
+    state.invoiceDraft = draft;
+    go('invoices', 'new');
   }
 
   function boot() {
@@ -3222,7 +4126,10 @@
       if (state.section === 'print') {
         go(state.printKind === 'invoice' ? 'invoices' : state.printKind === 'proposal' ? 'proposals' : 'quotes');
       }
-      else if (state.editorId) go(state.section);
+      else if (state.editorId) {
+        if (state.section === 'academy') go('academy', state.academyView === 'home' ? '' : state.academyView);
+        else go(state.section);
+      }
     });
     var calendarQuery = window.matchMedia ? window.matchMedia('(max-width: 767px)') : null;
     var onCalendarMode = function () {

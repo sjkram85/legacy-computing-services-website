@@ -260,7 +260,8 @@ test('proposals sheet is appended and existing tabs stay put', function () {
   assert.deepStrictEqual(titles.slice(0, 7), [
     'Tickets', 'Customers', 'Inquiries', 'Quotes', 'QuoteItems', 'Invoices', 'InvoiceItems'
   ]);
-  assert.strictEqual(titles[titles.length - 1], 'Proposals');
+  assert.strictEqual(titles[7], 'Proposals');
+  assert.deepStrictEqual(titles.slice(8), ['Academy Students', 'Academy Requests', 'Academy Sessions']);
   const headers = lib.columnsOf('Proposals').map(function (col) { return col.header; });
   assert.deepStrictEqual(headers, [
     'ID', 'Prospect name', 'Business', 'Email', 'Phone', 'Title', 'Status',
@@ -536,6 +537,139 @@ test('proposal send opens a gmail draft and sample rows stay fake', function () 
   assert.strictEqual(parsedSample.status, 'Draft');
   assert.strictEqual(sample.Proposals[1].status, 'Sent');
   assert.ok(sample.Proposals[1].docUrl.indexOf('docs.google.com/document') !== -1);
+});
+
+test('academy sheets append and old invoice headers stay in front', function () {
+  const invoiceHeaders = lib.columnsOf('Invoices').map(function (col) { return col.header; });
+  assert.deepStrictEqual(invoiceHeaders.slice(0, 11), [
+    'ID', 'Number', 'Created', 'Updated', 'Customer', 'Status', 'Issued', 'Due', 'Quote number', 'Tax', 'Notes'
+  ]);
+  assert.deepStrictEqual(invoiceHeaders.slice(11), ['Business', 'Payment link', 'Session ID', 'Package']);
+  const old = ['ID', 'Number', 'Created', 'Updated', 'Customer', 'Status', 'Issued', 'Due', 'Quote number', 'Tax', 'Notes'];
+  const plan = lib.headersToAppend(old, lib.columnsOf('Invoices'));
+  assert.deepStrictEqual(plan.headers, ['Business', 'Payment link', 'Session ID', 'Package']);
+  assert.strictEqual(plan.startColumn, 12);
+  const studentHeaders = lib.columnsOf('Academy Students').map(function (col) { return col.header; });
+  assert.ok(studentHeaders.indexOf('Parent/guardian') !== -1);
+  assert.ok(studentHeaders.indexOf('Age group') !== -1);
+  assert.deepStrictEqual(lib.CHOICES.ageGroup, ['Youth', 'Adult', 'Senior']);
+  assert.deepStrictEqual(lib.CHOICES.sessionStatus, ['Requested', 'Confirmed', 'Completed', 'Cancelled']);
+  const fs = require('fs');
+  const path = require('path');
+  const gs = fs.readFileSync(path.join(__dirname, '../apps-script/academy.gs'), 'utf8');
+  lib.columnsOf('Academy Requests').forEach(function (col) {
+    assert.ok(gs.indexOf("'" + col.header + "'") !== -1, col.header);
+  });
+  assert.ok(gs.indexOf('SPREADSHEET_ID') !== -1);
+  assert.ok(!/AKfycb|ya29\.|client_secret/i.test(gs));
+});
+
+test('academy intake accepts json and form posts and drops the honeypot', function () {
+  const payload = {
+    form: 'booking',
+    name: 'Casey Preview',
+    email: 'casey.preview@example.test',
+    phone: '410-555-0100',
+    ageGroup: 'youth',
+    program: 'Youth program',
+    preferredTimes: 'Tuesdays after 4',
+    goals: 'Learn a hook',
+    message: 'Looking for a coach',
+    source: 'legacy-bowling-academy',
+    website: ''
+  };
+  const fromJson = lib.academyRequestRecord(lib.academyFieldsFromPost({ body: JSON.stringify(payload) }));
+  assert.strictEqual(fromJson.ok, true);
+  assert.strictEqual(fromJson.record.form, 'booking');
+  assert.strictEqual(fromJson.record.ageGroup, 'Youth');
+  assert.strictEqual(fromJson.record.source, 'legacy-bowling-academy');
+  assert.strictEqual(fromJson.record.status, 'New');
+  const encoded = 'form=inquiry&name=Casey+Preview&email=casey.preview%40example.test&phone=410-555-0100&ageGroup=adult&program=League&preferredTimes=Saturdays&goals=Spare+shooting&message=Hello&source=legacy-bowling-academy&website=';
+  const fromForm = lib.academyRequestRecord(lib.academyFieldsFromPost({ body: encoded }));
+  assert.strictEqual(fromForm.record.form, 'inquiry');
+  assert.strictEqual(fromForm.record.ageGroup, 'Adult');
+  assert.strictEqual(fromForm.record.email, 'casey.preview@example.test');
+  const wrapped = lib.academyRequestRecord(lib.academyFieldsFromPost({
+    fields: { payload: JSON.stringify(payload) }
+  }));
+  assert.strictEqual(wrapped.record.name, 'Casey Preview');
+  const honeypot = lib.academyRequestRecord(lib.academyFieldsFromPost({
+    body: JSON.stringify(Object.assign({}, payload, { website: '' })),
+    fields: { website: 'https://spam.example' }
+  }));
+  assert.strictEqual(honeypot.ok, true);
+  assert.strictEqual(honeypot.ignored, true);
+  assert.strictEqual(lib.academyRequestRecord({ form: 'other', name: 'A', email: 'a@b.c' }).ok, false);
+  assert.strictEqual(lib.academyRequestRecord({ form: 'booking', name: '', email: 'a@b.c' }).ok, false);
+});
+
+test('academy invoices reuse the invoice feature and do not invent a price', function () {
+  assert.strictEqual(lib.invoiceBrand('').title, 'Legacy Computing Services LLC');
+  assert.strictEqual(lib.invoiceBrand('Legacy Computing Services').academy, false);
+  assert.ok(lib.invoiceBrand('').title.indexOf('Bowling') === -1);
+  const academyBrand = lib.invoiceBrand('Legacy Bowling Academy');
+  assert.strictEqual(academyBrand.title, 'Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC');
+  assert.ok(academyBrand.lines.indexOf('Make payments to Legacy Computing Services, LLC') !== -1);
+  assert.ok(lib.invoiceBrand('').lines.indexOf('Make payments to Legacy Computing Services, LLC') === -1);
+  assert.strictEqual(lib.invoicePaymentUrl(
+    { paymentLink: 'https://bowling.example/pay' },
+    { paymentUrl: 'https://pay.example/lcs' }
+  ), 'https://pay.example/lcs');
+  assert.strictEqual(lib.invoicePaymentUrl({ paymentLink: 'https://pay.example/lcs' }, {}), 'https://pay.example/lcs');
+  assert.strictEqual(lib.invoicePaymentUrl({ paymentLink: '' }, { paymentUrl: '' }), '');
+  assert.strictEqual(lib.invoicePaymentUrl({ brand: 'Legacy Bowling Academy', paymentLink: '' }, {}), '');
+  const session = {
+    id: 'sess-1',
+    student: 'Riley Sample',
+    kind: 'Private lesson',
+    status: 'Completed',
+    date: '2026-11-21',
+    start: '16:00',
+    end: '17:00',
+    coach: 'Sample Coach',
+    location: 'Forest Hill Lanes'
+  };
+  const draft = lib.academySessionInvoice(session);
+  assert.strictEqual(draft.brand, 'Legacy Bowling Academy');
+  assert.strictEqual(draft.customer, 'Riley Sample');
+  assert.strictEqual(draft.sessionId, 'sess-1');
+  assert.strictEqual(draft.paymentLink, '');
+  assert.strictEqual(draft.lines.length, 1);
+  assert.strictEqual(draft.lines[0].qty, '1');
+  assert.strictEqual(draft.lines[0].unitPrice, '');
+  assert.ok(draft.lines[0].description.indexOf('Forest Hill Lanes') !== -1);
+  assert.ok(JSON.stringify(draft.lines).indexOf('60') === -1);
+  assert.ok(JSON.stringify(draft.lines).indexOf('$') === -1);
+  const packaged = lib.academyPackageInvoice({ customer: 'Jordan Example', packageName: 'Four private lessons' });
+  assert.strictEqual(packaged.brand, 'Legacy Bowling Academy');
+  assert.strictEqual(packaged.lines[0].unitPrice, '');
+  assert.strictEqual(packaged.lines[0].description, 'Four private lessons');
+  assert.ok(lib.academyPackageInvoice({ customer: 'Jordan Example' }).error);
+  assert.strictEqual(lib.paymentLinkProblem(''), '');
+  assert.strictEqual(lib.paymentLinkProblem('http://pay.example/x') !== '', true);
+  assert.strictEqual(lib.paymentLinkProblem('https://pay.example/academy'), '');
+  assert.ok(lib.academyStudentError({ name: 'Riley Sample', ageGroup: 'Youth', status: 'Active', guardian: '' }));
+  assert.strictEqual(lib.academyStudentError({
+    name: 'Riley Sample', ageGroup: 'Youth', status: 'Active', guardian: 'Pat Preview', email: 'riley.sample@example.test'
+  }), '');
+  const calendar = lib.academyCalendarDraft(session);
+  assert.ok(calendar.templateUrl.indexOf('https://calendar.google.com/calendar/render?action=TEMPLATE') === 0);
+  assert.ok(calendar.templateUrl.indexOf(encodeURIComponent('Forest Hill Lanes')) !== -1);
+  assert.ok(calendar.description.indexOf('$') === -1);
+  assert.strictEqual(calendar.event.start.dateTime, '2026-11-21T16:00:00');
+  assert.strictEqual(calendar.event.end.dateTime, '2026-11-21T17:00:00');
+  const assumed = lib.academyCalendarDraft({ date: '2026-11-21', start: '16:00', kind: 'Private lesson', student: 'Riley Sample' });
+  assert.strictEqual(assumed.assumedEnd, true);
+  assert.strictEqual(assumed.event.end.dateTime, '2026-11-21T17:00:00');
+  assert.ok(assumed.description.indexOf('$') === -1);
+  const sample = lib.sampleBundle(new Date('2026-11-21T15:00:00Z'));
+  assert.ok(sample['Academy Students'].every(function (row) { return /example\.test$/.test(row.email); }));
+  assert.ok(sample['Academy Requests'].every(function (row) { return row.source === 'legacy-bowling-academy'; }));
+  assert.strictEqual(sample['Academy Sessions'][0].location, 'Forest Hill Lanes');
+  const academyLine = sample.InvoiceItems.filter(function (row) { return row.invoiceId === 'sample-invoice-academy'; })[0];
+  assert.strictEqual(academyLine.unitPrice, '');
+  assert.strictEqual(lib.invoiceBrand(sample.Invoices[0].brand).academy, false);
+  assert.strictEqual(lib.invoiceBrand(sample.Invoices[1].brand).academy, true);
 });
 
 console.log('all logic tests passed');

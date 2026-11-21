@@ -42,5 +42,11 @@ window.LCS_PORTAL = {
      Not a secret. The portal only places this link in a Gmail draft.
      It does not submit the form and it does not add entry. prefill fields.
      Leave blank, or leave a YOUR_... placeholder, to turn the button off. */
-  intakeFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdlt6J9Ew889ZO0dq4z6yzTrxb1FSuutsxvAiVGYX-5679tSQ/viewform"
+  intakeFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdlt6J9Ew889ZO0dq4z6yzTrxb1FSuutsxvAiVGYX-5679tSQ/viewform",
+
+  /* Optional. The one online payment page for Legacy Computing Services, LLC.
+     Academy invoices use this same address. There is no separate bowling
+     bank account or merchant account. Leave blank until a provider is chosen.
+     An https address only. Not a password. */
+  paymentUrl: ""
 };

@@ -94,7 +94,11 @@
         ['dueOn', 'Due'],
         ['quoteNumber', 'Quote number'],
         ['tax', 'Tax'],
-        ['notes', 'Notes']
+        ['notes', 'Notes'],
+        ['brand', 'Business'],
+        ['paymentLink', 'Payment link'],
+        ['sessionId', 'Session ID'],
+        ['packageName', 'Package']
       ]
     },
     {
@@ -129,6 +133,65 @@
         ['customerId', 'Customer ID'],
         ['jobId', 'Job ID']
       ]
+    },
+    {
+      title: 'Academy Students',
+      columns: [
+        ['id', 'ID'],
+        ['created', 'Created'],
+        ['updated', 'Updated'],
+        ['name', 'Name'],
+        ['email', 'Email'],
+        ['phone', 'Phone'],
+        ['ageGroup', 'Age group'],
+        ['guardian', 'Parent/guardian'],
+        ['program', 'Program'],
+        ['coach', 'Coach'],
+        ['notes', 'Notes'],
+        ['status', 'Status']
+      ]
+    },
+    {
+      title: 'Academy Requests',
+      columns: [
+        ['id', 'ID'],
+        ['received', 'Received'],
+        ['form', 'Form'],
+        ['name', 'Name'],
+        ['email', 'Email'],
+        ['phone', 'Phone'],
+        ['ageGroup', 'Age group'],
+        ['program', 'Program'],
+        ['preferredTimes', 'Preferred times'],
+        ['goals', 'Goals'],
+        ['message', 'Message'],
+        ['source', 'Source'],
+        ['status', 'Status'],
+        ['notes', 'Notes'],
+        ['sessionId', 'Session ID']
+      ]
+    },
+    {
+      title: 'Academy Sessions',
+      columns: [
+        ['id', 'ID'],
+        ['created', 'Created'],
+        ['updated', 'Updated'],
+        ['student', 'Student'],
+        ['studentId', 'Student ID'],
+        ['kind', 'Type'],
+        ['status', 'Status'],
+        ['date', 'Date'],
+        ['start', 'Start'],
+        ['end', 'End'],
+        ['coach', 'Coach'],
+        ['location', 'Location'],
+        ['program', 'Program'],
+        ['notes', 'Notes'],
+        ['requestId', 'Request ID'],
+        ['invoiceId', 'Invoice ID'],
+        ['calendarEventId', 'Calendar event ID']
+      ]
     }
   ];
 
@@ -138,8 +201,47 @@
     inquiryStatus: ['New', 'Reviewed', 'Replied', 'Closed'],
     quoteStatus: ['Draft', 'Sent', 'Accepted', 'Declined'],
     proposalStatus: ['Draft', 'Sent', 'Accepted', 'Declined'],
-    invoiceStatus: ['Draft', 'Sent', 'Paid', 'Void']
+    invoiceStatus: ['Draft', 'Sent', 'Paid', 'Void'],
+    ageGroup: ['Youth', 'Adult', 'Senior'],
+    studentStatus: ['Active', 'Inactive', 'Waitlist'],
+    requestStatus: ['New', 'Reviewed', 'Scheduled', 'Closed'],
+    requestForm: ['booking', 'inquiry'],
+    sessionKind: ['Private lesson', 'Group clinic', 'Camp', 'Youth program'],
+    sessionStatus: ['Requested', 'Confirmed', 'Completed', 'Cancelled'],
+    invoiceBrand: ['Legacy Computing Services', 'Legacy Bowling Academy']
   };
+
+  /* Blank Business on an existing invoice stays Legacy Computing Services.
+     Academy invoices store the short id and the print view expands the DBA line.
+     The $60 figure is a public reference on the academy site. It is never a price. */
+  var ACADEMY = {
+    location: 'Forest Hill Lanes',
+    source: 'legacy-bowling-academy',
+    brandId: 'Legacy Bowling Academy',
+    legalName: 'Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC',
+    payee: 'Make payments to Legacy Computing Services, LLC',
+    referenceNote: 'The academy site lists $60 per 60-minute private session as a reference only. Type the price you are charging. Leave the price blank and the total stays incomplete.'
+  };
+
+  var INVOICE_BRANDS = {
+    lcs: {
+      id: 'Legacy Computing Services',
+      title: 'Legacy Computing Services LLC',
+      lines: ['Bel Air, Maryland', 'scott@legacycomputingservices.com'],
+      academy: false
+    },
+    academy: {
+      id: 'Legacy Bowling Academy',
+      title: 'Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC',
+      lines: ['Forest Hill Lanes, Maryland', 'Make payments to Legacy Computing Services, LLC', 'scott@legacycomputingservices.com'],
+      academy: true
+    }
+  };
+
+  var ACADEMY_PAYLOAD_KEYS = [
+    'form', 'name', 'email', 'phone', 'ageGroup', 'program',
+    'preferredTimes', 'goals', 'message', 'source', 'website'
+  ];
 
   var PROPOSAL_BRAND = {
     company: 'Legacy Computing Services LLC',
@@ -1206,6 +1308,311 @@
     return requests;
   }
 
+  function clipText(value, max) {
+    var text = value == null ? '' : String(value).trim();
+    if (text.length > max) return text.slice(0, max);
+    return text;
+  }
+
+  function isPlainObject(value) {
+    return !!value && typeof value === 'object' && Object.prototype.toString.call(value) !== '[object Array]';
+  }
+
+  function decodeFormComponent(text) {
+    var raw = String(text == null ? '' : text).replace(/\+/g, ' ');
+    try { return decodeURIComponent(raw); } catch (err) { return raw; }
+  }
+
+  function parseFormEncoded(text) {
+    var out = {};
+    String(text || '').split('&').forEach(function (pair) {
+      if (!pair) return;
+      var idx = pair.indexOf('=');
+      var key = decodeFormComponent(idx === -1 ? pair : pair.slice(0, idx));
+      var val = decodeFormComponent(idx === -1 ? '' : pair.slice(idx + 1));
+      if (!key || Object.prototype.hasOwnProperty.call(out, key)) return;
+      out[key] = val;
+    });
+    return out;
+  }
+
+  function jsonObject(text) {
+    var parsed = parseJsonValue(text);
+    if (!parsed.ok || !isPlainObject(parsed.value)) return null;
+    return parsed.value;
+  }
+
+  function firstValue(value) {
+    if (Object.prototype.toString.call(value) === '[object Array]') return value.length ? value[0] : '';
+    return value;
+  }
+
+  /* Accept a JSON body, a form body, or form fields. A form field named
+     payload may itself be the JSON object (the same handoff the contact form uses).
+     An empty website field is the honeypot. A filled one is kept so the caller can drop the row. */
+  function academyFieldsFromPost(post) {
+    post = post || {};
+    var fields = isPlainObject(post.fields) ? post.fields : {};
+    var body = post.body == null ? '' : String(post.body).trim();
+    var fromBody = jsonObject(body);
+    var bodyFields = {};
+    if (!fromBody && body && body.indexOf('=') !== -1 && body.charAt(0) !== '{') {
+      bodyFields = parseFormEncoded(body);
+    }
+    var payloadRaw = fields.payload != null ? fields.payload : bodyFields.payload;
+    var fromPayload = jsonObject(payloadRaw);
+    var data = {};
+    function take(source) {
+      if (!isPlainObject(source)) return;
+      ACADEMY_PAYLOAD_KEYS.forEach(function (key) {
+        if (!Object.prototype.hasOwnProperty.call(source, key)) return;
+        var value = firstValue(source[key]);
+        if (value == null) return;
+        data[key] = value;
+      });
+    }
+    take(fromPayload);
+    take(fromBody);
+    take(bodyFields);
+    take(fields);
+    [fromPayload, fromBody, bodyFields, fields].forEach(function (source) {
+      if (!isPlainObject(source) || !Object.prototype.hasOwnProperty.call(source, 'website')) return;
+      var value = firstValue(source.website);
+      if (value != null && String(value).trim()) data.website = value;
+    });
+    return data;
+  }
+
+  function normalizeAgeGroup(value) {
+    var text = clipText(value, 40);
+    var key = text.toLowerCase();
+    if (key === 'youth') return 'Youth';
+    if (key === 'adult') return 'Adult';
+    if (key === 'senior') return 'Senior';
+    return text;
+  }
+
+  function academyRequestRecord(data) {
+    data = data || {};
+    if (clipText(data.website, 500)) return { ok: true, ignored: true };
+    var form = clipText(data.form, 40).toLowerCase();
+    if (form !== 'booking' && form !== 'inquiry') {
+      return { ok: false, error: 'form must be booking or inquiry.' };
+    }
+    var name = clipText(data.name, 200);
+    var email = clipText(data.email, 200);
+    if (!name || !email) return { ok: false, error: 'Name and email are required.' };
+    if (email.indexOf('@') === -1) return { ok: false, error: 'Email is not valid.' };
+    return {
+      ok: true,
+      record: {
+        form: form,
+        name: name,
+        email: email,
+        phone: clipText(data.phone, 80),
+        ageGroup: normalizeAgeGroup(data.ageGroup),
+        program: clipText(data.program, 200),
+        preferredTimes: clipText(data.preferredTimes, 500),
+        goals: clipText(data.goals, 2000),
+        message: clipText(data.message, 5000),
+        source: clipText(data.source, 200) || ACADEMY.source,
+        status: 'New',
+        notes: '',
+        sessionId: ''
+      }
+    };
+  }
+
+  function invoiceBrand(value) {
+    var name = clean(value).toLowerCase();
+    if (name === 'legacy bowling academy' || name === 'academy') return INVOICE_BRANDS.academy;
+    return INVOICE_BRANDS.lcs;
+  }
+
+  function httpsUrl(value) {
+    var link = clean(value);
+    if (/^https:\/\/\S+$/i.test(link)) return link;
+    return '';
+  }
+
+  function paymentLinkProblem(value) {
+    var link = clean(value);
+    if (!link) return '';
+    if (httpsUrl(link)) return '';
+    return 'The payment link must be an https URL for Legacy Computing Services, LLC, or stay blank. There is no separate academy payment account.';
+  }
+
+  /* One payee: Legacy Computing Services, LLC. paymentUrl in config is that
+     link for every invoice. A link typed on one row is used only when the
+     company link is still blank, and it is still the LCS link. */
+  function invoicePaymentUrl(record, config) {
+    var shared = httpsUrl(config && config.paymentUrl);
+    if (shared) return shared;
+    return httpsUrl(record && record.paymentLink);
+  }
+
+  function academyStudentError(record) {
+    record = record || {};
+    if (!clean(record.name)) return 'Enter a name.';
+    if (CHOICES.ageGroup.indexOf(clean(record.ageGroup)) === -1) return 'Choose an age group: Youth, Adult, or Senior.';
+    if (clean(record.ageGroup) === 'Youth' && !clean(record.guardian)) return 'A youth student needs a parent or guardian.';
+    if (CHOICES.studentStatus.indexOf(clean(record.status)) === -1) return 'Choose a status.';
+    if (clean(record.email) && !looksLikeEmail(record.email)) return 'Email is not valid.';
+    return '';
+  }
+
+  function academySessionError(record) {
+    record = record || {};
+    if (CHOICES.sessionKind.indexOf(clean(record.kind)) === -1) return 'Choose a session type.';
+    var status = clean(record.status);
+    if (CHOICES.sessionStatus.indexOf(status) === -1) return 'Choose a status.';
+    if (clean(record.kind) === 'Private lesson' && !clean(record.student)) return 'A private lesson needs a student.';
+    var date = clean(record.date);
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'Use a real date.';
+    if ((status === 'Confirmed' || status === 'Completed') && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return 'A confirmed or completed session needs a date.';
+    }
+    return '';
+  }
+
+  function clockMinutes(value) {
+    var match = clean(value).match(/^(\d{2}):(\d{2})/);
+    if (!match) return null;
+    return Number(match[1]) * 60 + Number(match[2]);
+  }
+
+  function minutesToClock(total) {
+    var day = 24 * 60;
+    var n = ((total % day) + day) % day;
+    var h = Math.floor(n / 60);
+    var m = n % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+
+  function nextIsoDate(date) {
+    var parts = date.split('-');
+    var dt = new Date(Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])));
+    dt.setUTCDate(dt.getUTCDate() + 1);
+    var month = dt.getUTCMonth() + 1;
+    var day = dt.getUTCDate();
+    return dt.getUTCFullYear() + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function compactStamp(date, clock) {
+    return date.replace(/-/g, '') + (clock ? 'T' + clock.replace(':', '') + '00' : '');
+  }
+
+  function academyCalendarDraft(session) {
+    session = session || {};
+    var date = clean(session.date);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+    var startMin = clockMinutes(session.start);
+    var endMin = clockMinutes(session.end);
+    var assumedEnd = false;
+    var endDate = date;
+    var startClock = '';
+    var endClock = '';
+    if (startMin == null) {
+      endDate = nextIsoDate(date);
+    } else {
+      startClock = minutesToClock(startMin);
+      if (endMin == null) {
+        endMin = startMin + 60;
+        assumedEnd = true;
+      }
+      endClock = minutesToClock(endMin);
+      if (endMin <= startMin) endDate = nextIsoDate(date);
+    }
+    var kind = clean(session.kind) || 'Session';
+    var who = clean(session.student) || clean(session.program) || 'Academy';
+    var summary = 'Bowling — ' + kind + ' — ' + who;
+    var location = clean(session.location) || ACADEMY.location;
+    var lines = [
+      'Legacy Bowling Academy',
+      kind,
+      'Student or group: ' + who,
+      clean(session.coach) ? 'Coach: ' + clean(session.coach) : '',
+      clean(session.program) ? 'Program: ' + clean(session.program) : ''
+    ];
+    if (assumedEnd) {
+      lines.push('End time was not on the session. This block is 60 minutes because a private session on the academy site is described that way. Change the end time in Calendar if this one is different.');
+    }
+    var description = lines.filter(Boolean).join('\n');
+    var event = startMin == null
+      ? {
+        summary: summary,
+        location: location,
+        description: description,
+        start: { date: date },
+        end: { date: endDate }
+      }
+      : {
+        summary: summary,
+        location: location,
+        description: description,
+        start: { dateTime: date + 'T' + startClock + ':00', timeZone: 'America/New_York' },
+        end: { dateTime: endDate + 'T' + endClock + ':00', timeZone: 'America/New_York' }
+      };
+    var dates = startMin == null
+      ? compactStamp(date) + '/' + compactStamp(endDate)
+      : compactStamp(date, startClock) + '/' + compactStamp(endDate, endClock);
+    var templateUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+      + '&text=' + encodeURIComponent(summary)
+      + '&dates=' + dates
+      + '&location=' + encodeURIComponent(location)
+      + '&details=' + encodeURIComponent(description)
+      + '&ctz=' + encodeURIComponent('America/New_York');
+    return {
+      summary: summary,
+      location: location,
+      description: description,
+      templateUrl: templateUrl,
+      event: event,
+      assumedEnd: assumedEnd
+    };
+  }
+
+  function academySessionInvoice(session) {
+    session = session || {};
+    var who = clean(session.student) || clean(session.program) || '';
+    var when = [clean(session.date), clean(session.start)].filter(Boolean).join(' ');
+    var kind = clean(session.kind) || 'Session';
+    var place = clean(session.location) || ACADEMY.location;
+    var description = [kind, when, place].filter(Boolean).join(' — ');
+    if (clean(session.coach)) description += ' (coach: ' + clean(session.coach) + ')';
+    return {
+      brand: ACADEMY.brandId,
+      customer: who,
+      status: 'Draft',
+      sessionId: clean(session.id),
+      packageName: '',
+      paymentLink: '',
+      quoteNumber: '',
+      tax: '',
+      notes: 'Created from an academy session. Type the price on the line. Leave it blank until you set it.',
+      lines: [{ description: description, qty: '1', unitPrice: '' }]
+    };
+  }
+
+  function academyPackageInvoice(fields) {
+    fields = fields || {};
+    var name = clean(fields.packageName);
+    if (!name) return { error: 'Enter a package name. The price stays blank until you type it.' };
+    if (!clean(fields.customer)) return { error: 'Enter who to bill. The price stays blank until you type it.' };
+    return {
+      brand: ACADEMY.brandId,
+      customer: clean(fields.customer),
+      status: 'Draft',
+      sessionId: '',
+      packageName: name,
+      paymentLink: '',
+      quoteNumber: '',
+      tax: '',
+      notes: 'Academy package. Type the price on the line. Leave it blank until you set it.',
+      lines: [{ description: name, qty: '1', unitPrice: '' }]
+    };
+  }
+
   function sampleBundle(now) {
     var today = isoDate(0, now);
     var soon = isoDate(14, now);
@@ -1340,6 +1747,28 @@
           quoteNumber: '',
           tax: '',
           notes: 'Sample invoice. The dollar amount is not a company price.',
+          brand: '',
+          paymentLink: '',
+          sessionId: '',
+          packageName: '',
+          sample: true
+        },
+        {
+          id: 'sample-invoice-academy',
+          number: 'INV-SAMPLE-ACADEMY',
+          created: today,
+          updated: today,
+          customer: 'Riley Sample',
+          status: 'Draft',
+          issuedOn: today,
+          dueOn: soon,
+          quoteNumber: '',
+          tax: '',
+          notes: 'Sample academy invoice. The price was not entered. This is not a company price.',
+          brand: 'Legacy Bowling Academy',
+          paymentLink: '',
+          sessionId: 'sample-session-1',
+          packageName: '',
           sample: true
         }
       ],
@@ -1351,6 +1780,15 @@
           description: 'Sample labor (not a real price)',
           qty: '2',
           unitPrice: '25',
+          sample: true
+        },
+        {
+          id: 'sample-invoice-line-academy',
+          invoiceId: 'sample-invoice-academy',
+          invoiceNumber: 'INV-SAMPLE-ACADEMY',
+          description: 'SAMPLE private lesson at Forest Hill Lanes (price not entered)',
+          qty: '1',
+          unitPrice: '',
           sample: true
         }
       ],
@@ -1408,6 +1846,100 @@
           ]),
           customerId: '',
           jobId: '',
+          sample: true
+        }
+      ],
+      'Academy Students': [
+        {
+          id: 'sample-student-riley',
+          created: today,
+          updated: today,
+          name: 'Riley Sample',
+          email: 'riley.sample@example.test',
+          phone: '(410) 555-0160',
+          ageGroup: 'Youth',
+          guardian: 'Pat Preview',
+          program: 'Youth program',
+          coach: 'Sample Coach',
+          notes: 'Sample student. Not a real person.',
+          status: 'Active',
+          sample: true
+        },
+        {
+          id: 'sample-student-jordan',
+          created: today,
+          updated: today,
+          name: 'Jordan Example',
+          email: 'jordan.example@example.test',
+          phone: '(410) 555-0161',
+          ageGroup: 'Adult',
+          guardian: '',
+          program: 'Private lessons',
+          coach: 'Sample Coach',
+          notes: 'Sample student. Not a real person.',
+          status: 'Active',
+          sample: true
+        }
+      ],
+      'Academy Requests': [
+        {
+          id: 'sample-request-1',
+          received: today,
+          form: 'booking',
+          name: 'Casey Preview',
+          email: 'casey.preview@example.test',
+          phone: '(410) 555-0162',
+          ageGroup: 'Youth',
+          program: 'Youth program',
+          preferredTimes: 'Weeknights after 5',
+          goals: 'SAMPLE goal. Not a real request.',
+          message: 'SAMPLE booking request from the academy site preview.',
+          source: 'legacy-bowling-academy',
+          status: 'New',
+          notes: 'Fake request. Nothing was booked.',
+          sessionId: '',
+          sample: true
+        }
+      ],
+      'Academy Sessions': [
+        {
+          id: 'sample-session-1',
+          created: today,
+          updated: today,
+          student: 'Riley Sample',
+          studentId: 'sample-student-riley',
+          kind: 'Private lesson',
+          status: 'Completed',
+          date: tomorrow,
+          start: '16:00',
+          end: '17:00',
+          coach: 'Sample Coach',
+          location: 'Forest Hill Lanes',
+          program: 'Youth program',
+          notes: 'Sample completed lesson. The price is not filled in.',
+          requestId: '',
+          invoiceId: 'sample-invoice-academy',
+          calendarEventId: '',
+          sample: true
+        },
+        {
+          id: 'sample-session-2',
+          created: today,
+          updated: today,
+          student: '',
+          studentId: '',
+          kind: 'Group clinic',
+          status: 'Requested',
+          date: later,
+          start: '10:00',
+          end: '',
+          coach: 'Sample Coach',
+          location: 'Forest Hill Lanes',
+          program: 'Clinic',
+          notes: 'Sample group clinic. Not a real booking.',
+          requestId: '',
+          invoiceId: '',
+          calendarEventId: '',
           sample: true
         }
       ],
@@ -1528,6 +2060,18 @@
     proposalFillRequests: proposalFillRequests,
     proposalPolishRequests: proposalPolishRequests,
     PROPOSAL_BRAND: PROPOSAL_BRAND,
+    ACADEMY: ACADEMY,
+    INVOICE_BRANDS: INVOICE_BRANDS,
+    academyFieldsFromPost: academyFieldsFromPost,
+    academyRequestRecord: academyRequestRecord,
+    invoiceBrand: invoiceBrand,
+    paymentLinkProblem: paymentLinkProblem,
+    invoicePaymentUrl: invoicePaymentUrl,
+    academyStudentError: academyStudentError,
+    academySessionError: academySessionError,
+    academyCalendarDraft: academyCalendarDraft,
+    academySessionInvoice: academySessionInvoice,
+    academyPackageInvoice: academyPackageInvoice,
     sampleBundle: sampleBundle,
     calendarEmbedUrl: calendarEmbedUrl,
     drivePreviewUrl: drivePreviewUrl,
