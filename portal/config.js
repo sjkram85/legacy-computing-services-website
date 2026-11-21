@@ -50,6 +50,12 @@ window.LCS_PORTAL = {
      Leave blank, or leave a YOUR_... placeholder, to turn the button off. */
   intakeFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdlt6J9Ew889ZO0dq4z6yzTrxb1FSuutsxvAiVGYX-5679tSQ/viewform",
 
+  /* Optional. The one online payment page for Legacy Computing Services, LLC.
+     Academy invoices use this same address. There is no separate bowling
+     bank account or merchant account. Leave blank until a provider is chosen.
+     An https address only. Not a password. */
+  paymentUrl: "",
+
   /* Optional browser key for Attach from Drive (Google Picker).
      Not a client secret. Leave blank until the key is restricted to this
      site's HTTP referrers and to the Google Picker API. An unrestricted

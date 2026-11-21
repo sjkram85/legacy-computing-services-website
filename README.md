@@ -18,7 +18,7 @@ How to edit prices, services, and the other lists is in [docs/editing.md](docs/e
 
 ## Employee portal
 
-Staff tools are at [portal/](portal/) (`https://legacycomputingservices.com/portal/`). The page is a sign-in shell. It does not store customer data in this repository. A discreet Employee Login link is in the site footer only. Links are relative, so they follow the custom domain. Do not change the `CNAME` file.
+Staff tools are at [portal/](portal/) (`https://legacycomputingservices.com/portal/`). The page is a sign-in shell. It does not store customer data in this repository. Legacy Bowling Academy students, lessons, and billing live in that same portal, on the Academy tab. A discreet Employee Login link is in the site footer only. Links are relative, so they follow the custom domain. Do not change the `CNAME` file.
 
 Scott’s setup steps are in [docs/portal-setup.md](docs/portal-setup.md). Until the Google Client ID is filled in, the portal shows a setup message and a sample-data preview.
 

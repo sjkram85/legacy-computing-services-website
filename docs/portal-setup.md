@@ -16,6 +16,7 @@ Put only these values in `portal/config.js`:
 - The Drive folder ID
 - Optionally, the Apps Script web address for website inquiries
 - The public client intake form link (`intakeFormUrl`)
+- Optionally, one https payment page for Legacy Computing Services, LLC (`paymentUrl`). Academy invoices use that same link. Leave it blank until a provider is chosen. It is not a password, and it is not a separate bowling account.
 - Optionally, a **browser API key** for the Google file picker (`pickerApiKey`). Leave it blank until you restrict it. See [Attach a file that is already in Drive](#attach-a-file-that-is-already-in-drive).
 
 Do **not** put a client secret, a password, customer names, or prices in that file. The intake form link is a public Google Form address, not a password. Do **not** put an API key that is not restricted to this website’s HTTP referrers.
@@ -137,9 +138,12 @@ The spreadsheet has these tabs. Do not rename them. Do not delete the first row.
 | Inquiries | ID, Received, Name, Email, Phone, Service, Budget, Details, Status, Source, Notes |
 | Quotes | ID, Number, Created, Updated, Customer, Status, Issued, Valid until, Tax, Notes |
 | QuoteItems | ID, Quote ID, Quote number, Description, Qty, Unit price |
-| Invoices | ID, Number, Created, Updated, Customer, Status, Issued, Due, Quote number, Tax, Notes |
+| Invoices | ID, Number, Created, Updated, Customer, Status, Issued, Due, Quote number, Tax, Notes, Business, Payment link, Session ID, Package |
 | InvoiceItems | ID, Invoice ID, Invoice number, Description, Qty, Unit price |
 | Proposals | ID, Prospect name, Business, Email, Phone, Title, Status, Created, Sent, Expires, Total, Doc URL, Notes, Sections, Line items, Customer ID, Job ID, Attachments |
+| Academy Students | ID, Created, Updated, Name, Email, Phone, Age group, Parent/guardian, Program, Coach, Notes, Status |
+| Academy Requests | ID, Received, Form, Name, Email, Phone, Age group, Program, Preferred times, Goals, Message, Source, Status, Notes, Session ID |
+| Academy Sessions | ID, Created, Updated, Student, Student ID, Type, Status, Date, Start, End, Coach, Location, Program, Notes, Request ID, Invoice ID, Calendar event ID |
 
 Quote and invoice totals are added up in the portal from the quantity and unit price you type. A blank price stays blank. The portal does not invent a price. Leave **Tax** blank when there is no tax. There is no default tax rate.
 
@@ -151,8 +155,14 @@ Statuses the portal offers:
 - Quotes: Draft, Sent, Accepted, Declined
 - Proposals: Draft, Sent, Accepted, Declined
 - Invoices: Draft, Sent, Paid, Void
+- Academy students: Active, Inactive, Waitlist
+- Academy age group: Youth, Adult, Senior
+- Academy requests: New, Reviewed, Scheduled, Closed
+- Academy sessions: Requested, Confirmed, Completed, Cancelled
 
-If a tab is missing later, sign in and click **Add missing tabs and headers**. That fills empty tabs. It does not overwrite rows that already have data. If a header name is missing, such as **Intake Sent** or **Attachments**, that button adds it at the end of the header row. It does not rename or overwrite the header cells that are already there, and it does not rewrite the other cells on the row.
+**Business** on an invoice is either blank, `Legacy Computing Services`, or `Legacy Bowling Academy`. Blank means Legacy Computing Services. Academy rows stay on this same Invoices tab and use the same invoice numbers, so bowling revenue stays with Legacy Computing Services, LLC. The portal adds **Business**, **Payment link**, **Session ID**, and **Package** at the end of the Invoices header row when they are missing. It does not rename or overwrite the header cells that are already there, and it does not change existing computing-company invoices.
+
+If a tab is missing later, sign in and click **Add missing tabs and headers**. That fills empty tabs. It does not overwrite rows that already have data. If a header name is missing, such as **Intake Sent**, **Attachments**, or **Business**, that button adds it at the end of the header row. It does not rename or overwrite the header cells that are already there, and it does not rewrite the other cells on the row. Opening **Academy** does the same thing for the three Academy tabs and for those invoice headers.
 
 ### Client intake form
 
@@ -270,6 +280,7 @@ They then get:
 - Shortcuts to Gmail, Drive, Calendar, Meet, and the Admin console, each opening in a new tab (Admin only works for Workspace admins). Gmail cannot be embedded.
 - The company calendar embedded on the dashboard, plus a short upcoming list when Calendar access was granted
 - Tickets, customers, inquiries, proposals, quotes, and invoices from the spreadsheet
+- **Academy**, for Legacy Bowling Academy students, lesson requests, sessions, and invoices on that same Invoices tab
 - **Proposals**, including a Google Doc in the company docs folder, Drive file links on proposals that were already written outside the portal, and a Gmail draft. The page does not send the email.
 - **Send intake form** on each ticket, and again after a proposal is accepted. It opens a Gmail draft. It does not send the email from this page.
 - A Spreadsheet tab that embeds that same Google Sheet for editing
@@ -312,6 +323,96 @@ You can skip the website POST and use a Google Form whose results you copy into 
 5. Point the Form’s destination at this spreadsheet, or link the form from the sheet.
 
 The form will create its own response tab. The trigger copies a row onto **Inquiries**, which is the tab the portal reads.
+
+## 13. Legacy Bowling Academy
+
+Legacy Bowling Academy is a DBA of Legacy Computing Services, LLC. Its students, lesson requests, and sessions live in this same portal, under **Academy**. There is no second admin site. Invoices for the academy use the same **Invoices** tab as the computing company.
+
+You do this once. After that, employees just use the Academy tab.
+
+### Add the tabs
+
+1. Open the portal and sign in.
+2. Click **Academy**.
+
+The page adds three tabs if they are missing: **Academy Students**, **Academy Requests**, and **Academy Sessions**. It also adds **Business**, **Payment link**, **Session ID**, and **Package** at the end of the Invoices header row if those names are missing.
+
+It does not rename tabs. It does not overwrite header cells that are already there. It does not change existing Legacy Computing Services invoices.
+
+**Add missing tabs and headers** on the dashboard does the same thing.
+
+### What each part is for
+
+- **Students** — name, email, phone, age group (Youth, Adult, or Senior), parent or guardian, program, coach, notes, and status. A youth student needs a parent or guardian.
+- **Requests** — messages from the public academy website. A booking and a general question both land here.
+- **Lessons** — private lessons, group clinics, camps, and youth programs. Status is Requested, Confirmed, Completed, or Cancelled. The lane location starts as Forest Hill Lanes. Change it if a session is somewhere else.
+- **Billing** — starts an invoice on the existing Invoices tab, with the same invoice numbers as the computing company. The business is set to Legacy Bowling Academy. You can also start one from a completed lesson, or from a package whose name you type.
+
+The portal does not invent a price. The academy website lists $60 for a 60-minute private session as a reference only. Type the price you are actually charging. Leave it blank if you have not decided, and the total stays incomplete.
+
+On the printed invoice, the bowling name appears only as **Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC**, with Forest Hill Lanes. Under that, the invoice says **Make payments to Legacy Computing Services, LLC**. Legacy Computing Services, LLC receives every payment. There is no separate bowling bank account, merchant account, or payment account. A Legacy Computing Services invoice that has a blank Business cell, or says Legacy Computing Services, still prints as Legacy Computing Services LLC in Bel Air, without that DBA line. Do not change those rows to the academy unless you mean to.
+
+**Payment link** is one Legacy Computing Services hook, not an academy one. No card provider is connected yet. Leave `paymentUrl` in `portal/config.js` blank, and leave **Payment link** on the invoice blank. When you choose a provider, paste that one https address into `paymentUrl`. Every invoice, including academy invoices, prints it as paying Legacy Computing Services, LLC. A link typed on a single invoice is used only while `paymentUrl` is still blank, and it is still the company link. A computing-company invoice with no link does not gain an online-payment line. An academy invoice with no link still tells the customer to pay Legacy Computing Services, LLC, and says online payment is not connected yet.
+
+### Confirmed lessons and Calendar
+
+`calendarId` in `portal/config.js` is still optional.
+
+- If it is filled in, saving a session as **Confirmed** asks Google for permission to add events, then puts that session on that calendar. Share the calendar with the employees who confirm lessons.
+- If it is blank, the portal does not create an event. The session has **Add to Google Calendar**, which opens Google Calendar with the lesson filled in. You still press Save in Google Calendar.
+
+The end time is whatever you typed. If you leave the end time blank, the calendar block is 60 minutes, because that is how a private session is described on the academy site. Change the end time in Calendar if this lesson is different. The calendar event does not include a price.
+
+### Intake from the academy website
+
+The public academy site is a different repository. This portal only receives the rows.
+
+Do not paste `apps-script/academy.gs` into the inquiry script you already deployed. Both files define `doPost`, and one Apps Script project can publish only one web app. Leave the inquiry project alone.
+
+1. Open [script.google.com](https://script.google.com/) while signed in as the company account that owns the portal spreadsheet.
+2. Click **New project**. Name it `Academy intake`.
+3. Replace the sample code with the contents of `apps-script/academy.gs` from this repository. Click **Save**.
+4. Click the gear (**Project Settings**). Under **Script properties**, click **Add script property**.
+5. Property: `SPREADSHEET_ID`. Value: the same spreadsheet ID that is in `portal/config.js`. This property stays in Google. Do not put it, the web app URL, or any password into the website repository.
+6. Click **Deploy**, then **New deployment**.
+7. Click the gear next to “Select type” and choose **Web app**.
+8. Execute as: **Me**.
+9. Who has access: **Anyone**.
+10. Click **Deploy**. Approve the permissions. They let the script add a row to your spreadsheet.
+11. Copy the **Web app URL**. It must end in `/exec`.
+12. Give that URL to the academy website. The portal does not need it. After you sign in, Academy → Requests reads the sheet.
+
+The address is public once the academy site uses it. Anyone who can read it can submit a fake request. The script only **adds** a row. It never sends back students, invoices, or prices.
+
+The first request creates the **Academy Requests** tab if the portal has not already. The script does not edit the other tabs. A hidden field named `website` must be empty. If a sender fills it in, the script answers success and does not store the row. That is the spam check.
+
+The academy site can POST either JSON or a normal form. Both are accepted. A browser page can also POST a form field named `payload` whose value is the JSON, the same idea as the contact-form handoff. Tell the academy site to send this JSON:
+
+```json
+{
+  "form": "booking",
+  "name": "Jordan Lee",
+  "email": "jordan@example.com",
+  "phone": "410-555-0100",
+  "ageGroup": "youth",
+  "program": "Youth program",
+  "preferredTimes": "Tuesdays after 4pm",
+  "goals": "Learn a hook",
+  "message": "Looking for a coach",
+  "source": "legacy-bowling-academy",
+  "website": ""
+}
+```
+
+`form` is `booking` or `inquiry`. `name` and `email` are required. `ageGroup` is `youth`, `adult`, or `senior`. `source` should be `legacy-bowling-academy`. `website` must be an empty string.
+
+The same fields work as a form body:
+
+```text
+form=booking&name=Jordan%20Lee&email=jordan%40example.com&phone=410-555-0100&ageGroup=youth&program=Youth%20program&preferredTimes=Tuesdays%20after%204pm&goals=Learn%20a%20hook&message=Looking%20for%20a%20coach&source=legacy-bowling-academy&website=
+```
+
+A saved request answers with JSON: `{"ok":true}`. A request missing the name, the email, or a valid form answers with `{"ok":false,"error":"..."}`. The portal does not send email from this page.
 
 ## When something goes wrong
 
