@@ -166,14 +166,13 @@
 
   <footer class="border-t border-slate-700/80 bg-[#0B131E]">
     <div class="mx-auto flex max-w-3xl flex-col gap-5 px-4 py-8 sm:px-6">
-      <!-- Sister site address: js/sister-site.js -->
-      <a data-sister-site class="group inline-flex items-center gap-2.5 self-center sm:self-start" rel="noopener noreferrer">
+      <div class="inline-flex items-center gap-2.5 self-center sm:self-start">
         <img src="assets/legacy-umbrella-shield.png" width="36" height="38" alt="" class="h-auto w-9 shrink-0" />
         <span class="text-left leading-tight">
-          <span class="block font-mono text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-slate-500">A Legacy company</span>
-          <span class="mt-0.5 block text-[0.84rem] font-bold text-slate-300 transition-colors group-hover:text-cyan-400">Legacy Bowling Academy</span>
+          <span class="block font-mono text-[0.66rem] font-semibold tracking-[0.06em] text-slate-500">A Legacy Company</span>
+          <span class="mt-0.5 block text-[0.84rem] font-bold text-slate-300">Legacy Computing Services, LLC</span>
         </span>
-      </a>
+      </div>
       <div class="flex flex-col items-start justify-between gap-3 text-xs text-slate-500 sm:flex-row sm:items-center">
         <p>© <span id="yearSpan">2026</span> Legacy Computing Services LLC. Bel Air, Maryland.</p>
         <p class="flex flex-wrap gap-x-4 gap-y-1 font-mono">
@@ -184,7 +183,6 @@
       </div>
     </div>
   </footer>
-  <script src="js/sister-site.js"></script>
   <script>
     document.getElementById('yearSpan').textContent = String(new Date().getFullYear());
   </script>
