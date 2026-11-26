@@ -128,10 +128,11 @@
         </div>
 
         <!-- Desktop Nav -->
-        <nav aria-label="Prism Navigation" class="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300">
-          <a href="#preview" class="hover:text-cyan-400 transition-colors">Live Preview</a>
+        <nav aria-label="Prism Navigation" class="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-300">
+          <a href="#sandbox" class="text-cyan-300 hover:text-cyan-200 font-semibold transition-colors">Interactive Demo</a>
+          <a href="#compare" class="hover:text-cyan-400 transition-colors">Why Prism</a>
+          <a href="#preview" class="hover:text-cyan-400 transition-colors">Screenshots</a>
           <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
-          <a href="#workflow" class="hover:text-cyan-400 transition-colors">How It Works</a>
           <a href="#pricing" class="hover:text-cyan-400 transition-colors">Pricing</a>
           <a href="#faq" class="hover:text-cyan-400 transition-colors">FAQ</a>
           <a href="../" class="text-slate-400 hover:text-white transition-colors font-mono text-xs">← Main Site</a>
@@ -161,9 +162,10 @@
 
     <!-- Mobile Drawer -->
     <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-800 bg-[#070B12]/95 px-4 pt-3 pb-5 space-y-2">
-      <a href="#preview" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">Live Preview</a>
+      <a href="#sandbox" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-cyan-300 hover:bg-slate-900 font-semibold">▶ Try Interactive Demo</a>
+      <a href="#compare" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">Why Prism vs. Legacy</a>
+      <a href="#preview" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">Screenshots</a>
       <a href="#features" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">Features</a>
-      <a href="#workflow" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">How It Works</a>
       <a href="#pricing" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">Pricing</a>
       <a href="#faq" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-900 hover:text-cyan-400 font-medium">FAQ</a>
       <a href="../" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-white font-mono text-xs">← Back to Legacy Computing Services</a>
@@ -200,12 +202,11 @@
           </p>
 
           <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-cyber-cyan transition-all">
-              View Plans &amp; Pricing
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+            <a href="#sandbox" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-cyber-cyan transition-all">
+              ▶ Try Interactive Demo
             </a>
-            <a href="#demo" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/60 text-white font-bold text-sm sm:text-base transition-all">
-              Request a 3-Minute Live Demo
+            <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/60 text-white font-bold text-sm sm:text-base transition-all">
+              View Plans &amp; Pricing
             </a>
             <a href="https://prism-chusbc.fly.dev/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-xl text-cyan-300 hover:text-white font-semibold text-sm transition-colors">
               Existing Customer Login →
@@ -230,6 +231,213 @@
               <span class="text-emerald-400 text-lg">✓</span>
               <div class="text-xs leading-snug"><strong class="block text-white">Private Per-Org Vault</strong><span class="text-slate-400">Zero cross-association visibility</span></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 2B. INTERACTIVE HANDS-ON SANDBOX DEMO (NO LOGIN REQUIRED)           -->
+    <!-- =================================================================== -->
+    <section id="sandbox" class="py-16 lg:py-24 bg-[#0E1726] border-b border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-emerald-400">Hands-On Interactive Sandbox · No Sign-Up Needed</span>
+          <h2 class="mt-2 font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
+            Test Drive Prism 2.0 Right Here
+          </h2>
+          <p class="mt-3 text-slate-300 text-base">
+            Don’t take our word for it — parse a sample tournament flyer, enter live scores or simulate Phone TV Photo OCR, and watch the Lobby Kiosk TV &amp; brackets update in real time.
+          </p>
+        </div>
+
+        <!-- Sandbox Mode Tabs -->
+        <div class="mt-8 flex flex-wrap justify-center gap-2.5" role="tablist" aria-label="Interactive Sandbox Demos">
+          <button type="button" role="tab" aria-selected="true" data-sb="scoring" class="sb-tab preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
+            ⚡ 1. Live Scoring &amp; Lobby Kiosk TV
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-sb="flyer" class="sb-tab preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
+            📄 2. A.I. Flyer Auto-Setup
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-sb="bracket" class="sb-tab preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
+            🌿 3. Zero-Self-Matchup Brackets
+          </button>
+        </div>
+
+        <!-- Sandbox Stage -->
+        <div class="mt-7 cyber-panel rounded-3xl p-5 sm:p-7 border-cyan-500/35 shadow-cyber-cyan">
+
+          <!-- PANEL 1: LIVE SCORING + OCR + KIOSK TV -->
+          <div id="sb-panel-scoring">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
+              <div>
+                <span class="font-mono text-[11px] uppercase tracking-wider text-cyan-400">Live Handicap Engine · 90% of 220 · 3-Game Singles</span>
+                <h3 class="font-display text-lg font-bold text-white">Type any score below (or simulate Phone TV Photo OCR)</h3>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="btnSimOcr" class="px-4 py-2 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer transition-all">
+                  📷 Simulate Phone TV Photo OCR
+                </button>
+                <button type="button" id="btnResetScores" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs sm:text-sm cursor-pointer">
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-6 items-start">
+              <!-- Desk Score Grid -->
+              <div class="lg:col-span-7 overflow-x-auto rounded-2xl border border-slate-800 bg-[#08101A]">
+                <table class="w-full text-left text-xs sm:text-sm">
+                  <thead class="bg-[#0E1929] text-slate-400 font-mono text-[11px] uppercase">
+                    <tr>
+                      <th class="px-3 py-2.5">Slot</th>
+                      <th class="px-3 py-2.5">Bowler (Avg)</th>
+                      <th class="px-2 py-2.5 text-center">Hdcp/G</th>
+                      <th class="px-2 py-2.5 text-center">G1</th>
+                      <th class="px-2 py-2.5 text-center">G2</th>
+                      <th class="px-2 py-2.5 text-center">G3</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sbScoreBody" class="divide-y divide-slate-800/70"></tbody>
+                </table>
+                <div id="sbOcrToast" class="hidden px-4 py-2.5 bg-emerald-500/15 border-t border-emerald-500/35 text-emerald-300 text-xs font-semibold"></div>
+              </div>
+
+              <!-- Live Mini Lobby Kiosk TV -->
+              <div class="lg:col-span-5 rounded-2xl border border-cyan-500/40 bg-gradient-to-b from-[#0E1D31] to-[#08101A] p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+                    <span class="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-300">Live Lobby Kiosk TV</span>
+                  </div>
+                  <span class="font-mono text-[11px] text-slate-400">Prize Pool: $200</span>
+                </div>
+                <div id="sbKioskList" class="space-y-2"></div>
+                <p class="mt-3 text-[11px] text-slate-400">
+                  Updates instantaneously on concourse TVs &amp; bowlers’ phones — zero paper sheets taped to the wall.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 2: A.I. FLYER IMPORT SIMULATOR -->
+          <div id="sb-panel-flyer" class="hidden">
+            <div class="grid lg:grid-cols-12 gap-6 items-start">
+              <div class="lg:col-span-5 space-y-3">
+                <span class="font-mono text-[11px] uppercase tracking-wider text-cyan-400">Step 1 · Choose a Sample Tournament Flyer</span>
+                <h3 class="font-display text-lg font-bold text-white">Drop a PDF or Photo — Done in 10 Seconds</h3>
+                <div class="space-y-2">
+                  <button type="button" data-flyer="youth" class="sb-flyer-pick w-full text-left p-3.5 rounded-xl border border-cyan-400/60 bg-cyan-500/10 text-white cursor-pointer">
+                    <div class="font-bold text-sm">🏆 Youth SMART Championship Flyer (PDF)</div>
+                    <div class="text-xs text-slate-300 mt-0.5">4 Boys/Girls divisions · 90% of 210 · $35 SMART entry</div>
+                  </button>
+                  <button type="button" data-flyer="adult" class="sb-flyer-pick w-full text-left p-3.5 rounded-xl border border-slate-700 bg-slate-900/70 text-slate-200 hover:border-cyan-400/50 cursor-pointer">
+                    <div class="font-bold text-sm">🎳 Memorial Handicap Singles Flyer (Photo)</div>
+                    <div class="text-xs text-slate-400 mt-0.5">3 games + Top-5 Stepladder · 80% of 225 · $50 cash</div>
+                  </button>
+                  <button type="button" data-flyer="doubles" class="sb-flyer-pick w-full text-left p-3.5 rounded-xl border border-slate-700 bg-slate-900/70 text-slate-200 hover:border-cyan-400/50 cursor-pointer">
+                    <div class="font-bold text-sm">🔥 Scratch Doubles Marathon Sweeper (PDF)</div>
+                    <div class="text-xs text-slate-400 mt-0.5">6 games scratch · Auto A/B &amp; C/D lane pairing · $120/team</div>
+                  </button>
+                </div>
+                <button type="button" id="btnRunFlyerAi" class="w-full py-3 px-4 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-sm shadow-cyber-cyan cursor-pointer transition-all">
+                  ✨ Parse Flyer with Prism A.I.
+                </button>
+              </div>
+
+              <div class="lg:col-span-7 rounded-2xl border border-slate-800 bg-[#08101A] p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="font-mono text-xs text-cyan-300">PRISM A.I. EXTRACTED CONFIGURATION</span>
+                  <span id="sbFlyerTime" class="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-emerald-300">Ready</span>
+                </div>
+                <div id="sbFlyerOut" class="space-y-3 text-sm text-slate-300"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 3: MULTI-ENTRY BRACKETS -->
+          <div id="sb-panel-bracket" class="hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
+              <div>
+                <span class="font-mono text-[11px] uppercase tracking-wider text-emerald-400">Collision-Free Multi-Entry Engine</span>
+                <h3 class="font-display text-lg font-bold text-white">8-Person Brackets — Guaranteed Zero Self-Matchups</h3>
+              </div>
+              <button type="button" id="btnGenBracket" class="px-4 py-2.5 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer">
+                🔀 Shuffle &amp; Generate Bracket
+              </button>
+            </div>
+            <div id="sbBracketGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+            <p class="mt-4 text-xs text-slate-400">
+              Unlike manual spreadsheets or clunky add-on bracket programs, Prism runs multi-entry brackets, High Game Pots, Eliminator, and Mystery Score directly from your live lane scores.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 2C. PRISM 2.0 VS. LEGACY 1990s SOFTWARE COMPARISON                  -->
+    <!-- =================================================================== -->
+    <section id="compare" class="py-16 lg:py-24 border-b border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center">
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-cyan-400">Why Associations &amp; Centers Are Switching</span>
+          <h2 class="mt-2 font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
+            Prism 2.0 vs. Legacy Tournament Software
+          </h2>
+          <p class="mt-3 text-slate-300 text-base">
+            Most bowling tournaments still run on 25-year-old Windows desktop installs or fragile Excel spreadsheets. Here’s what changes the day you move to Prism.
+          </p>
+        </div>
+
+        <div class="mt-10 cyber-panel rounded-3xl overflow-hidden border-slate-700/70">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-[#09121E] border-b border-slate-800">
+                <tr>
+                  <th class="px-5 py-4 font-mono text-xs uppercase tracking-wider text-slate-400">Workflow</th>
+                  <th class="px-5 py-4 font-mono text-xs uppercase tracking-wider text-rose-300">Legacy Desktop Software / Excel</th>
+                  <th class="px-5 py-4 font-mono text-xs uppercase tracking-wider text-emerald-300 bg-cyan-500/10">Prism 2.0 Control Center</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/80">
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Devices &amp; Collaboration</td>
+                  <td class="px-5 py-4 text-slate-400">✕ Tied to 1 Windows laptop · USB backups · single operator bottleneck</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ 100% Browser &amp; Mobile</strong> — Windows, Mac, iPad, or phone with multi-director live sync</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Tournament Setup</td>
+                  <td class="px-5 py-4 text-slate-400">✕ 30–45 minutes clicking through dated menus for divisions, handicaps &amp; fees</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ 10-Second A.I. Flyer Import</strong> — drop a PDF or photo and Prism builds the event automatically</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Score Entry &amp; Floor Sync</td>
+                  <td class="px-5 py-4 text-slate-400">✕ Paper recap sheets walked to the desk and hand-typed one bowler at a time</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ Phone TV Photo OCR + 10s Sync</strong> — snap overhead monitors + built-in Offline Wi-Fi Queue</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Bowler &amp; Lobby Experience</td>
+                  <td class="px-5 py-4 text-slate-400">✕ Printouts taped to the concourse wall; crowded desk asking “what’s the cut?”</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ Live Lobby Kiosk TV + Phone Portal</strong> — PBA-style Stepladder TV &amp; paid sponsor banners</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Brackets &amp; Side Action</td>
+                  <td class="px-5 py-4 text-slate-400">✕ Separate paid bracket software or manual paper charts prone to double-entry errors</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ Built-In Side Action Suite</strong> — Multi-entry brackets (0 self-matchups), Pots, Eliminator &amp; Mystery</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Closeout &amp; USBC Reporting</td>
+                  <td class="px-5 py-4 text-slate-400">✕ Manual envelope math, slow prize lists, separate spreadsheets for SMART &amp; WinLABS</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ 1-Click Closeout Packet</strong> — One-Envelope cash sheets, Certificates, Social Winners Card, WinLABS &amp; SMART</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-bold text-white">Data Safety &amp; Privacy</td>
+                  <td class="px-5 py-4 text-slate-400">✕ One dead hard drive loses years of bowler history; exposed youth IDs on printouts</td>
+                  <td class="px-5 py-4 text-slate-100 bg-cyan-500/[0.04]"><strong class="text-emerald-300">✓ Private Per-Org Cloud Vault</strong> — Automated backups, strict org isolation &amp; Youth SMART ID masking</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -926,6 +1134,208 @@
       document.getElementById('prismLeadSuccess').classList.add('hidden');
       document.getElementById('prismLeadForm').classList.remove('hidden');
     }
+
+    // -----------------------------------------------------------------------
+    // INTERACTIVE SANDBOX DEMO ENGINE (100% client-side, instant)
+    // -----------------------------------------------------------------------
+    (function initSandbox() {
+      // Sandbox tab switching
+      document.querySelectorAll('.sb-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.sb;
+          document.querySelectorAll('.sb-tab').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
+          ['scoring', 'flyer', 'bracket'].forEach((k) => {
+            document.getElementById('sb-panel-' + k)?.classList.toggle('hidden', k !== target);
+          });
+        });
+      });
+
+      // 1. Live Scoring & Mini Lobby Kiosk TV
+      const DEFAULT_BOWLERS = [
+        { slot: 'L1A', name: 'Marcus Vance', avg: 205, g: [224, 211, 0] },
+        { slot: 'L1B', name: 'Elena Rostova', avg: 182, g: [196, 208, 0] },
+        { slot: 'L1C', name: 'Devon Brooks', avg: 168, g: [185, 192, 0] },
+        { slot: 'L1D', name: 'Chloe Bennett', avg: 194, g: [204, 189, 0] },
+      ];
+      let bowlers = DEFAULT_BOWLERS.map((b) => ({ ...b, g: [...b.g] }));
+
+      function hdcpPerGame(avg) {
+        return Math.max(0, Math.floor((220 - avg) * 0.9));
+      }
+
+      function renderSandboxScores() {
+        const tbody = document.getElementById('sbScoreBody');
+        const kiosk = document.getElementById('sbKioskList');
+        if (!tbody || !kiosk) return;
+
+        tbody.innerHTML = bowlers.map((b, idx) => {
+          const h = hdcpPerGame(b.avg);
+          return `<tr class="hover:bg-cyan-500/5">
+            <td class="px-3 py-2.5 font-mono text-cyan-300 font-bold">${b.slot}</td>
+            <td class="px-3 py-2.5"><strong class="text-white">${b.name}</strong> <span class="text-slate-400 text-xs">(${b.avg})</span></td>
+            <td class="px-2 py-2.5 text-center font-mono text-slate-300">+${h}</td>
+            ${[0, 1, 2].map((gi) => `<td class="px-1.5 py-2 text-center">
+              <input type="number" min="0" max="300" data-bi="${idx}" data-gi="${gi}" value="${b.g[gi] || ''}" placeholder="—"
+                class="sb-sc-in w-14 text-center font-mono font-bold py-1.5 rounded-lg bg-slate-950 border ${b.g[gi] ? 'border-emerald-500/50 text-white' : 'border-slate-700 text-slate-300'} focus:border-cyan-400 focus:outline-none text-xs sm:text-sm" />
+            </td>`).join('')}
+          </tr>`;
+        }).join('');
+
+        tbody.querySelectorAll('.sb-sc-in').forEach((inp) => {
+          inp.addEventListener('input', () => {
+            const bi = Number(inp.dataset.bi);
+            const gi = Number(inp.dataset.gi);
+            let v = parseInt(inp.value, 10);
+            if (isNaN(v) || v < 0) v = 0;
+            if (v > 300) v = 300;
+            bowlers[bi].g[gi] = v;
+            renderKioskOnly();
+          });
+        });
+        renderKioskOnly();
+      }
+
+      function renderKioskOnly() {
+        const kiosk = document.getElementById('sbKioskList');
+        if (!kiosk) return;
+        const ranked = bowlers.map((b) => {
+          const h = hdcpPerGame(b.avg);
+          const gamesBowled = b.g.filter((x) => x > 0).length;
+          const scr = b.g.reduce((a, c) => a + c, 0);
+          const tot = scr + h * gamesBowled;
+          return { ...b, scr, tot, gamesBowled };
+        }).sort((a, b) => b.tot - a.tot);
+
+        const payouts = ['$120', '$80', '—', '—'];
+        kiosk.innerHTML = ranked.map((r, i) => `
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl border ${i === 0 ? 'border-amber-400/50 bg-amber-500/10' : i === 1 ? 'border-emerald-400/35 bg-emerald-500/5' : 'border-slate-800 bg-slate-950/60'}">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="font-mono text-xs font-extrabold ${i === 0 ? 'text-amber-300' : i === 1 ? 'text-emerald-300' : 'text-slate-400'}">#${i + 1}</span>
+              <div class="min-w-0">
+                <div class="font-bold text-white text-sm truncate">${r.name} ${i < 2 ? '<span class="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">CASH</span>' : ''}</div>
+                <div class="font-mono text-[11px] text-slate-400">${r.gamesBowled}g · Scratch ${r.scr}</div>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="font-mono font-extrabold text-base text-cyan-300">${r.tot}</div>
+              <div class="font-mono text-[11px] ${i < 2 ? 'text-emerald-300 font-bold' : 'text-slate-500'}">${payouts[i]}</div>
+            </div>
+          </div>`).join('');
+      }
+
+      document.getElementById('btnSimOcr')?.addEventListener('click', () => {
+        const ocrG3 = [236, 214, 219, 202];
+        bowlers.forEach((b, i) => { b.g[2] = ocrG3[i]; });
+        renderSandboxScores();
+        const toast = document.getElementById('sbOcrToast');
+        if (toast) {
+          toast.textContent = '📷 Phone TV Photo OCR complete (0.9s): Read Game 3 for Lanes 1–2 (236, 214, 219, 202) with 99.4% confidence — Lobby Kiosk updated!';
+          toast.classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('btnResetScores')?.addEventListener('click', () => {
+        bowlers = DEFAULT_BOWLERS.map((b) => ({ ...b, g: [...b.g] }));
+        document.getElementById('sbOcrToast')?.classList.add('hidden');
+        renderSandboxScores();
+      });
+      renderSandboxScores();
+
+      // 2. A.I. Flyer Setup Simulator
+      const FLYERS = {
+        youth: {
+          title: '2026 Youth SMART Scholarship Championship',
+          format: 'Singles · 3 Games + Top-4 Stepladder',
+          handicap: '90% of 210 (Individual)',
+          entry: '$35 / bowler ($20 Scholarship · $12 Lineage · $3 Expense)',
+          divisions: ['Boys Div 1 (165+)', 'Boys Div 2 (0–164)', 'Girls Div 1 (155+)', 'Girls Div 2 (0–154)'],
+          extras: 'Youth SMART CSV Export · Masked USBC IDs · Separate Boys/Girls Stepladder',
+          saved: 'Saved ~38 minutes vs. legacy setup'
+        },
+        adult: {
+          title: 'Annual Memorial Handicap Singles Classic',
+          format: 'Singles · 3 Games + Top-5 PBA Stepladder',
+          handicap: '80% of 225 (Max 60/game)',
+          entry: '$50 / bowler ($34 Prize Fund · $13 Lineage · $3 Admin)',
+          divisions: ['Open Handicap (All Averages)', 'Senior Bonus (50+)'],
+          extras: 'One-Envelope Cash Sheet · $5 Multi-Entry Brackets · High Game Pots',
+          saved: 'Saved ~30 minutes vs. legacy setup'
+        },
+        doubles: {
+          title: 'Chesapeake Scratch Doubles Marathon Sweeper',
+          format: 'Doubles · 6 Games Scratch · Auto A/B & C/D Pairing',
+          handicap: 'Scratch (0%)',
+          entry: '$120 / team ($90 Prize Fund · $30 Lineage)',
+          divisions: ['Open Scratch Doubles'],
+          extras: 'Eliminator Side Pot · Mystery Score · Live Lobby Kiosk Sponsor Rotator',
+          saved: 'Saved ~35 minutes vs. legacy setup'
+        }
+      };
+      let activeFlyer = 'youth';
+      function renderFlyerResult(key, animate = false) {
+        const f = FLYERS[key];
+        const out = document.getElementById('sbFlyerOut');
+        const badge = document.getElementById('sbFlyerTime');
+        if (!out || !f) return;
+        if (animate) {
+          badge.textContent = 'Reading PDF...';
+          out.innerHTML = '<div class="py-6 text-center font-mono text-xs text-cyan-300">✨ Prism A.I. extracting divisions, handicap math, fee split &amp; rules...</div>';
+          setTimeout(() => renderFlyerResult(key, false), 420);
+          return;
+        }
+        badge.textContent = 'Parsed in 1.2s · ' + f.saved;
+        out.innerHTML = `
+          <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+            <div class="text-xs font-mono text-slate-400">TOURNAMENT NAME</div>
+            <div class="font-display font-bold text-white text-base mt-0.5">${f.title}</div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800"><div class="text-[11px] font-mono text-slate-400">FORMAT</div><div class="text-white font-semibold mt-0.5">${f.format}</div></div>
+            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800"><div class="text-[11px] font-mono text-slate-400">HANDICAP</div><div class="text-cyan-300 font-semibold mt-0.5">${f.handicap}</div></div>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800"><div class="text-[11px] font-mono text-slate-400">ENTRY FEE BREAKDOWN</div><div class="text-emerald-300 font-semibold mt-0.5">${f.entry}</div></div>
+          <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+            <div class="text-[11px] font-mono text-slate-400 mb-1.5">AUTO-CREATED DIVISIONS</div>
+            <div class="flex flex-wrap gap-1.5">${f.divisions.map((d) => `<span class="px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/35 text-cyan-200 text-xs font-semibold">${d}</span>`).join('')}</div>
+          </div>
+          <div class="text-xs text-slate-400"><strong class="text-white">Also auto-enabled:</strong> ${f.extras}</div>`;
+      }
+      document.querySelectorAll('.sb-flyer-pick').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeFlyer = btn.dataset.flyer;
+          document.querySelectorAll('.sb-flyer-pick').forEach((b) => {
+            const on = b === btn;
+            b.className = 'sb-flyer-pick w-full text-left p-3.5 rounded-xl border cursor-pointer ' + (on ? 'border-cyan-400/60 bg-cyan-500/10 text-white' : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-cyan-400/50');
+          });
+          renderFlyerResult(activeFlyer, true);
+        });
+      });
+      document.getElementById('btnRunFlyerAi')?.addEventListener('click', () => renderFlyerResult(activeFlyer, true));
+      renderFlyerResult('youth', false);
+
+      // 3. Zero-Self-Matchup Bracket Generator
+      const POOL = ['Marcus Vance', 'Elena Rostova', 'Devon Brooks', 'Chloe Bennett', 'Tyler Grant', 'Nadia Patel', 'Jordan Cole', 'Samira Reyes'];
+      function renderBracket() {
+        const grid = document.getElementById('sbBracketGrid');
+        if (!grid) return;
+        const arr = [...POOL].sort(() => Math.random() - 0.5);
+        const matches = [[arr[0], arr[1]], [arr[2], arr[3]], [arr[4], arr[5]], [arr[6], arr[7]]];
+        grid.innerHTML = matches.map((m, i) => `
+          <div class="rounded-2xl border border-slate-800 bg-[#08101A] p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-[11px] text-cyan-400">ROUND 1 · MATCH ${i + 1}</span>
+              <span class="font-mono text-[10px] text-emerald-400">✓ 0 Self-Match</span>
+            </div>
+            <div class="space-y-1.5 text-sm">
+              <div class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white font-semibold">${m[0]}</div>
+              <div class="text-center font-mono text-[10px] text-slate-500">VS</div>
+              <div class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white font-semibold">${m[1]}</div>
+            </div>
+          </div>`).join('');
+      }
+      document.getElementById('btnGenBracket')?.addEventListener('click', renderBracket);
+      renderBracket();
+    })();
   </script>
 </body>
 </html>
