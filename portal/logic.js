@@ -359,9 +359,13 @@
     if (/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url)) {
       return { url: url, problem: '' };
     }
+    if (/^https:\/\/(?:[a-z0-9-]+\.)?legacycomputing\.workers\.dev\/api\/[a-z0-9/_-]+$/i.test(url)
+      || /^https:\/\/api\.legacycomputingservices\.com\/api\/[a-z0-9/_-]+$/i.test(url)) {
+      return { url: url, problem: '' };
+    }
     return {
       url: '',
-      problem: 'The inquiry address in portal/config.js must be a Google Apps Script web app URL ending in /exec. The email form still works.'
+      problem: 'The inquiry address in portal/config.js must be a Cloudflare Worker API URL or Google Apps Script /exec URL. The email form still works.'
     };
   }
 

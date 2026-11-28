@@ -38,11 +38,14 @@ window.LCS_PORTAL = {
      calendar itself must be shared only with the people who should see it. */
   calendarId: "",
 
+  /* Cloudflare Worker API base URL for the Control Center (D1 database & auth).
+     Leave blank to use legacy Google Sheets mode instead. */
+  apiBaseUrl: "https://legacy-control-center-api.legacycomputing.workers.dev",
+
   /* Optional. Leave blank to keep the public contact form as email-only.
-     When set, it must be a Google Apps Script web app URL ending in /exec.
-     See docs/portal-setup.md and apps-script/inquiries.gs.
+     Accepts a Cloudflare Worker inquiry endpoint or Google Apps Script /exec URL.
      The address will be public once it is saved in this file. */
-  inquiriesWebhookUrl: "https://script.google.com/macros/s/AKfycbxXent-Sa4smfBZmx8SguDFRKu8CWtB8c7AaqPYQUik2XrL3NEhjSUuIy_380BVN6evFA/exec",
+  inquiriesWebhookUrl: "https://legacy-control-center-api.legacycomputing.workers.dev/api/public/inquiry",
 
   /* Public Google Form for the client intake and service agreement.
      Not a secret. The portal only places this link in a Gmail draft.
@@ -52,14 +55,59 @@ window.LCS_PORTAL = {
 
   /* Optional. The one online payment page for Legacy Computing Services, LLC.
      Academy invoices use this same address. There is no separate bowling
-     bank account or merchant account. Leave blank until a provider is chosen.
-     An https address only. Not a password. */
-  paymentUrl: "",
+     bank account or merchant account. */
+  paymentUrl: "https://venmo.com/u/LegacyBrands",
 
   /* Optional browser key for Attach from Drive (Google Picker).
      Not a client secret. Leave blank until the key is restricted to this
      site's HTTP referrers and to the Google Picker API. An unrestricted
      key must not be saved here. Blank uses a pasted Drive link instead.
      See docs/portal-setup.md. */
-  pickerApiKey: ""
+  pickerApiKey: "",
+
+  /* One-click Legacy projects & live sites shown on the Control Center Overview.
+     All paths/URLs are public. Add or update links here anytime. */
+  projects: [
+    {
+      name: "Prism 2.0",
+      tag: "Core Product",
+      desc: "USBC bowling tournament & league software",
+      url: "https://prism.legacycomputingservices.com/",
+      actionLabel: "Open app",
+      secondaryUrl: "../prism/",
+      secondaryLabel: "Landing page",
+      icon: "../prism/assets/prism-icon-192.png"
+    },
+    {
+      name: "Legacy Computing Services",
+      tag: "Company Site",
+      desc: "Public web engineering, PCs & IT support site",
+      url: "https://legacycomputingservices.com/",
+      actionLabel: "Open site",
+      icon: "../assets/legacy-computing-shield.png"
+    },
+    {
+      name: "Legacy Bowling Academy",
+      tag: "Company Site",
+      desc: "Public bowling coaching, clinics & booking site",
+      url: "https://sjkram85.github.io/legacy-bowling-academy-website/",
+      actionLabel: "Open site",
+      icon: "../assets/legacy-bowling-academy-logo.jpg"
+    },
+    {
+      name: "Cecil-Harford USBC",
+      tag: "Client Project",
+      desc: "Local USBC association website",
+      url: "https://sjkram85.github.io/CHUSBC-Website-Redesign/",
+      actionLabel: "Open site",
+      icon: "../assets/portfolio/usbc-pin-logo.jpg"
+    },
+    {
+      name: "Legacy Creations",
+      tag: "Coming Soon",
+      desc: "Wife's business site — link ready when launched",
+      url: "",
+      icon: "../assets/legacy-creations-logo.jpg"
+    }
+  ]
 };

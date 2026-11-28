@@ -74,6 +74,8 @@ test('inquiry webhook stays off unless it is an Apps Script exec url', function 
   assert.ok(lib.inquiryEndpoint({ inquiriesWebhookUrl: 'https://evil.example/exec' }).problem);
   const good = 'https://script.google.com/macros/s/AKfycbx_test-ID/exec';
   assert.strictEqual(lib.inquiryEndpoint({ inquiriesWebhookUrl: good }).url, good);
+  const worker = 'https://legacy-control-center-api.legacycomputing.workers.dev/api/public/inquiry';
+  assert.strictEqual(lib.inquiryEndpoint({ inquiriesWebhookUrl: worker }).url, worker);
   assert.strictEqual(lib.inquiryEndpoint({
     inquiriesWebhookUrl: 'http://script.google.com/macros/s/AKfycbx/exec'
   }).url, '');

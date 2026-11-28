@@ -1885,6 +1885,23 @@
           if (note) note.textContent = result.problem || '';
           return;
         }
+        if (!/script\.google\.com/i.test(result.url)) {
+          if (note) note.textContent = 'Saving a copy to the Legacy Control Center desk…';
+          fetch(result.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(function (res) {
+            return res.json().then(function (data) {
+              if (res.ok && data && data.ok && note) {
+                note.textContent = 'Your inquiry was saved to the Legacy Control Center desk (Ref: ' + String(data.id || '').slice(0, 8).toUpperCase() + '). You can also send the email below for your own records.';
+              }
+            });
+          }).catch(function () {
+            if (note) note.textContent = 'The email above is ready to send via your email app.';
+          });
+          return;
+        }
         if (note) {
           note.textContent = 'A copy of this request was handed to the company inquiry sheet. This page cannot confirm that Google stored it. The email is still not sent until you press Open in Email App and then Send.';
         }

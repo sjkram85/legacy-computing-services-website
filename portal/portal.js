@@ -26,6 +26,8 @@
     printId: '',
     profile: null,
     token: null,
+    sessionToken: '',
+    role: 'admin',
     grantedScope: '',
     expiresAt: 0,
     expired: false,
@@ -73,6 +75,17 @@
 
   function cfg() {
     return window.LCS_PORTAL || {};
+  }
+
+  function apiBaseUrl() {
+    var raw = Lib.clean(cfg().apiBaseUrl);
+    if (!raw || Lib.isPlaceholder(raw)) return '';
+    if (!/^https:\/\//i.test(raw)) return '';
+    return raw.replace(/\/+$/, '');
+  }
+
+  function useCloudflare() {
+    return Boolean(apiBaseUrl());
   }
 
   function spreadsheetId() {
@@ -183,7 +196,16 @@
       state.editorId = '';
       return;
     }
-    var known = { home: 1, tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1, invoices: 1, academy: 1, docs: 1, sheet: 1 };
+    var known = { home: 1, computing: 1, tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1, invoices: 1, academy: 1, creations: 1, docs: 1, sheet: 1 };
+    var computingTabs = { tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1 };
+    if (parts[0] === 'computing') {
+      state.section = computingTabs[parts[1]] ? parts[1] : 'tickets';
+      state.academyView = 'home';
+      state.editorId = computingTabs[parts[1]] ? (parts[2] || '') : '';
+      state.printKind = '';
+      state.printId = '';
+      return;
+    }
     state.section = known[parts[0]] ? parts[0] : 'home';
     if (state.section === 'academy') {
       var academyViews = { home: 1, students: 1, sessions: 1, requests: 1, billing: 1 };
@@ -504,7 +526,7 @@
     brand.appendChild(brandMark());
     var name = el('span', { class: 'leading-tight min-w-0' });
     name.appendChild(el('span', { class: 'block font-display text-base font-extrabold tracking-wide text-white uppercase truncate' }, ['Legacy']));
-    name.appendChild(el('span', { class: 'block font-mono text-[10px] uppercase tracking-[0.22em] text-slate-300' }, ['Employee portal']));
+    name.appendChild(el('span', { class: 'block font-mono text-[10px] uppercase tracking-[0.22em] text-slate-300' }, ['Control Center']));
     brand.appendChild(name);
     inner.appendChild(brand);
     var side = el('div', { class: 'flex items-center gap-2 sm:gap-3 shrink-0' });
@@ -517,24 +539,30 @@
     return header;
   }
 
+  var COMPUTING_SECTIONS = { tickets: 1, customers: 1, inquiries: 1, proposals: 1, quotes: 1 };
+
   function renderNav() {
     var nav = el('nav', { class: 'no-print border-b border-slate-800 bg-[#0B131E]', 'aria-label': 'Portal' });
     var row = el('div', { class: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 overflow-x-auto py-3' });
-    [
-      ['home', 'Overview'],
-      ['tickets', 'Tickets'],
-      ['customers', 'Customers'],
-      ['inquiries', 'Inquiries'],
-      ['proposals', 'Proposals'],
-      ['quotes', 'Quotes'],
-      ['invoices', 'Invoices'],
-      ['academy', 'Academy'],
-      ['docs', 'Docs'],
-      ['sheet', 'Spreadsheet']
-    ].forEach(function (item) {
+    var items = state.role === 'coach'
+      ? [['academy', 'Academy']]
+      : [
+          ['home', 'Overview'],
+          ['tickets', 'Computing'],
+          ['academy', 'Academy'],
+          ['creations', 'Creations'],
+          ['invoices', 'Billing'],
+          ['docs', 'Docs'],
+          ['sheet', 'Spreadsheet']
+        ].filter(function (item) {
+          return !(useCloudflare() && item[0] === 'sheet');
+        });
+    items.forEach(function (item) {
       var on = state.section === item[0];
+      if (item[0] === 'tickets' && COMPUTING_SECTIONS[state.section]) on = true;
       if (state.section === 'print') {
-        on = (state.printKind === 'invoice' && item[0] === 'invoices') || (state.printKind === 'quote' && item[0] === 'quotes') || (state.printKind === 'proposal' && item[0] === 'proposals');
+        on = (state.printKind === 'invoice' && item[0] === 'invoices')
+          || ((state.printKind === 'quote' || state.printKind === 'proposal') && item[0] === 'tickets');
       }
       var node = button(item[1], 'shrink-0 px-3 py-2 rounded-xl text-sm font-semibold ' + (on ? 'nav-current' : 'text-slate-300 hover:bg-slate-900'), function () {
         go(item[0]);
@@ -546,14 +574,42 @@
     return nav;
   }
 
+  function computingSubnav() {
+    var bar = el('div', { class: 'flex gap-2 overflow-x-auto' });
+    [
+      ['tickets', 'Tickets'],
+      ['customers', 'Customers'],
+      ['inquiries', 'Inquiries'],
+      ['proposals', 'Proposals'],
+      ['quotes', 'Quotes']
+    ].forEach(function (item) {
+      var on = state.section === item[0];
+      bar.appendChild(button(
+        item[1],
+        'shrink-0 px-3 py-2 rounded-xl text-sm font-semibold border ' + (on ? 'bg-[#18A2D6] text-slate-950 border-transparent' : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-sky-400/50'),
+        function () { go(item[0]); }
+      ));
+    });
+    return bar;
+  }
+
+  function wrapComputing(content) {
+    var page = el('div', { class: 'space-y-5' });
+    page.appendChild(computingSubnav());
+    page.appendChild(content);
+    return page;
+  }
+
   function renderSection() {
-    if (state.section === 'tickets') return state.editorId ? renderTicketEditor() : renderTickets();
-    if (state.section === 'customers') return state.editorId ? renderCustomerEditor() : renderCustomers();
-    if (state.section === 'inquiries') return state.editorId ? renderInquiryEditor() : renderInquiries();
-    if (state.section === 'proposals') return state.editorId ? renderProposalEditor() : renderProposals();
-    if (state.section === 'quotes') return state.editorId ? renderDocEditor('quote') : renderDocList('quote');
+    if (state.role === 'coach' && state.section !== 'academy') return renderAcademy();
+    if (state.section === 'tickets') return wrapComputing(state.editorId ? renderTicketEditor() : renderTickets());
+    if (state.section === 'customers') return wrapComputing(state.editorId ? renderCustomerEditor() : renderCustomers());
+    if (state.section === 'inquiries') return wrapComputing(state.editorId ? renderInquiryEditor() : renderInquiries());
+    if (state.section === 'proposals') return wrapComputing(state.editorId ? renderProposalEditor() : renderProposals());
+    if (state.section === 'quotes') return wrapComputing(state.editorId ? renderDocEditor('quote') : renderDocList('quote'));
     if (state.section === 'invoices') return state.editorId ? renderDocEditor('invoice') : renderDocList('invoice');
     if (state.section === 'academy') return renderAcademy();
+    if (state.section === 'creations') return renderCreations();
     if (state.section === 'docs') return renderDocs();
     if (state.section === 'sheet') return renderSheet();
     if (state.section === 'print') return renderPrint();
@@ -588,6 +644,123 @@
     return grid;
   }
 
+  function projectsList() {
+    if (Array.isArray(cfg().projects) && cfg().projects.length) return cfg().projects;
+    return [
+      {
+        name: 'Prism 2.0',
+        tag: 'Core Product',
+        desc: 'USBC bowling tournament & league software',
+        url: 'https://prism.legacycomputingservices.com/',
+        actionLabel: 'Open app',
+        secondaryUrl: '../prism/',
+        secondaryLabel: 'Landing page',
+        icon: '../prism/assets/prism-icon-192.png'
+      },
+      {
+        name: 'Legacy Computing Services',
+        tag: 'Company Site',
+        desc: 'Public web engineering, PCs & IT support site',
+        url: 'https://legacycomputingservices.com/',
+        actionLabel: 'Open site',
+        icon: '../assets/legacy-computing-shield.png'
+      },
+      {
+        name: 'Legacy Bowling Academy',
+        tag: 'Company Site',
+        desc: 'Public bowling coaching, clinics & booking site',
+        url: 'https://sjkram85.github.io/legacy-bowling-academy-website/',
+        actionLabel: 'Open site',
+        icon: '../assets/legacy-bowling-academy-logo.jpg'
+      },
+      {
+        name: 'Cecil-Harford USBC',
+        tag: 'Client Project',
+        desc: 'Local USBC association website',
+        url: 'https://sjkram85.github.io/CHUSBC-Website-Redesign/',
+        actionLabel: 'Open site',
+        icon: '../assets/portfolio/usbc-pin-logo.jpg'
+      },
+      {
+        name: 'Legacy Creations',
+        tag: 'Coming Soon',
+        desc: "Wife's business site — link ready when launched",
+        url: '',
+        icon: '../assets/legacy-creations-logo.jpg'
+      }
+    ];
+  }
+
+  function safeProjectUrl(raw) {
+    var val = Lib.clean(raw);
+    if (!val) return '';
+    if (/^(\.\.\/|\.\/)/.test(val)) return val;
+    return safeHttp(val);
+  }
+
+  function renderProjectsLaunchpad() {
+    var wrap = el('section', { class: 'space-y-3' });
+    var head = el('div', { class: 'space-y-1' });
+    head.appendChild(el('p', { class: 'font-mono text-[11px] uppercase tracking-[0.2em] text-cyan-400' }, ['Legacy Ecosystem']));
+    head.appendChild(el('h2', { class: 'font-display text-xl font-bold text-white' }, ['Projects & Live Sites']));
+    head.appendChild(el('p', { class: 'text-sm text-slate-400' }, ['One-click access to live Legacy apps, brand sites, and active client projects.']));
+    wrap.appendChild(head);
+
+    var grid = el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3' });
+    projectsList().forEach(function (proj) {
+      var primaryUrl = safeProjectUrl(proj.url);
+      var secondaryUrl = safeProjectUrl(proj.secondaryUrl);
+      var iconSrc = safeProjectUrl(proj.icon);
+
+      var card = el('article', {
+        class: (primaryUrl ? 'cyber-panel cyber-panel-hover' : 'border border-dashed border-slate-700 bg-slate-950/50') + ' rounded-2xl p-4 flex items-start gap-3.5'
+      });
+
+      var thumb = el('div', { class: 'w-12 h-12 rounded-xl overflow-hidden border border-slate-700/70 bg-slate-950 flex items-center justify-center shrink-0' });
+      if (iconSrc) {
+        thumb.appendChild(el('img', { src: iconSrc, alt: '', class: 'w-full h-full object-cover' }));
+      } else {
+        thumb.appendChild(shield());
+      }
+      card.appendChild(thumb);
+
+      var body = el('div', { class: 'min-w-0 flex-1 space-y-1' });
+      body.appendChild(el('span', {
+        class: 'block font-mono text-[10px] uppercase tracking-wider ' + (primaryUrl ? 'text-cyan-300' : 'text-slate-500')
+      }, [proj.tag || 'Project']));
+      body.appendChild(el('h3', { class: 'font-display font-bold text-white text-base leading-snug truncate' }, [proj.name || 'Untitled']));
+      if (proj.desc) {
+        body.appendChild(el('p', { class: 'text-xs text-slate-400 leading-relaxed' }, [proj.desc]));
+      }
+
+      var actions = el('div', { class: 'pt-1.5 flex flex-wrap items-center gap-3' });
+      if (primaryUrl) {
+        actions.appendChild(el('a', {
+          href: primaryUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          class: 'inline-flex items-center gap-1 font-mono text-xs font-semibold text-sky-300 hover:text-white'
+        }, [(proj.actionLabel || 'Open') + ' \u2197']));
+        if (secondaryUrl) {
+          actions.appendChild(el('a', {
+            href: secondaryUrl,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            class: 'inline-flex items-center gap-1 font-mono text-xs text-slate-400 hover:text-sky-300'
+          }, [(proj.secondaryLabel || 'Details') + ' \u2197']));
+        }
+      } else {
+        actions.appendChild(el('span', { class: 'font-mono text-[11px] text-slate-500' }, ['Link coming soon']));
+      }
+      body.appendChild(actions);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
   function statCard(label, value, hash) {
     var card = el('button', { type: 'button', class: 'cyber-panel cyber-panel-hover rounded-2xl p-4 text-left w-full' });
     card.appendChild(el('span', { class: 'block font-mono text-[11px] uppercase tracking-wider text-slate-400' }, [label]));
@@ -598,6 +771,16 @@
 
   function sheetCallout() {
     if (state.mode !== 'live') return null;
+    if (useCloudflare()) {
+      var cfBox = el('section', { class: 'cyber-panel rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4' });
+      var copy = el('div', { class: 'space-y-1' });
+      copy.appendChild(el('p', { class: 'font-mono text-xs uppercase tracking-wider text-emerald-300' }, ['Cloudflare D1 backend active']));
+      copy.appendChild(el('p', { class: 'text-sm text-slate-300' }, [
+        'Portal records and public intake forms are stored directly in Cloudflare D1. Signed in as ' + (state.role === 'coach' ? 'Academy Coach' : 'Admin') + '.'
+      ]));
+      cfBox.appendChild(copy);
+      return cfBox;
+    }
     var box = el('section', { class: 'cyber-panel rounded-3xl p-6 space-y-4' });
     if (!spreadsheetId()) {
       box.appendChild(el('h2', { class: 'font-display text-2xl font-bold text-white' }, ['Create the portal spreadsheet']));
@@ -660,10 +843,32 @@
     var page = el('div', { class: 'space-y-8' });
     page.appendChild(sectionHead('Workspace', 'Dashboard', 'Gmail cannot be embedded, so Gmail, Drive, Calendar, Meet, and Admin open in a new tab. The calendar below stays on this page.'));
     page.appendChild(linkGrid());
+    page.appendChild(renderProjectsLaunchpad());
     page.appendChild(renderCalendarEmbed());
     var callout = sheetCallout();
     if (callout) page.appendChild(callout);
     if (state.sheetsError) page.appendChild(emptyNote(state.sheetsError));
+    var companies = el('div', { class: 'grid grid-cols-1 md:grid-cols-3 gap-3' });
+    [
+      { kicker: 'Legacy Computing Services', title: 'Computing', desc: 'Tickets, customers, inquiries, proposals, and quotes.', hash: ['tickets'], tone: 'text-sky-300', logo: '../assets/legacy-computing-logo.jpg' },
+      { kicker: 'Legacy Bowling Academy', title: 'Academy', desc: 'Students, lesson requests, sessions at Forest Hill Lanes, and billing.', hash: ['academy'], tone: 'text-cyan-300', logo: '../assets/legacy-bowling-academy-logo.jpg' },
+      { kicker: 'Legacy Creations', title: 'Creations', desc: 'Placeholder workspace reserved for orders, customers, and requests.', hash: ['creations'], tone: 'text-emerald-300', logo: '../assets/legacy-creations-logo.jpg' }
+    ].forEach(function (co) {
+      var card = el('button', { type: 'button', class: 'cyber-panel cyber-panel-hover rounded-2xl p-4 text-left w-full flex items-start gap-3.5' });
+      card.appendChild(el('img', {
+        src: co.logo,
+        alt: co.kicker,
+        class: 'w-12 h-12 rounded-xl object-cover border border-slate-700/70 shrink-0'
+      }));
+      var body = el('div', { class: 'min-w-0 flex-1 space-y-1' });
+      body.appendChild(el('span', { class: 'block font-mono text-[10px] uppercase tracking-wider ' + co.tone }, [co.kicker]));
+      body.appendChild(el('span', { class: 'block font-display text-lg font-bold text-white' }, [co.title]));
+      body.appendChild(el('span', { class: 'block text-xs text-slate-400 leading-relaxed' }, [co.desc]));
+      card.appendChild(body);
+      card.addEventListener('click', function () { go.apply(null, co.hash); });
+      companies.appendChild(card);
+    });
+    page.appendChild(companies);
     var openTickets = (state.data.Tickets || []).filter(function (row) { return row.status !== 'Done'; }).length;
     var fresh = (state.data.Inquiries || []).filter(function (row) { return !row.status || row.status === 'New'; }).length;
     var openQuotes = (state.data.Quotes || []).filter(function (row) { return row.status === 'Draft' || row.status === 'Sent'; }).length;
@@ -780,6 +985,9 @@
 
   function sheetBlocked(title) {
     if (state.mode === 'demo') return null;
+    if (useCloudflare()) {
+      return state.sheetsError ? emptyNote(state.sheetsError) : null;
+    }
     if (!spreadsheetId()) return sheetCallout();
     if (state.sheetsError) return emptyNote(state.sheetsError);
     if (state.missingTabs && state.missingTabs.indexOf(title) !== -1) {
@@ -2242,7 +2450,7 @@
   }
 
   function proposalsNeedSheet() {
-    if (state.mode !== 'live' || !spreadsheetId() || state.sheetsError) return false;
+    if (state.mode !== 'live' || useCloudflare() || !spreadsheetId() || state.sheetsError) return false;
     if (state.sheetIds.Proposals == null) return true;
     var parsed = state.parsed.Proposals;
     var header = parsed && parsed.headerRow;
@@ -2251,7 +2459,7 @@
   }
 
   function ensureProposalSheet() {
-    if (state.mode !== 'live' || !spreadsheetId()) return Promise.resolve();
+    if (state.mode !== 'live' || useCloudflare() || !spreadsheetId()) return Promise.resolve();
     if (!proposalsNeedSheet()) {
       state.proposalSheetReady = true;
       return Promise.resolve();
@@ -3089,6 +3297,8 @@
     clearTimeout(expiryTimer);
     state.mode = 'gate';
     state.token = null;
+    state.sessionToken = '';
+    state.role = 'admin';
     state.profile = null;
     state.grantedScope = '';
     state.data = Lib.emptyData();
@@ -3154,6 +3364,43 @@
       state.busy = '';
       state.banner = { tone: 'bad', text: resp && resp.error === 'access_denied' ? 'Sign-in was cancelled.' : 'Google did not complete sign-in.' };
       paint();
+      return;
+    }
+    if (useCloudflare()) {
+      state.busy = 'Verifying account with Cloudflare…';
+      paint();
+      fetch(apiBaseUrl() + '/api/portal/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: resp.access_token })
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok || !data || !data.ok) {
+            throw new Error((data && data.error) || 'Account is not authorized for this portal.');
+          }
+          return data;
+        });
+      }).then(function (auth) {
+        state.sessionToken = auth.sessionToken || '';
+        state.role = (auth.user && auth.user.role) || 'admin';
+        state.profile = auth.user || null;
+        state.mode = 'live';
+        state.expired = false;
+        state.busy = '';
+        armExpiry(auth.expiresIn || 43200);
+        return loadAll().then(function () {
+          state.banner = null;
+          go(state.role === 'coach' ? 'academy' : 'home');
+        });
+      }).catch(function (err) {
+        return revoke(resp.access_token).then(function () {
+          state.busy = '';
+          state.profile = null;
+          state.sessionToken = '';
+          state.banner = { tone: 'bad', text: (err && err.message) || 'Could not verify Google sign-in.' };
+          paint();
+        });
+      });
       return;
     }
     googleFetch('https://www.googleapis.com/oauth2/v3/userinfo', { token: resp.access_token }).then(function (profile) {
@@ -3342,21 +3589,46 @@
     return (state.grantedScope || '').split(/\s+/).indexOf(url) !== -1;
   }
 
+  function apiFetch(path, options) {
+    var opts = options || {};
+    var headers = { Authorization: 'Bearer ' + state.sessionToken };
+    var init = { method: opts.method || 'GET', headers: headers };
+    if (opts.body != null) {
+      headers['Content-Type'] = 'application/json';
+      init.body = JSON.stringify(opts.body);
+    }
+    return fetch(apiBaseUrl() + path, init).then(function (res) {
+      return res.text().then(function (text) {
+        var data = null;
+        if (text) {
+          try { data = JSON.parse(text); } catch (err) { data = { error: text }; }
+        }
+        if (!res.ok || (data && data.ok === false)) {
+          var error = new Error((data && data.error) || res.statusText || 'Portal API request failed');
+          error.status = res.status;
+          if (res.status === 401) state.expired = true;
+          throw error;
+        }
+        return data || {};
+      });
+    });
+  }
+
   function loadAll() {
-    state.busy = 'Loading from Google…';
+    state.busy = useCloudflare() ? 'Loading from Cloudflare…' : 'Loading from Google…';
     paint();
     var jobs = [];
-    if (spreadsheetId()) {
+    if (useCloudflare() || spreadsheetId()) {
       jobs.push(loadSheets().catch(function (err) { state.sheetsError = friendly(err); }));
     } else state.sheetsError = '';
     if (driveFolderId()) {
-      if (scopeHas('drive')) jobs.push(loadDrive().catch(function (err) { state.drive = { files: [], error: friendly(err), folderId: driveFolderId() }; }));
-      else state.drive = { files: [], error: 'Drive access was not granted. Docs cannot be listed. You can still open Drive from the overview links.', folderId: '' };
+      if (state.token && scopeHas('drive')) jobs.push(loadDrive().catch(function (err) { state.drive = { files: [], error: friendly(err), folderId: driveFolderId() }; }));
+      else state.drive = { files: [], error: useCloudflare() ? '' : 'Drive access was not granted. Docs cannot be listed. You can still open Drive from the overview links.', folderId: '' };
     }
-    if (scopeHas('calendar')) {
+    if (state.token && scopeHas('calendar')) {
       jobs.push(loadCalendar().catch(function (err) { state.calendarError = friendly(err); state.events = []; }));
     } else {
-      state.calendarError = 'Calendar access was not granted. The Calendar link still opens Google Calendar.';
+      state.calendarError = useCloudflare() ? '' : 'Calendar access was not granted. The Calendar link still opens Google Calendar.';
       state.events = [];
     }
     return Promise.all(jobs).then(function () {
@@ -3365,6 +3637,22 @@
   }
 
   function loadSheets() {
+    if (useCloudflare()) {
+      return apiFetch('/api/portal/data').then(function (res) {
+        var next = Lib.emptyData();
+        var incoming = (res && res.data) || {};
+        Lib.SHEETS.forEach(function (spec) {
+          next[spec.title] = Array.isArray(incoming[spec.title]) ? incoming[spec.title] : [];
+        });
+        state.data = next;
+        state.parsed = {};
+        state.headers = {};
+        state.missingTabs = [];
+        state.proposalSheetReady = true;
+        state.academySheetReady = true;
+        state.sheetsError = '';
+      });
+    }
     var id = spreadsheetId();
     return googleFetch('https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(id) + '?fields=' + encodeURIComponent('spreadsheetUrl,properties.title,sheets.properties')).then(function (meta) {
       state.spreadsheetUrl = (meta && meta.spreadsheetUrl) || ('https://docs.google.com/spreadsheets/d/' + id + '/edit');
@@ -3416,7 +3704,7 @@
   }
 
   function ensureIntakeColumn() {
-    if (state.mode === 'demo') return Promise.resolve();
+    if (state.mode === 'demo' || useCloudflare()) return Promise.resolve();
     var headers = (state.headers.Tickets || []).slice();
     var hasIntake = headers.some(function (cell) {
       return String(cell || '').trim().toLowerCase() === 'intake sent';
@@ -3450,6 +3738,7 @@
   }
 
   function writeIntakeCell(record) {
+    if (useCloudflare()) return upsert('Tickets', record);
     var headers = headerRowFor('Tickets');
     var index = -1;
     headers.forEach(function (header, i) {
@@ -3467,6 +3756,12 @@
     if (state.mode === 'demo') {
       demoUpsert(title, record);
       return Promise.resolve();
+    }
+    if (useCloudflare()) {
+      return apiFetch('/api/portal/records/' + encodeURIComponent(title), {
+        method: 'PUT',
+        body: { record: record }
+      });
     }
     var id = spreadsheetId();
     var columns = Lib.columnsOf(title);
@@ -3512,6 +3807,12 @@
   function persistDocument(kind, header, lines, existing) {
     var spec = Lib.DOC_SPEC[kind];
     stampUpdate(header, existing);
+    if (useCloudflare() && state.mode === 'live') {
+      return apiFetch('/api/portal/documents/' + encodeURIComponent(kind), {
+        method: 'PUT',
+        body: { header: header, lines: lines }
+      }).then(loadSheets);
+    }
     return upsert(spec.sheet, header).then(function () {
       var previous = (state.data[spec.items] || []).filter(function (item) {
         return item[spec.parentKey] === header.id;
@@ -3807,7 +4108,7 @@
   }
 
   function ensureInvoiceColumns() {
-    if (state.mode === 'demo') return Promise.resolve();
+    if (state.mode === 'demo' || useCloudflare()) return Promise.resolve();
     return ensureSheet('Invoices');
   }
 
@@ -3830,7 +4131,7 @@
   }
 
   function academySheetsPending() {
-    if (state.mode !== 'live' || !spreadsheetId() || state.sheetsError) return false;
+    if (state.mode !== 'live' || useCloudflare() || !spreadsheetId() || state.sheetsError) return false;
     var titles = ['Academy Students', 'Academy Requests', 'Academy Sessions', 'Invoices'];
     for (var i = 0; i < titles.length; i++) {
       if (sheetHeadersPending(titles[i])) return true;
@@ -3912,13 +4213,62 @@
     return page;
   }
 
+  function renderCreations() {
+    var page = el('div', { class: 'space-y-6' });
+    page.appendChild(el('div', { class: 'flex items-start gap-4' }, [
+      el('img', {
+        src: '../assets/legacy-creations-logo.jpg',
+        alt: 'Legacy Creations',
+        class: 'w-16 h-16 rounded-2xl object-cover border border-amber-300/30 shadow-md shrink-0'
+      }),
+      sectionHead(
+        'Legacy Creations',
+        'Creations',
+        'Workspace reserved for Creations—custom orders, clients, product catalog, and billing under the Legacy family of companies.'
+      )
+    ]));
+    page.appendChild(el('div', { class: 'inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-1.5 font-mono text-xs uppercase tracking-wider text-sky-300' }, [
+      'Coming soon · Ready for Cloudflare D1 when Creations launches'
+    ]));
+
+    var cards = el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3' });
+    [
+      ['Orders', 'Track custom Creations orders, fulfillment status, and pickup or shipping dates.'],
+      ['Customers', 'Client directory, order history, and repeat-buyer preferences for Creations.'],
+      ['Custom Requests', 'Intake queue for custom design requests and quotes from the Creations site.'],
+      ['Billing', 'Shared invoicing and payment tracking under Legacy Computing Services, LLC.']
+    ].forEach(function (item) {
+      var card = el('div', { class: 'rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-5 space-y-2' });
+      card.appendChild(el('div', { class: 'flex items-center justify-between gap-2' }, [
+        el('span', { class: 'font-display font-bold text-white' }, [item[0]]),
+        el('span', { class: 'font-mono text-[10px] uppercase tracking-wider text-slate-500' }, ['Coming soon'])
+      ]));
+      card.appendChild(el('p', { class: 'text-xs text-slate-400 leading-relaxed' }, [item[1]]));
+      cards.appendChild(card);
+    });
+    page.appendChild(cards);
+
+    var actions = el('div', { class: 'flex flex-wrap gap-2' });
+    actions.appendChild(button('Open shared Billing', SECONDARY, function () { go('invoices'); }));
+    actions.appendChild(button('Back to Overview', GHOST, function () { go('home'); }));
+    page.appendChild(actions);
+    return page;
+  }
+
   function renderAcademyHome() {
     var page = el('div', { class: 'space-y-5' });
-    page.appendChild(sectionHead(
-      'Legacy Bowling Academy',
-      'Academy',
-      'Students, lesson requests, and sessions for Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC. Billing uses the same Invoices tab as the computing company. Lessons are at Forest Hill Lanes.'
-    ));
+    page.appendChild(el('div', { class: 'flex items-start gap-4' }, [
+      el('img', {
+        src: '../assets/legacy-bowling-academy-logo.jpg',
+        alt: 'Legacy Bowling Academy',
+        class: 'w-16 h-16 rounded-2xl object-cover border border-cyan-400/30 shadow-md shrink-0'
+      }),
+      sectionHead(
+        'Legacy Bowling Academy',
+        'Academy',
+        'Students, lesson requests, and sessions for Legacy Bowling Academy, a DBA of Legacy Computing Services, LLC. Billing uses the same Invoices tab as the computing company. Lessons are at Forest Hill Lanes.'
+      )
+    ]));
     var fresh = (state.data['Academy Requests'] || []).filter(function (row) {
       return !row.status || row.status === 'New';
     }).length;
@@ -4341,7 +4691,9 @@
 
   function renderAcademyRequests() {
     var page = el('div', { class: 'space-y-5' });
-    var head = sectionHead('Inbox', 'Academy requests', 'Rows arrive from the academy website after the Apps Script in apps-script/academy.gs is deployed. Booking and inquiry both land here. This page does not email the person back.');
+    var head = sectionHead('Inbox', 'Academy requests', useCloudflare()
+      ? 'Booking requests and inquiries submitted from the Legacy Bowling Academy website land here directly via Cloudflare D1. Use Schedule session or Add as student below.'
+      : 'Rows arrive from the academy website after the Apps Script in apps-script/academy.gs is deployed. Booking and inquiry both land here. This page does not email the person back.');
     head.appendChild(button('Add a request', PRIMARY, function () { go('academy', 'requests', 'new'); }));
     page.appendChild(head);
     var blocked = sheetBlocked('Academy Requests');
