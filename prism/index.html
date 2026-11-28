@@ -282,13 +282,13 @@
         <div class="mt-8 cyber-panel rounded-3xl overflow-hidden border-cyan-500/40 shadow-cyber-cyan">
           <div class="bg-[#070D16] p-2 sm:p-3">
             <div class="relative aspect-video rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
-              <video id="prismPromoVideo" controls playsinline webkit-playsinline x-webkit-airplay="allow" controlsList="nodownload" preload="metadata" poster="assets/screen-scoring.png?v=2" class="w-full h-full object-cover block">
-                <source src="assets/Prism_2_Promo.mp4?v=1" type="video/mp4" />
+              <video id="prismPromoVideo" controls playsinline webkit-playsinline x-webkit-airplay="allow" controlsList="nodownload" preload="metadata" poster="assets/screen-scoring.png?v=3" class="w-full h-full object-cover block">
+                <source src="assets/Prism_2_Promo.mp4?v=2" type="video/mp4" />
               </video>
               <div id="prismPromoFallback" class="hidden absolute inset-0 bg-[#08101A]/95 flex flex-col items-center justify-center p-6 text-center gap-3">
-                <img src="assets/screen-scoring.png?v=2" alt="Prism 2.0 Control Center Preview" class="max-h-44 rounded-xl border border-slate-700 opacity-90" />
+                <img src="assets/screen-scoring.png?v=3" alt="Prism 2.0 Control Center Preview" class="max-h-44 rounded-xl border border-slate-700 opacity-90" />
                 <p class="text-xs sm:text-sm text-slate-300">Inline playback isn’t available in this browser view — open or download the HD promo directly.</p>
-                <a href="assets/Prism_2_Promo.mp4?v=1" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-xs">
+                <a href="assets/Prism_2_Promo.mp4?v=2" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-xs">
                   🎬 Watch / Download 2-Min Promo (MP4)
                 </a>
               </div>
@@ -299,10 +299,10 @@
               <strong class="text-white">Share with your board or proprietor:</strong> Download the HD MP4 or jump straight into the interactive sandbox below.
             </div>
             <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-              <a href="assets/Prism_2.0_Board_Pitch_Sheet.pdf?v=2" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/45 text-emerald-200 font-bold text-xs transition-all">
+              <a href="assets/Prism_2.0_Board_Pitch_Sheet.pdf?v=3" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/45 text-emerald-200 font-bold text-xs transition-all">
                 📄 1-Page Board Pitch PDF
               </a>
-              <a href="assets/Prism_2_Promo.mp4?v=1" download="Prism_2.0_Promo.mp4" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs transition-all">
+              <a href="assets/Prism_2_Promo.mp4?v=2" download="Prism_2.0_Promo.mp4" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs transition-all">
                 ⬇ Download MP4
               </a>
               <a href="#demo" class="px-4 py-2 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-xs transition-all">
@@ -324,7 +324,7 @@
             <div>
               <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-emerald-400">Hands-On Interactive Sandbox · No Sign-Up Needed</span>
               <h2 class="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-white">
-                ▶ Test Drive Prism 2.0 Right Here (Scoring, Phone OCR, A.I. Flyer &amp; Brackets)
+                ▶ Test Drive Prism 2.0 Right Here (Scoring, OCR, A.I. Flyer, Brackets &amp; League Treasurer)
               </h2>
             </div>
             <span class="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 font-bold text-xs">
@@ -344,6 +344,9 @@
           </button>
           <button type="button" role="tab" aria-selected="false" data-sb="bracket" class="sb-tab preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
             🌿 3. Zero-Self-Matchup Brackets
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-sb="league" class="sb-tab preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
+            💵 4. League Treasurer &amp; BLS
           </button>
         </div>
 
@@ -454,6 +457,80 @@
               Unlike manual spreadsheets or clunky add-on bracket programs, Prism runs multi-entry brackets, High Game Pots, Eliminator, and Mystery Score directly from your live lane scores.
             </p>
           </div>
+
+          <!-- PANEL 4: LEAGUE TREASURER & BLS -->
+          <div id="sb-panel-league" class="hidden">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
+              <div>
+                <span class="font-mono text-[11px] uppercase tracking-wider text-emerald-400">Prism Leagues · Week 2 Treasurer &amp; Point Engine</span>
+                <h3 class="font-display text-lg font-bold text-white">Edit Nightly Dues or Simulate a Google Sheet Import</h3>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnSbLgSheet" class="px-3.5 py-2 rounded-xl bg-[#18A2D6] hover:bg-sky-400 text-slate-950 font-extrabold text-xs cursor-pointer transition-all">
+                  📥 Simulate Google Sheet Import
+                </button>
+                <button type="button" id="btnSbLgExact" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/45 text-emerald-300 font-bold text-xs cursor-pointer">
+                  ✓ Fill Exact ($20)
+                </button>
+              </div>
+            </div>
+
+            <!-- Point System + Fee Split Bar -->
+            <div class="mb-5 grid md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-[#08101A] border border-slate-800 flex flex-wrap items-center gap-2.5">
+                <span class="font-mono text-slate-400 uppercase">Split/Wk:</span>
+                <label class="text-slate-300">Dues $<input type="number" id="sbLgDues" value="20" min="1" step="1" class="w-12 ml-1 px-1.5 py-1 rounded bg-slate-950 border border-slate-700 text-white font-mono text-center" /></label>
+                <label class="text-slate-300">Lin $<input type="number" id="sbLgLin" value="12" min="0" step="1" class="w-12 ml-1 px-1.5 py-1 rounded bg-slate-950 border border-slate-700 text-white font-mono text-center" /></label>
+                <label class="text-slate-300">Sec $<input type="number" id="sbLgSec" value="1" min="0" step="0.5" class="w-12 ml-1 px-1.5 py-1 rounded bg-slate-950 border border-slate-700 text-white font-mono text-center" /></label>
+                <span id="sbLgPrzBadge" class="ml-auto font-mono font-bold text-amber-300">Prize: $7.00/wk</span>
+              </div>
+              <div class="p-3 rounded-xl bg-[#08101A] border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <label for="sbLgPts" class="font-mono text-slate-400 uppercase">Point System:</label>
+                <select id="sbLgPts" class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs font-semibold">
+                  <option value="7pt" selected>7-Point Standard (2/gm + 1 ser)</option>
+                  <option value="4pt">4-Point Streamlined (1/gm + 1 ser)</option>
+                  <option value="split_team">Split Match / Team (15-Pt Hybrid)</option>
+                  <option value="sport_multi">Sport Multi-Match (2 gms/match · 6 pts)</option>
+                </select>
+                <span id="sbLgPtsHint" class="font-mono text-cyan-300 font-semibold">7 pts/wk</span>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-5 items-start">
+              <div class="lg:col-span-8 overflow-x-auto rounded-2xl border border-slate-800 bg-[#08101A]">
+                <table class="w-full text-left text-xs sm:text-sm">
+                  <thead class="bg-[#0E1929] text-slate-400 font-mono text-[11px] uppercase">
+                    <tr>
+                      <th class="px-3 py-2.5">Bowler (Prior Paid)</th>
+                      <th class="px-2 py-2.5 text-center">Paid Wk 2 ($)</th>
+                      <th class="px-3 py-2.5">Live Split</th>
+                      <th class="px-3 py-2.5">YTD Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sbLgBody" class="divide-y divide-slate-800/70"></tbody>
+                </table>
+                <div id="sbLgToast" class="hidden px-4 py-2.5 bg-emerald-500/15 border-t border-emerald-500/35 text-emerald-300 text-xs font-semibold"></div>
+              </div>
+              <div class="lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-2.5">
+                <div class="p-3.5 rounded-xl bg-[#08101A] border border-emerald-500/35">
+                  <div class="font-mono text-[10px] uppercase text-slate-400">Cash Collected (Wk 2)</div>
+                  <div id="sbLgCash" class="font-mono text-xl font-extrabold text-emerald-300 mt-0.5">$140.00</div>
+                </div>
+                <div class="p-3.5 rounded-xl bg-[#08101A] border border-cyan-500/35">
+                  <div class="font-mono text-[10px] uppercase text-slate-400">Alley Lineage Share</div>
+                  <div id="sbLgLinTot" class="font-mono text-xl font-extrabold text-cyan-300 mt-0.5">$84.00</div>
+                </div>
+                <div class="p-3.5 rounded-xl bg-[#08101A] border border-amber-500/35">
+                  <div class="font-mono text-[10px] uppercase text-slate-400">Prize Fund Share</div>
+                  <div id="sbLgPrzTot" class="font-mono text-xl font-extrabold text-amber-300 mt-0.5">$49.00</div>
+                </div>
+                <div class="p-3.5 rounded-xl bg-[#08101A] border border-slate-700">
+                  <div class="font-mono text-[10px] uppercase text-slate-400">Net Bank Deposit</div>
+                  <div id="sbLgDeposit" class="font-mono text-xl font-extrabold text-white mt-0.5">$92.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
           </div>
         </details>
@@ -553,7 +630,7 @@
             <div>
               <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan-400">Real Control Desk · Zero Mockups</span>
               <h2 class="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-white">
-                Browse 5 Live Control Desk Screenshots
+                Browse 7 Live Control Desk Screenshots (Tournaments &amp; Leagues)
               </h2>
             </div>
             <span class="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-cyan-300 font-bold text-xs">
@@ -565,7 +642,7 @@
         <!-- Tabs -->
         <div role="tablist" aria-label="Prism Screen Previews" class="mt-8 flex flex-wrap justify-center gap-2.5">
           <button type="button" role="tab" aria-selected="true" data-screen="setup" class="preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
-            1. A.I. Flyer &amp; Setup
+            1. Setup &amp; Roster
           </button>
           <button type="button" role="tab" aria-selected="false" data-screen="scoring" class="preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
             2. Fast Score Entry
@@ -579,6 +656,12 @@
           <button type="button" role="tab" aria-selected="false" data-screen="finals" class="preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
             5. Stepladder &amp; Payouts
           </button>
+          <button type="button" role="tab" aria-selected="false" data-screen="league-standings" class="preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
+            6. League Standings &amp; Highs
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-screen="league-treasurer" class="preview-tab px-4 py-2.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200 font-bold text-xs sm:text-sm cursor-pointer transition-all">
+            7. League Treasurer &amp; Sheets
+          </button>
         </div>
 
         <!-- Browser Frame -->
@@ -588,14 +671,14 @@
               <span class="h-3 w-3 rounded-full bg-rose-500/80"></span>
               <span class="h-3 w-3 rounded-full bg-amber-400/80"></span>
               <span class="h-3 w-3 rounded-full bg-emerald-400/80"></span>
-              <span id="previewUrlBar" class="ml-3 font-mono text-xs text-slate-400 truncate">prism.legacycomputingservices.com · Step 1: A.I. Flyer Setup</span>
+              <span id="previewUrlBar" class="ml-3 font-mono text-xs text-slate-400 truncate">prism.legacycomputingservices.com · Step 1: Setup &amp; Squad Roster</span>
             </div>
             <span class="hidden sm:inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-400">
               <span class="h-2 w-2 rounded-full bg-emerald-400"></span> LIVE DESK ENGINE
             </span>
           </div>
           <div class="bg-[#070D16] p-2 sm:p-4">
-            <img id="previewImg" src="assets/screen-setup.png?v=2" alt="Prism A.I. Flyer Setup screen" class="w-full h-auto rounded-2xl border border-slate-800/90 shadow-2xl" />
+            <img id="previewImg" src="assets/screen-setup.png?v=3" alt="Prism A.I. Flyer Setup screen" class="w-full h-auto rounded-2xl border border-slate-800/90 shadow-2xl" />
           </div>
           <div class="px-5 sm:px-7 py-4 bg-[#0D1725] border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -614,7 +697,7 @@
     <!-- =================================================================== -->
     <!-- 4. CORE CAPABILITIES — TWO CLEAR PRODUCT LANES                      -->
     <!-- =================================================================== -->
-    <section id="features" class="py-12 lg:py-16 bg-[#0E1726] border-b border-slate-800/80">
+    <section id="features" class="py-12 lg:py-16 bg-[#0E1726] border-b border-slate-800/80 scroll-mt-20">
       <span id="leagues" class="block -mt-20 pt-20" aria-hidden="true"></span>
       <span id="workflow" class="block" aria-hidden="true"></span>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -990,7 +1073,7 @@
           <p class="text-emerald-300 font-semibold">Founding USBC Associations &amp; Early Partner Centers receive 50% off Year 1.</p>
           <p class="text-xs text-slate-300 pt-1">
             <strong class="text-white">Easy Board &amp; Center Billing:</strong> Official Association Check, Net-15 Invoice, or ACH Bank Transfer.
-            <a href="assets/Prism_2.0_Board_Pitch_Sheet.pdf?v=2" target="_blank" rel="noopener noreferrer" class="ml-1.5 text-cyan-300 hover:text-cyan-200 underline underline-offset-2 font-semibold">Download 1-Page Board Pitch Sheet (PDF) →</a>
+            <a href="assets/Prism_2.0_Board_Pitch_Sheet.pdf?v=3" target="_blank" rel="noopener noreferrer" class="ml-1.5 text-cyan-300 hover:text-cyan-200 underline underline-offset-2 font-semibold">Download 1-Page Board Pitch Sheet (PDF) →</a>
           </p>
         </div>
 
@@ -1317,7 +1400,7 @@
             <a href="https://prism.legacycomputingservices.com/start" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#18A2D6] to-emerald-400 hover:brightness-110 text-slate-950 font-extrabold text-sm shadow-cyber-cyan transition-all">
               🚀 Start Free 14-Day Trial
             </a>
-            <a href="assets/Prism_2.0_Board_Pitch_Sheet.pdf?v=2" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm transition-all">
+            <a href="assets/Prism_2.0_Board_Pitch_Sheet.pdf?v=3" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm transition-all">
               📄 Share Board Pitch PDF
             </a>
           </div>
@@ -1589,43 +1672,55 @@
     // Live Preview Tab Switcher
     const SCREENS = {
       setup: {
-        img: 'assets/screen-setup.png?v=2',
-        url: 'prism.legacycomputingservices.com · Step 1: A.I. Flyer Setup',
-        title: 'A.I. Flyer & Event Setup',
-        desc: 'Upload any PDF or phone photo of your tournament flyer — Prism automatically builds divisions, handicap rules, entry fees, and squads in seconds.'
+        img: 'assets/screen-setup.png?v=3',
+        url: 'prism.legacycomputingservices.com · Step 1: Setup & Squad Roster',
+        title: 'Clean Collapsible Sidebar, Flyer Import & Live Roster',
+        desc: 'Upload a flyer PDF to configure divisions & handicaps in 10 seconds, edit cells inline with instant auto-save, and track Paid / Check-In status in one clean view.'
       },
       scoring: {
-        img: 'assets/screen-scoring.png?v=2',
+        img: 'assets/screen-scoring.png?v=3',
         url: 'prism.legacycomputingservices.com · Step 2: Fast Score Entry',
-        title: 'Fast Spreadsheet Score Entry & Live Standings',
-        desc: 'Enter scores rapidly across lanes with instant handicap math, auto-calculated totals, and built-in Offline Wi-Fi Drop Protection.'
+        title: 'Fast Spreadsheet Score Entry & Automated Roll-Offs',
+        desc: 'Enter scores across lanes with live handicap totals, automatic tie/roll-off detection, Offline Wi-Fi Drop Protection, and 10-second mobile OCR sync.'
       },
       lanes: {
-        img: 'assets/screen-lanes.png?v=2',
+        img: 'assets/screen-lanes.png?v=3',
         url: 'prism.legacycomputingservices.com · Step 3: Live Lane Lights',
         title: 'Live Lane Lights & Floor Progress Heatmap',
         desc: 'See every active pair at a glance — know immediately which lanes are bowling, which are finished, and where floor helpers need to snap a monitor.'
       },
       sideaction: {
-        img: 'assets/screen-sideaction.png?v=2',
+        img: 'assets/screen-sideaction.png?v=3',
         url: 'prism.legacycomputingservices.com · Step 4: Brackets & Side Action',
         title: 'Multi-Entry 8-Person Brackets, Pots, Eliminator & Mystery',
         desc: 'Generate multi-entry brackets with guaranteed zero self-matchups and run High Game Pots, Eliminator, and Mystery Score off the exact same scores.'
       },
       finals: {
-        img: 'assets/screen-finals.png?v=2',
+        img: 'assets/screen-finals.png?v=3',
         url: 'prism.legacycomputingservices.com · Step 5: Stepladder & Payouts',
         title: 'Stepladder Finals, Roll-Offs & One-Envelope Payouts',
         desc: 'Resolve cut and seed roll-offs, broadcast PBA-style Stepladder Finals to lobby TVs, and print One-Envelope cash payout sheets with exact bill counts.'
+      },
+      'league-standings': {
+        img: 'assets/screen-league-standings.png?v=1',
+        url: 'prism.legacycomputingservices.com · Prism Leagues: Standings & Highs',
+        title: 'USBC League Standings, Highs & 2-Way BLS Sync',
+        desc: 'Rolling USBC averages, team W–L points (7/4/8/Split/Match/Sport), season highs, printable QR Standing Sheets, and 1-click BLS import/export.'
+      },
+      'league-treasurer': {
+        img: 'assets/screen-league-treasurer.png?v=1',
+        url: 'prism.legacycomputingservices.com · Prism Leagues: Automated Treasurer',
+        title: 'Automated League Treasurer & Google Sheets Import',
+        desc: 'Import Google Sheets or Excel balances in 1 click, track live Lineage vs. Prize splits, search bowlers instantly, color-tag accounts, and print nightly envelopes.'
       }
     };
 
-    document.querySelectorAll('.preview-tab').forEach((btn) => {
+    document.querySelectorAll('.preview-tab[data-screen]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const key = btn.dataset.screen;
         const data = SCREENS[key];
         if (!data) return;
-        document.querySelectorAll('.preview-tab').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
+        document.querySelectorAll('.preview-tab[data-screen]').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
         document.getElementById('previewImg').src = data.img;
         document.getElementById('previewImg').alt = data.title;
         document.getElementById('previewUrlBar').textContent = data.url;
@@ -1719,7 +1814,7 @@
         btn.addEventListener('click', () => {
           const target = btn.dataset.sb;
           document.querySelectorAll('.sb-tab').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
-          ['scoring', 'flyer', 'bracket'].forEach((k) => {
+          ['scoring', 'flyer', 'bracket', 'league'].forEach((k) => {
             document.getElementById('sb-panel-' + k)?.classList.toggle('hidden', k !== target);
           });
         });
@@ -1910,6 +2005,129 @@
       }
       document.getElementById('btnGenBracket')?.addEventListener('click', renderBracket);
       renderBracket();
+
+      // 4. League Treasurer & BLS Point Engine Simulator
+      const LG_DEFAULT = [
+        { name: 'Marcus Vance', team: 'Pin Crushers', prior: 60, paid: 40, color: '#34d399', note: 'Cash ahead' },
+        { name: 'Elena Rostova', team: 'Split Happens', prior: 20, paid: 40, color: '#38bdf8', note: 'Venmo +1 wk' },
+        { name: 'Devon Brooks', team: 'Split Happens', prior: 20, paid: 0, color: '#fbbf24', note: 'Pays next Tue' },
+        { name: 'Nadia Patel', team: 'Pin Crushers', prior: 20, paid: 20, color: '#94a3b8', note: 'Cash' },
+      ];
+      let lgRows = LG_DEFAULT.map((r) => ({ ...r }));
+
+      function splitFee(amt, dues, lin, sec) {
+        const a = Math.max(0, Number(amt) || 0);
+        const d = Math.max(0.01, Number(dues) || 20);
+        const lw = Math.max(0, Number(lin) || 0);
+        const sw = Math.max(0, Number(sec) || 0);
+        const pw = Math.max(0, d - lw - sw);
+        const fw = Math.floor((a + 1e-9) / d);
+        let rem = Math.max(0, a - fw * d);
+        const lr = Math.min(rem, lw); rem = Math.max(0, rem - lr);
+        const sr = Math.min(rem, sw); rem = Math.max(0, rem - sr);
+        return {
+          lin: fw * lw + lr,
+          sec: fw * sw + sr,
+          prz: fw * pw + rem,
+        };
+      }
+
+      function renderLeagueSandboxTotals() {
+        const dues = Math.max(1, Number(document.getElementById('sbLgDues')?.value || 20));
+        const lin = Math.max(0, Number(document.getElementById('sbLgLin')?.value || 12));
+        const sec = Math.max(0, Number(document.getElementById('sbLgSec')?.value || 1));
+        const prz = Math.max(0, dues - lin - sec);
+        const pBadge = document.getElementById('sbLgPrzBadge');
+        if (pBadge) pBadge.textContent = `Prize: $${prz.toFixed(2)}/wk`;
+
+        let cash = 0, linTot = 0, przTot = 0;
+        lgRows.forEach((r, idx) => {
+          const sp = splitFee(r.paid, dues, lin, sec);
+          cash += r.paid; linTot += sp.lin; przTot += sp.prz;
+          const spEl = document.getElementById(`sb-lg-sp-${idx}`);
+          if (spEl) spEl.innerHTML = r.paid > 0
+            ? `<span class="text-cyan-300">$${sp.lin.toFixed(2)} Lin</span> · <span class="text-amber-300">$${sp.prz.toFixed(2)} Prz</span>`
+            : '<span class="text-slate-500">—</span>';
+          const ytd = r.prior + r.paid;
+          const exp = dues * 2;
+          const bal = Math.round((ytd - exp) * 100) / 100;
+          const stEl = document.getElementById(`sb-lg-st-${idx}`);
+          if (stEl) {
+            if (bal > 0.01) stEl.innerHTML = `<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[11px] font-bold">+$${bal.toFixed(0)} Ahead</span>`;
+            else if (bal < -0.01) stEl.innerHTML = `<span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono text-[11px] font-bold">Short $${Math.abs(bal).toFixed(0)}</span>`;
+            else stEl.innerHTML = `<span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono text-[11px]">Current</span>`;
+          }
+        });
+        const schedAlley = lgRows.length * lin;
+        const cEl = document.getElementById('sbLgCash'); if (cEl) cEl.textContent = `$${cash.toFixed(2)}`;
+        const lEl = document.getElementById('sbLgLinTot'); if (lEl) lEl.textContent = `$${linTot.toFixed(2)}`;
+        const rEl = document.getElementById('sbLgPrzTot'); if (rEl) rEl.textContent = `$${przTot.toFixed(2)}`;
+        const dEl = document.getElementById('sbLgDeposit'); if (dEl) dEl.textContent = `$${(cash - schedAlley).toFixed(2)}`;
+      }
+
+      function renderLeagueSandboxRows() {
+        const tbody = document.getElementById('sbLgBody');
+        if (!tbody) return;
+        tbody.innerHTML = lgRows.map((r, idx) => `
+          <tr class="hover:bg-cyan-500/5">
+            <td class="px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full shrink-0" style="background:${r.color};"></span>
+                <div>
+                  <strong class="text-white">${r.name}</strong>
+                  <div class="text-[11px] text-slate-400">${r.team} · Prior $${r.prior} · ${r.note}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-2 py-2.5 text-center">
+              <input type="number" min="0" step="1" data-li="${idx}" value="${r.paid}" class="sb-lg-in w-16 text-center font-mono font-bold py-1.5 rounded-lg bg-slate-950 border border-slate-700 focus:border-cyan-400 focus:outline-none text-white text-xs sm:text-sm" />
+            </td>
+            <td class="px-3 py-2.5 font-mono text-xs" id="sb-lg-sp-${idx}"></td>
+            <td class="px-3 py-2.5" id="sb-lg-st-${idx}"></td>
+          </tr>`).join('');
+        tbody.querySelectorAll('.sb-lg-in').forEach((inp) => {
+          inp.addEventListener('input', () => {
+            const li = Number(inp.dataset.li);
+            lgRows[li].paid = Math.max(0, Number(inp.value || 0));
+            renderLeagueSandboxTotals();
+          });
+        });
+        renderLeagueSandboxTotals();
+      }
+
+      ['sbLgDues', 'sbLgLin', 'sbLgSec'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('input', renderLeagueSandboxTotals);
+      });
+      document.getElementById('sbLgPts')?.addEventListener('change', (e) => {
+        const hints = {
+          '7pt': '7 pts/wk',
+          '4pt': '4 pts/wk',
+          'split_team': '15 pts/wk (2-man)',
+          'sport_multi': '6 pts/wk (4 gms)'
+        };
+        const h = document.getElementById('sbLgPtsHint');
+        if (h) h.textContent = hints[e.target.value] || '7 pts/wk';
+      });
+      document.getElementById('btnSbLgSheet')?.addEventListener('click', () => {
+        lgRows = [
+          { name: 'Marcus Vance', team: 'Pin Crushers', prior: 60, paid: 60, color: '#34d399', note: 'Google Sheet: Cash 3 wks' },
+          { name: 'Elena Rostova', team: 'Split Happens', prior: 20, paid: 40, color: '#38bdf8', note: 'Google Sheet: Venmo +1 wk' },
+          { name: 'Devon Brooks', team: 'Split Happens', prior: 20, paid: 20, color: '#34d399', note: 'Google Sheet: Caught up' },
+          { name: 'Nadia Patel', team: 'Pin Crushers', prior: 20, paid: 20, color: '#94a3b8', note: 'Google Sheet: Check #1042' },
+        ];
+        renderLeagueSandboxRows();
+        const t = document.getElementById('sbLgToast');
+        if (t) {
+          t.textContent = '📥 Imported 4 matched bowlers from pasted Google Sheet (CSV/XLSX) — balances & lineage splits updated!';
+          t.classList.remove('hidden');
+        }
+      });
+      document.getElementById('btnSbLgExact')?.addEventListener('click', () => {
+        const d = Math.max(1, Number(document.getElementById('sbLgDues')?.value || 20));
+        lgRows.forEach((r) => { r.paid = d; });
+        renderLeagueSandboxRows();
+      });
+      renderLeagueSandboxRows();
     })();
 
     // Interactive Per-Bowler Savings Calculator
@@ -1988,16 +2206,26 @@
       btn.addEventListener('click', () => switchProductLane(btn.dataset.lane));
     });
     document.querySelectorAll('[data-lane-jump]').forEach((el) => {
-      el.addEventListener('click', () => {
-        switchProductLane(el.dataset.laneJump);
-        if (el.tagName === 'BUTTON') {
-          document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-        }
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lane = el.dataset.laneJump === 'leagues' ? 'leagues' : 'tournaments';
+        mobileMenu?.classList.add('hidden');
+        mobileMenuBtn?.setAttribute('aria-expanded', 'false');
+        switchProductLane(lane);
+        try {
+          history.replaceState(null, '', lane === 'leagues' ? '#leagues' : '#features');
+        } catch {}
+        requestAnimationFrame(() => {
+          document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
       });
     });
-    if (window.location.hash === '#leagues') {
-      switchProductLane('leagues');
-    }
+    const syncLaneFromHash = () => {
+      if (window.location.hash === '#leagues') switchProductLane('leagues');
+      else if (window.location.hash === '#features') switchProductLane('tournaments');
+    };
+    window.addEventListener('hashchange', syncLaneFromHash);
+    syncLaneFromHash();
   </script>
 </body>
 </html>
